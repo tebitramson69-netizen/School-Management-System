@@ -1,5 +1,7 @@
 <?php
 
+define('BASE_URL', '/school-system/public');
+
 class Database
 {
     private static ?PDO $connection = null;
