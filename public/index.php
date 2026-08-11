@@ -2,10 +2,13 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../src/Controllers/AuthController.php';
+require_once __DIR__ . '/../src/Controllers/AdminController.php';
+require_once __DIR__ . '/../src/Middleware/AuthMiddleware.php';
 
 $action = $_GET['action'] ?? 'login';
 
 $authController = new AuthController();
+$adminController = new AdminController();
 
 switch ($action) {
     case 'login':
@@ -21,18 +24,29 @@ switch ($action) {
         break;
 
     case 'admin_dashboard':
-        echo "Admin dashboard coming soon.";
+        $adminController->dashboard();
+        break;
+
+    case 'create_teacher_form':
+        $adminController->showCreateTeacherForm();
+        break;
+
+    case 'create_teacher':
+        $adminController->createTeacher();
         break;
 
     case 'teacher_dashboard':
+        AuthMiddleware::requireRole('teacher');
         echo "Teacher dashboard coming soon.";
         break;
 
     case 'student_dashboard':
+        AuthMiddleware::requireRole('student');
         echo "Student dashboard coming soon.";
         break;
 
     case 'parent_dashboard':
+        AuthMiddleware::requireRole('parent');
         echo "Parent dashboard coming soon.";
         break;
 
