@@ -59,6 +59,14 @@ switch ($action) {
         $adminController->createParent();
         break;
 
+    case 'assign_teacher_form':
+        $adminController->showAssignTeacherForm();
+        break;
+
+    case 'assign_teacher':
+        $adminController->assignTeacher();
+        break;
+
     case 'teacher_dashboard':
         AuthMiddleware::requireRole('teacher');
         echo "Teacher dashboard coming soon.";

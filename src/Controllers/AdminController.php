@@ -5,6 +5,8 @@ require_once __DIR__ . '/../Models/Teacher.php';
 require_once __DIR__ . '/../Models/Student.php';
 require_once __DIR__ . '/../Models/ClassModel.php';
 require_once __DIR__ . '/../Models/ParentModel.php';
+require_once __DIR__ . '/../Models/Subject.php';
+require_once __DIR__ . '/../Models/ClassSubjectTeacher.php';
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
 
 class AdminController
@@ -14,6 +16,8 @@ class AdminController
     private Student $studentModel;
     private ClassModel $classModel;
     private ParentModel $parentModel;
+    private Subject $subjectModel;
+    private ClassSubjectTeacher $assignmentModel;
 
     public function __construct()
     {
@@ -22,6 +26,8 @@ class AdminController
         $this->studentModel = new Student();
         $this->classModel = new ClassModel();
         $this->parentModel = new ParentModel();
+        $this->subjectModel = new Subject();
+        $this->assignmentModel = new ClassSubjectTeacher();
     }
 
     public function dashboard(): void
@@ -230,6 +236,58 @@ class AdminController
         }
 
         $_SESSION['success_message'] = "Parent account created successfully for {$fullName}.";
+        header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
+        exit;
+    }
+
+    public function showAssignTeacherForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        $classes = $this->classModel->all();
+        $subjects = $this->subjectModel->all();
+        $teachers = $this->teacherModel->all();
+        require __DIR__ . '/../../views/admin/assign_teacher.php';
+    }
+
+    public function assignTeacher(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $classId = (int) ($_POST['class_id'] ?? 0);
+        $subjectId = (int) ($_POST['subject_id'] ?? 0);
+        $teacherId = (int) ($_POST['teacher_id'] ?? 0);
+
+        $errors = [];
+
+        if ($classId <= 0) {
+            $errors[] = 'Please select a class.';
+        }
+
+        if ($subjectId <= 0) {
+            $errors[] = 'Please select a subject.';
+        }
+
+        if ($teacherId <= 0) {
+            $errors[] = 'Please select a teacher.';
+        }
+
+        if ($classId > 0 && $subjectId > 0 && $this->assignmentModel->existsForClassSubject($classId, $subjectId)) {
+            $errors[] = 'This class already has a teacher assigned for this subject.';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            header('Location: ' . BASE_URL . '/index.php?action=assign_teacher_form');
+            exit;
+        }
+
+        $this->assignmentModel->assign($classId, $subjectId, $teacherId);
+
+        $_SESSION['success_message'] = "Teacher assigned successfully.";
         header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
         exit;
     }

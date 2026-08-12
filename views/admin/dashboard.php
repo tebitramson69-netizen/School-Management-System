@@ -37,6 +37,9 @@ unset($_SESSION['success_message']);
             <a href="<?= BASE_URL ?>/index.php?action=create_parent_form" class="btn-card">
                 + Add Parent
             </a>
+            <a href="<?= BASE_URL ?>/index.php?action=assign_teacher_form" class="btn-card">
+                Assign Teacher to Class/Subject
+            </a>
         </div>
     </div>
 </body>
