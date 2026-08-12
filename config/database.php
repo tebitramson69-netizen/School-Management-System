@@ -1,7 +1,7 @@
 <?php
 
 define('BASE_URL', '/school-system/public');
-
+define('SCHOOL_EMAIL_DOMAIN', '@school.com');
 class Database
 {
     private static ?PDO $connection = null;

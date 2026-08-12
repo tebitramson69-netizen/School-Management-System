@@ -39,9 +39,12 @@ unset($_SESSION['form_errors'], $_SESSION['old_input']);
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email"
-                           value="<?= htmlspecialchars($old['email'] ?? '') ?>" required>
+                    <label for="username">Username</label>
+                    <div class="input-suffix-group">
+                        <input type="text" id="username" name="username"
+                               value="<?= htmlspecialchars($old['username'] ?? '') ?>" required>
+                        <span class="input-suffix"><?= SCHOOL_EMAIL_DOMAIN ?></span>
+                    </div>
                 </div>
 
                 <div class="form-group">

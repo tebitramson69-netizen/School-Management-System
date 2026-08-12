@@ -23,6 +23,14 @@ switch ($action) {
         $authController->logout();
         break;
 
+    case 'change_password_form':
+        $authController->showChangePasswordForm();
+        break;
+
+    case 'change_password':
+        $authController->changePassword();
+        break;
+
     case 'admin_dashboard':
         $adminController->dashboard();
         break;
@@ -33,6 +41,22 @@ switch ($action) {
 
     case 'create_teacher':
         $adminController->createTeacher();
+        break;
+
+    case 'create_student_form':
+        $adminController->showCreateStudentForm();
+        break;
+
+    case 'create_student':
+        $adminController->createStudent();
+        break;
+
+    case 'create_parent_form':
+        $adminController->showCreateParentForm();
+        break;
+
+    case 'create_parent':
+        $adminController->createParent();
         break;
 
     case 'teacher_dashboard':

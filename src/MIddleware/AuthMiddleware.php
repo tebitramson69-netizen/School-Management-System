@@ -20,5 +20,10 @@ class AuthMiddleware
             echo "Access denied. You don't have permission to view this page.";
             exit;
         }
+
+        if (!empty($_SESSION['must_change_password'])) {
+            header('Location: ' . BASE_URL . '/index.php?action=change_password_form');
+            exit;
+        }
     }
 }

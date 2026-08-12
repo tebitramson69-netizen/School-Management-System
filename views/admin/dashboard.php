@@ -31,11 +31,11 @@ unset($_SESSION['success_message']);
             <a href="<?= BASE_URL ?>/index.php?action=create_teacher_form" class="btn-card">
                 + Add Teacher
             </a>
-            <a href="#" class="btn-card btn-disabled">
-                + Add Student (coming soon)
+            <a href="<?= BASE_URL ?>/index.php?action=create_student_form" class="btn-card">
+                + Add Student
             </a>
-            <a href="#" class="btn-card btn-disabled">
-                + Add Parent (coming soon)
+            <a href="<?= BASE_URL ?>/index.php?action=create_parent_form" class="btn-card">
+                + Add Parent
             </a>
         </div>
     </div>

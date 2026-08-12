@@ -49,8 +49,64 @@ class AuthController
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
+        $_SESSION['must_change_password'] = (bool) $user['must_change_password'];
+
+        if ($_SESSION['must_change_password']) {
+            header('Location: ' . BASE_URL . '/index.php?action=change_password_form');
+            exit;
+        }
 
         $this->redirectToDashboard($user['role']);
+    }
+
+    public function showChangePasswordForm(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '/index.php?action=login');
+            exit;
+        }
+
+        require __DIR__ . '/../../views/auth/change_password.php';
+    }
+
+    public function changePassword(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '/index.php?action=login');
+            exit;
+        }
+
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+
+        $errors = [];
+
+        if (strlen($newPassword) < 6) {
+            $errors[] = 'New password must be at least 6 characters.';
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            $errors[] = 'Passwords do not match.';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            header('Location: ' . BASE_URL . '/index.php?action=change_password_form');
+            exit;
+        }
+
+        $this->userModel->updatePassword($_SESSION['user_id'], $newPassword);
+        $_SESSION['must_change_password'] = false;
+
+        $this->redirectToDashboard($_SESSION['role']);
     }
 
     private function redirectToDashboard(string $role): void
