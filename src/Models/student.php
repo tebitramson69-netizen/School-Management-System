@@ -60,4 +60,17 @@ class Student
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
+
+    public function allByClass(int $classId): array
+    {
+        $sql = "SELECT s.id, s.full_name, s.admission_no
+                FROM students s
+                JOIN enrollments e ON e.student_id = s.id
+                JOIN academic_years ay ON e.academic_year_id = ay.id AND ay.is_current = TRUE
+                WHERE e.class_id = :class_id
+                ORDER BY s.full_name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['class_id' => $classId]);
+        return $stmt->fetchAll();
+    }
 }

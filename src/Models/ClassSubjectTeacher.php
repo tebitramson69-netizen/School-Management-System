@@ -55,4 +55,17 @@ class ClassSubjectTeacher
         $stmt->execute(['teacher_id' => $teacherId]);
         return $stmt->fetchAll();
     }
+
+    public function find(int $id): array|false
+    {
+        $sql = "SELECT cst.id, cst.class_id, cst.subject_id, cst.teacher_id, 
+                       c.name AS class_name, s.name AS subject_name
+                FROM class_subject_teacher cst
+                JOIN classes c ON cst.class_id = c.id
+                JOIN subjects s ON cst.subject_id = s.id
+                WHERE cst.id = :id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch();
+    }
 }

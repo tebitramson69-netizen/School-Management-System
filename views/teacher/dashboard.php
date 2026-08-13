@@ -2,6 +2,9 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$success = $_SESSION['success_message'] ?? null;
+unset($_SESSION['success_message']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,6 +20,12 @@ if (session_status() === PHP_SESSION_NONE) {
             <h1>Welcome, <?= htmlspecialchars($teacher['full_name']) ?></h1>
             <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">Logout</a>
         </header>
+
+        <?php if ($success): ?>
+            <div class="alert alert-success">
+                <?= htmlspecialchars($success) ?>
+            </div>
+        <?php endif; ?>
 
         <h2>Your Classes & Subjects</h2>
 
@@ -37,7 +46,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             <td><?= htmlspecialchars($assignment['class_name']) ?></td>
                             <td><?= htmlspecialchars($assignment['subject_name']) ?></td>
                             <td>
-                                <a href="#">Mark Attendance (coming soon)</a> |
+                                <a href="<?= BASE_URL ?>/index.php?action=mark_attendance_form&assignment_id=<?= $assignment['id'] ?>">Mark Attendance</a> |
                                 <a href="#">Enter Scores (coming soon)</a>
                             </td>
                         </tr>

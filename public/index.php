@@ -73,6 +73,14 @@ switch ($action) {
         $teacherController->dashboard();
         break;
 
+    case 'mark_attendance_form':
+        $teacherController->showMarkAttendanceForm();
+        break;
+
+    case 'mark_attendance':
+        $teacherController->markAttendance();
+        break;
+
     case 'student_dashboard':
         AuthMiddleware::requireRole('student');
         echo "Student dashboard coming soon.";
