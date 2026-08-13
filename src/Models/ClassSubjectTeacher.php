@@ -42,4 +42,17 @@ class ClassSubjectTeacher
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
+
+    public function forTeacher(int $teacherId): array
+    {
+        $sql = "SELECT cst.id, cst.class_id, cst.subject_id, c.name AS class_name, s.name AS subject_name
+                FROM class_subject_teacher cst
+                JOIN classes c ON cst.class_id = c.id
+                JOIN subjects s ON cst.subject_id = s.id
+                WHERE cst.teacher_id = :teacher_id
+                ORDER BY c.name, s.name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['teacher_id' => $teacherId]);
+        return $stmt->fetchAll();
+    }
 }

@@ -33,4 +33,12 @@ class Teacher
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
+
+    public function findByUserId(int $userId): array|false
+    {
+        $sql = "SELECT * FROM teachers WHERE user_id = :user_id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetch();
+    }
 }
