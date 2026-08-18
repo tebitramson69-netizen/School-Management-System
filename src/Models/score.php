@@ -54,4 +54,18 @@ class Score
 
         return $result;
     }
+
+    public function forStudent(int $studentId): array
+    {
+        $sql = "SELECT sc.score, sc.max_score, sub.name AS subject_name, 
+                       t.name AS term_name, t.sequence_number
+                FROM scores sc
+                JOIN subjects sub ON sc.subject_id = sub.id
+                JOIN terms t ON sc.term_id = t.id
+                WHERE sc.student_id = :student_id
+                ORDER BY t.id, sub.name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['student_id' => $studentId]);
+        return $stmt->fetchAll();
+    }
 }

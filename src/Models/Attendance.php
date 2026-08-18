@@ -53,4 +53,17 @@ class Attendance
 
         return $result;
     }
+
+    public function forStudent(int $studentId): array
+    {
+        $sql = "SELECT a.date, a.status, s.name AS subject_name
+                FROM attendance a
+                JOIN class_subject_teacher cst ON a.class_subject_teacher_id = cst.id
+                JOIN subjects s ON cst.subject_id = s.id
+                WHERE a.student_id = :student_id
+                ORDER BY a.date DESC, s.name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['student_id' => $studentId]);
+        return $stmt->fetchAll();
+    }
 }

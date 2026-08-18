@@ -64,4 +64,26 @@ class Student
         $stmt->execute(['class_id' => $classId]);
         return $stmt->fetchAll();
     }
+
+    public function findByUserId(int $userId): array|false
+    {
+        $sql = "SELECT * FROM students WHERE user_id = :user_id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetch();
+    }
+
+    public function allByClassDetailed(int $classId): array
+    {
+        $sql = "SELECT s.id, s.full_name, s.gender, s.dob, u.email
+                FROM students s
+                JOIN users u ON s.user_id = u.id
+                JOIN enrollments e ON e.student_id = s.id
+                JOIN academic_years ay ON e.academic_year_id = ay.id AND ay.is_current = TRUE
+                WHERE e.class_id = :class_id
+                ORDER BY s.full_name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['class_id' => $classId]);
+        return $stmt->fetchAll();
+    }
 }
