@@ -73,6 +73,14 @@ class Student
         return $stmt->fetch();
     }
 
+    public function find(int $id): array|false
+    {
+        $sql = "SELECT * FROM students WHERE id = :id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch();
+    }
+
     public function allByClassDetailed(int $classId): array
     {
         $sql = "SELECT s.id, s.full_name, s.gender, s.dob, u.email

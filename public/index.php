@@ -5,6 +5,7 @@ require_once __DIR__ . '/../src/Controllers/AuthController.php';
 require_once __DIR__ . '/../src/Controllers/AdminController.php';
 require_once __DIR__ . '/../src/Controllers/TeacherController.php';
 require_once __DIR__ . '/../src/Controllers/StudentController.php';
+require_once __DIR__ . '/../src/Controllers/ParentController.php';
 require_once __DIR__ . '/../src/Middleware/AuthMiddleware.php';
 
 $action = $_GET['action'] ?? 'login';
@@ -13,6 +14,7 @@ $authController = new AuthController();
 $adminController = new AdminController();
 $teacherController = new TeacherController();
 $studentController = new StudentController();
+$parentController = new ParentController();
 
 switch ($action) {
     case 'login':
@@ -108,8 +110,11 @@ switch ($action) {
         break;
 
     case 'parent_dashboard':
-        AuthMiddleware::requireRole('parent');
-        echo "Parent dashboard coming soon.";
+        $parentController->dashboard();
+        break;
+
+    case 'parent_child_detail':
+        $parentController->childDetail();
         break;
 
     default:

@@ -43,4 +43,32 @@ class ParentModel
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
+
+    public function findByUserId(int $userId): array|false
+    {
+        $sql = "SELECT * FROM parents WHERE user_id = :user_id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetch();
+    }
+
+    public function getChildren(int $parentId): array
+    {
+        $sql = "SELECT s.id, s.full_name
+                FROM students s
+                JOIN parent_student ps ON ps.student_id = s.id
+                WHERE ps.parent_id = :parent_id
+                ORDER BY s.full_name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['parent_id' => $parentId]);
+        return $stmt->fetchAll();
+    }
+
+    public function isLinkedToChild(int $parentId, int $studentId): bool
+    {
+        $sql = "SELECT 1 FROM parent_student WHERE parent_id = :parent_id AND student_id = :student_id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['parent_id' => $parentId, 'student_id' => $studentId]);
+        return $stmt->fetch() !== false;
+    }
 }
