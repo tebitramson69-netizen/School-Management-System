@@ -85,7 +85,7 @@ CREATE TABLE class_subject_teacher (
 -- 5. TIME STRUCTURE
 CREATE TABLE academic_years (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(20) NOT NULL UNIQUE,   -- e.g. "2025/2026"
+    name VARCHAR(20) NOT NULL UNIQUE,   -- e.g. "2026/2027"
     is_current BOOLEAN DEFAULT FALSE
 ) ENGINE=InnoDB;
 

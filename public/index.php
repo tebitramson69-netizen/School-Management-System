@@ -69,6 +69,18 @@ switch ($action) {
         $adminController->assignTeacher();
         break;
 
+    case 'view_teachers':
+        $adminController->viewTeacherAssignments();
+        break;
+
+    case 'view_classes':
+        $adminController->viewClasses();
+        break;
+
+    case 'view_class_list':
+        $adminController->viewClassList();
+        break;
+
     case 'teacher_dashboard':
         $teacherController->dashboard();
         break;
@@ -79,6 +91,14 @@ switch ($action) {
 
     case 'mark_attendance':
         $teacherController->markAttendance();
+        break;
+
+    case 'enter_scores_form':
+        $teacherController->showEnterScoresForm();
+        break;
+
+    case 'enter_scores':
+        $teacherController->enterScores();
         break;
 
     case 'student_dashboard':

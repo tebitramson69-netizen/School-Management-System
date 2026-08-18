@@ -40,6 +40,12 @@ unset($_SESSION['success_message']);
             <a href="<?= BASE_URL ?>/index.php?action=assign_teacher_form" class="btn-card">
                 Assign Teacher to Class/Subject
             </a>
+            <a href="<?= BASE_URL ?>/index.php?action=view_teachers" class="btn-card">
+                View Teachers & Assignments
+            </a>
+            <a href="<?= BASE_URL ?>/index.php?action=view_classes" class="btn-card">
+                View Classes & Class Lists
+            </a>
         </div>
     </div>
 </body>

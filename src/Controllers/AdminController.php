@@ -111,7 +111,6 @@ class AdminController
         $fullName = trim($_POST['full_name'] ?? '');
         $dob = trim($_POST['dob'] ?? '');
         $gender = trim($_POST['gender'] ?? '');
-        $admissionNo = trim($_POST['admission_no'] ?? '');
         $classId = (int) ($_POST['class_id'] ?? 0);
         $password = $_POST['password'] ?? '';
 
@@ -133,10 +132,6 @@ class AdminController
             $errors[] = 'Please select a gender.';
         }
 
-        if (empty($admissionNo)) {
-            $errors[] = 'Admission number is required.';
-        }
-
         if ($classId <= 0) {
             $errors[] = 'Please select a class.';
         }
@@ -149,15 +144,11 @@ class AdminController
             $errors[] = 'This username is already taken.';
         }
 
-        if (!empty($admissionNo) && $this->studentModel->admissionNoExists($admissionNo)) {
-            $errors[] = 'This admission number is already in use.';
-        }
-
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
             $_SESSION['old_input'] = [
                 'username' => $username, 'full_name' => $fullName, 'dob' => $dob,
-                'gender' => $gender, 'admission_no' => $admissionNo, 'class_id' => $classId
+                'gender' => $gender, 'class_id' => $classId
             ];
             header('Location: ' . BASE_URL . '/index.php?action=create_student_form');
             exit;
@@ -165,7 +156,7 @@ class AdminController
 
         // Create user + student profile, then enroll into the current academic year
         $userId = $this->userModel->create($email, $password, 'student');
-        $studentId = $this->studentModel->create($userId, $fullName, $dob, $gender, $admissionNo);
+        $studentId = $this->studentModel->create($userId, $fullName, $dob, $gender);
         $this->studentModel->enroll($studentId, $classId, 1); // academic_year_id 1 = 2025/2026 (current)
 
         $_SESSION['success_message'] = "Student account created successfully for {$fullName}.";
@@ -290,5 +281,49 @@ class AdminController
         $_SESSION['success_message'] = "Teacher assigned successfully.";
         header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
         exit;
+    }
+
+    public function viewTeacherAssignments(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        $assignments = $this->assignmentModel->all();
+
+        // Group flat assignment rows by teacher, so the view can list
+        // each teacher once with all their classes/subjects nested underneath
+        $byTeacher = [];
+        foreach ($assignments as $assignment) {
+            $byTeacher[$assignment['teacher_name']][] = $assignment;
+        }
+        ksort($byTeacher);
+
+        require __DIR__ . '/../../views/admin/teacher_assignments.php';
+    }
+
+    public function viewClasses(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        $classes = $this->classModel->all();
+
+        require __DIR__ . '/../../views/admin/classes.php';
+    }
+
+    public function viewClassList(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        $classId = (int) ($_GET['class_id'] ?? 0);
+        $class = $this->classModel->find($classId);
+
+        if (!$class) {
+            http_response_code(404);
+            echo "Class not found.";
+            exit;
+        }
+
+        $students = $this->studentModel->allByClass($classId);
+
+        require __DIR__ . '/../../views/admin/class_list.php';
     }
 }

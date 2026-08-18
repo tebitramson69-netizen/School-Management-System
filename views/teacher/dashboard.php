@@ -47,7 +47,7 @@ unset($_SESSION['success_message']);
                             <td><?= htmlspecialchars($assignment['subject_name']) ?></td>
                             <td>
                                 <a href="<?= BASE_URL ?>/index.php?action=mark_attendance_form&assignment_id=<?= $assignment['id'] ?>">Mark Attendance</a> |
-                                <a href="#">Enter Scores (coming soon)</a>
+                                <a href="<?= BASE_URL ?>/index.php?action=enter_scores_form&assignment_id=<?= $assignment['id'] ?>">Enter Scores</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

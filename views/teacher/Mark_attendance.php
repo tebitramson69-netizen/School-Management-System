@@ -34,6 +34,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th>S/N</th>
                             <th>Student</th>
                             <th>Admission No.</th>
                             <th>Present</th>
@@ -42,9 +43,11 @@ if (session_status() === PHP_SESSION_NONE) {
                         </tr>
                     </thead>
                     <tbody>
+                        <?php $serialNumber = 1; ?>
                         <?php foreach ($students as $student): ?>
                             <?php $currentStatus = $existingAttendance[$student['id']] ?? 'present'; ?>
                             <tr>
+                                <td><?= $serialNumber++ ?></td>
                                 <td><?= htmlspecialchars($student['full_name']) ?></td>
                                 <td><?= htmlspecialchars($student['admission_no']) ?></td>
                                 <td>

@@ -11,17 +11,16 @@ class Student
         $this->db = Database::getConnection();
     }
 
-    public function create(int $userId, string $fullName, string $dob, string $gender, string $admissionNo): int
+    public function create(int $userId, string $fullName, string $dob, string $gender): int
     {
-        $sql = "INSERT INTO students (user_id, full_name, dob, gender, admission_no) 
-                VALUES (:user_id, :full_name, :dob, :gender, :admission_no)";
+        $sql = "INSERT INTO students (user_id, full_name, dob, gender) 
+                VALUES (:user_id, :full_name, :dob, :gender)";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'user_id' => $userId,
             'full_name' => $fullName,
             'dob' => $dob,
-            'gender' => $gender,
-            'admission_no' => $admissionNo
+            'gender' => $gender
         ]);
 
         return (int) $this->db->lastInsertId();
@@ -39,17 +38,9 @@ class Student
         ]);
     }
 
-    public function admissionNoExists(string $admissionNo): bool
-    {
-        $sql = "SELECT id FROM students WHERE admission_no = :admission_no LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['admission_no' => $admissionNo]);
-        return $stmt->fetch() !== false;
-    }
-
     public function all(): array
     {
-        $sql = "SELECT s.id, s.full_name, s.admission_no, s.gender, u.email, u.is_active,
+        $sql = "SELECT s.id, s.full_name, s.gender, u.email, u.is_active,
                        c.name AS class_name
                 FROM students s
                 JOIN users u ON s.user_id = u.id
@@ -63,7 +54,7 @@ class Student
 
     public function allByClass(int $classId): array
     {
-        $sql = "SELECT s.id, s.full_name, s.admission_no
+        $sql = "SELECT s.id, s.full_name
                 FROM students s
                 JOIN enrollments e ON e.student_id = s.id
                 JOIN academic_years ay ON e.academic_year_id = ay.id AND ay.is_current = TRUE

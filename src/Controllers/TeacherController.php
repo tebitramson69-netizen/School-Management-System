@@ -4,6 +4,8 @@ require_once __DIR__ . '/../Models/Teacher.php';
 require_once __DIR__ . '/../Models/ClassSubjectTeacher.php';
 require_once __DIR__ . '/../Models/Student.php';
 require_once __DIR__ . '/../Models/Attendance.php';
+require_once __DIR__ . '/../Models/Term.php';
+require_once __DIR__ . '/../Models/Score.php';
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
 
 class TeacherController
@@ -12,6 +14,8 @@ class TeacherController
     private ClassSubjectTeacher $assignmentModel;
     private Student $studentModel;
     private Attendance $attendanceModel;
+    private Term $termModel;
+    private Score $scoreModel;
 
     public function __construct()
     {
@@ -19,6 +23,8 @@ class TeacherController
         $this->assignmentModel = new ClassSubjectTeacher();
         $this->studentModel = new Student();
         $this->attendanceModel = new Attendance();
+        $this->termModel = new Term();
+        $this->scoreModel = new Score();
     }
 
     public function dashboard(): void
@@ -54,8 +60,6 @@ class TeacherController
 
         $assignment = $this->assignmentModel->find($assignmentId);
 
-        // Security check: confirm this assignment actually belongs to this teacher,
-        // so nobody can mark another teacher's subject period by editing the URL
         if (!$assignment || (int) $assignment['teacher_id'] !== $teacher['id']) {
             http_response_code(403);
             echo "Access denied. This is not your assignment.";
@@ -93,6 +97,70 @@ class TeacherController
         $this->attendanceModel->markBulk($assignmentId, $date, $statuses, $teacher['id']);
 
         $_SESSION['success_message'] = "Attendance saved for {$assignment['subject_name']} ({$assignment['class_name']}) on " . date('F j, Y', strtotime($date)) . ".";
+        header('Location: ' . BASE_URL . '/index.php?action=teacher_dashboard');
+        exit;
+    }
+
+    public function showEnterScoresForm(): void
+    {
+        AuthMiddleware::requireRole('teacher');
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $teacher = $this->teacherModel->findByUserId($_SESSION['user_id']);
+        $assignmentId = (int) ($_GET['assignment_id'] ?? 0);
+        $termId = (int) ($_GET['term_id'] ?? 0);
+
+        $assignment = $this->assignmentModel->find($assignmentId);
+
+        if (!$assignment || (int) $assignment['teacher_id'] !== $teacher['id']) {
+            http_response_code(403);
+            echo "Access denied. This is not your assignment.";
+            exit;
+        }
+
+        $terms = $this->termModel->all();
+        $students = [];
+        $existingScores = [];
+        $selectedTerm = null;
+
+        // Only load the roster once a term/sequence has been chosen
+        if ($termId > 0) {
+            $selectedTerm = $this->termModel->find($termId);
+            $students = $this->studentModel->allByClass($assignment['class_id']);
+            $existingScores = $this->scoreModel->getForSubjectTerm($assignment['subject_id'], $termId);
+        }
+
+        require __DIR__ . '/../../views/teacher/enter_scores.php';
+    }
+
+    public function enterScores(): void
+    {
+        AuthMiddleware::requireRole('teacher');
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $teacher = $this->teacherModel->findByUserId($_SESSION['user_id']);
+        $assignmentId = (int) ($_POST['assignment_id'] ?? 0);
+        $termId = (int) ($_POST['term_id'] ?? 0);
+        $sequence = (int) ($_POST['sequence'] ?? 0);
+        $scores = $_POST['score'] ?? [];
+
+        $assignment = $this->assignmentModel->find($assignmentId);
+
+        if (!$assignment || (int) $assignment['teacher_id'] !== $teacher['id']) {
+            http_response_code(403);
+            echo "Access denied. This is not your assignment.";
+            exit;
+        }
+
+        $this->scoreModel->recordBulk($assignment['subject_id'], $termId, $sequence, $scores);
+
+        $_SESSION['success_message'] = "Scores saved for {$assignment['subject_name']} ({$assignment['class_name']}).";
         header('Location: ' . BASE_URL . '/index.php?action=teacher_dashboard');
         exit;
     }

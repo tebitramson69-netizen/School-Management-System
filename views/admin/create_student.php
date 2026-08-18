@@ -48,12 +48,6 @@ unset($_SESSION['form_errors'], $_SESSION['old_input']);
                 </div>
 
                 <div class="form-group">
-                    <label for="admission_no">Admission Number</label>
-                    <input type="text" id="admission_no" name="admission_no"
-                           value="<?= htmlspecialchars($old['admission_no'] ?? '') ?>" required>
-                </div>
-
-                <div class="form-group">
                     <label for="dob">Date of Birth</label>
                     <input type="date" id="dob" name="dob"
                            value="<?= htmlspecialchars($old['dob'] ?? '') ?>" required>
