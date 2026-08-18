@@ -36,7 +36,6 @@ if (session_status() === PHP_SESSION_NONE) {
                         <tr>
                             <th>S/N</th>
                             <th>Student</th>
-                            <th>Admission No.</th>
                             <th>Present</th>
                             <th>Absent</th>
                             <th>Late</th>
@@ -49,7 +48,6 @@ if (session_status() === PHP_SESSION_NONE) {
                             <tr>
                                 <td><?= $serialNumber++ ?></td>
                                 <td><?= htmlspecialchars($student['full_name']) ?></td>
-                                <td><?= htmlspecialchars($student['admission_no']) ?></td>
                                 <td>
                                     <input type="radio" name="status[<?= $student['id'] ?>]" value="present"
                                            <?= $currentStatus === 'present' ? 'checked' : '' ?>>

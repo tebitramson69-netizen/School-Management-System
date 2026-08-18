@@ -60,7 +60,6 @@ if (session_status() === PHP_SESSION_NONE) {
                             <tr>
                                 <th>S/N</th>
                                 <th>Student</th>
-                                <th>Admission No.</th>
                                 <th>Score (out of 20)</th>
                             </tr>
                         </thead>
@@ -71,7 +70,6 @@ if (session_status() === PHP_SESSION_NONE) {
                                 <tr>
                                     <td><?= $serialNumber++ ?></td>
                                     <td><?= htmlspecialchars($student['full_name']) ?></td>
-                                    <td><?= htmlspecialchars($student['admission_no']) ?></td>
                                     <td>
                                         <input type="number" name="score[<?= $student['id'] ?>]"
                                                min="0" max="20" step="0.5"

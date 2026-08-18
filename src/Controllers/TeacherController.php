@@ -6,6 +6,7 @@ require_once __DIR__ . '/../Models/Student.php';
 require_once __DIR__ . '/../Models/Attendance.php';
 require_once __DIR__ . '/../Models/Term.php';
 require_once __DIR__ . '/../Models/Score.php';
+require_once __DIR__ . '/../Models/Announcement.php';
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
 
 class TeacherController
@@ -16,6 +17,7 @@ class TeacherController
     private Attendance $attendanceModel;
     private Term $termModel;
     private Score $scoreModel;
+    private Announcement $announcementModel;
 
     public function __construct()
     {
@@ -25,6 +27,7 @@ class TeacherController
         $this->attendanceModel = new Attendance();
         $this->termModel = new Term();
         $this->scoreModel = new Score();
+        $this->announcementModel = new Announcement();
     }
 
     public function dashboard(): void
@@ -43,6 +46,7 @@ class TeacherController
         }
 
         $assignments = $this->assignmentModel->forTeacher($teacher['id']);
+        $announcements = $this->announcementModel->forDashboard(null);
 
         require __DIR__ . '/../../views/teacher/dashboard.php';
     }

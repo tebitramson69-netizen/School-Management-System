@@ -66,7 +66,7 @@ $oldStudentIds = array_map('intval', $old['student_ids'] ?? []);
                             <?php foreach ($students as $student): ?>
                                 <?php $selected = in_array((int) $student['id'], $oldStudentIds, true) ? 'selected' : ''; ?>
                                 <option value="<?= $student['id'] ?>" <?= $selected ?>>
-                                    <?= htmlspecialchars($student['full_name']) ?> (<?= htmlspecialchars($student['admission_no']) ?>)
+                                    <?= htmlspecialchars($student['full_name']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

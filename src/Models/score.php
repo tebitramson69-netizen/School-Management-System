@@ -68,4 +68,23 @@ class Score
         $stmt->execute(['student_id' => $studentId]);
         return $stmt->fetchAll();
     }
+
+    /**
+     * Computes each subject's average across all sequence scores entered so far,
+     * for a simple running report card (not tied to one specific term).
+     */
+    public function reportCardForStudent(int $studentId): array
+    {
+        $sql = "SELECT sub.name AS subject_name, 
+                       AVG(sc.score) AS average_score, 
+                       MAX(sc.max_score) AS max_score
+                FROM scores sc
+                JOIN subjects sub ON sc.subject_id = sub.id
+                WHERE sc.student_id = :student_id
+                GROUP BY sub.id, sub.name
+                ORDER BY sub.name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['student_id' => $studentId]);
+        return $stmt->fetchAll();
+    }
 }

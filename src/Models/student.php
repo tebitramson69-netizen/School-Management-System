@@ -81,6 +81,18 @@ class Student
         return $stmt->fetch();
     }
 
+    public function getCurrentClassId(int $studentId): ?int
+    {
+        $sql = "SELECT e.class_id FROM enrollments e
+                JOIN academic_years ay ON e.academic_year_id = ay.id
+                WHERE e.student_id = :student_id AND ay.is_current = TRUE
+                LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['student_id' => $studentId]);
+        $result = $stmt->fetch();
+        return $result ? (int) $result['class_id'] : null;
+    }
+
     public function allByClassDetailed(int $classId): array
     {
         $sql = "SELECT s.id, s.full_name, s.gender, s.dob, u.email

@@ -7,6 +7,7 @@ require_once __DIR__ . '/../Models/ClassModel.php';
 require_once __DIR__ . '/../Models/ParentModel.php';
 require_once __DIR__ . '/../Models/Subject.php';
 require_once __DIR__ . '/../Models/ClassSubjectTeacher.php';
+require_once __DIR__ . '/../Models/Announcement.php';
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
 
 class AdminController
@@ -18,6 +19,7 @@ class AdminController
     private ParentModel $parentModel;
     private Subject $subjectModel;
     private ClassSubjectTeacher $assignmentModel;
+    private Announcement $announcementModel;
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class AdminController
         $this->parentModel = new ParentModel();
         $this->subjectModel = new Subject();
         $this->assignmentModel = new ClassSubjectTeacher();
+        $this->announcementModel = new Announcement();
     }
 
     public function dashboard(): void
@@ -325,5 +328,55 @@ class AdminController
         $students = $this->studentModel->allByClass($classId);
 
         require __DIR__ . '/../../views/admin/class_list.php';
+    }
+
+    public function showPostAnnouncementForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        $classes = $this->classModel->all();
+        require __DIR__ . '/../../views/admin/post_announcement.php';
+    }
+
+    public function postAnnouncement(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $title = trim($_POST['title'] ?? '');
+        $body = trim($_POST['body'] ?? '');
+        $classId = (int) ($_POST['class_id'] ?? 0);
+        $classId = $classId > 0 ? $classId : null; // 0 or empty means "school-wide"
+
+        $errors = [];
+
+        if (empty($title)) {
+            $errors[] = 'Title is required.';
+        }
+
+        if (empty($body)) {
+            $errors[] = 'Announcement body is required.';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            header('Location: ' . BASE_URL . '/index.php?action=post_announcement_form');
+            exit;
+        }
+
+        $this->announcementModel->create($_SESSION['user_id'], $classId, $title, $body);
+
+        $_SESSION['success_message'] = "Announcement posted successfully.";
+        header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
+        exit;
+    }
+
+    public function viewAnnouncements(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        $announcements = $this->announcementModel->all();
+        require __DIR__ . '/../../views/admin/announcements.php';
     }
 }

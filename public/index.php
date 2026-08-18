@@ -85,6 +85,18 @@ switch ($action) {
         $adminController->viewClassList();
         break;
 
+    case 'post_announcement_form':
+        $adminController->showPostAnnouncementForm();
+        break;
+
+    case 'post_announcement':
+        $adminController->postAnnouncement();
+        break;
+
+    case 'view_announcements':
+        $adminController->viewAnnouncements();
+        break;
+
     case 'teacher_dashboard':
         $teacherController->dashboard();
         break;

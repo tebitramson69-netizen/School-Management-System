@@ -46,6 +46,12 @@ unset($_SESSION['success_message']);
             <a href="<?= BASE_URL ?>/index.php?action=view_classes" class="btn-card">
                 View Classes & Class Lists
             </a>
+            <a href="<?= BASE_URL ?>/index.php?action=post_announcement_form" class="btn-card">
+                Post Announcement
+            </a>
+            <a href="<?= BASE_URL ?>/index.php?action=view_announcements" class="btn-card">
+                View All Announcements
+            </a>
         </div>
     </div>
 </body>

@@ -27,6 +27,19 @@ unset($_SESSION['success_message']);
             </div>
         <?php endif; ?>
 
+        <h2>Announcements</h2>
+        <?php if (empty($announcements)): ?>
+            <p>No announcements right now.</p>
+        <?php else: ?>
+            <?php foreach ($announcements as $announcement): ?>
+                <div class="alert alert-success">
+                    <strong><?= htmlspecialchars($announcement['title']) ?></strong><br>
+                    <?= nl2br(htmlspecialchars($announcement['body'])) ?><br>
+                    <small><?= date('F j, Y', strtotime($announcement['created_at'])) ?></small>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+
         <h2>Your Classes & Subjects</h2>
 
         <?php if (empty($assignments)): ?>
