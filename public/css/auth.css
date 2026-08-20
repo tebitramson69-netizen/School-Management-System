@@ -264,6 +264,8 @@ p {
     width: 64px;
     height: 64px;
     margin: 0 auto 14px;
+    align-items: center;
+        justify-content: center;
 }
 
 /* =========================================================
@@ -295,6 +297,8 @@ p {
 
 .login-card,
 .auth-card {
+    align-items: center;
+        justify-content: center;
     width: min(100%, 460px);
     padding: clamp(25px, 5vw, 42px);
 
@@ -322,6 +326,8 @@ p {
 .login-card form,
 .auth-card form {
     margin-top: 26px;
+    align-items: center;
+        justify-content: center;
 }
 
 .auth-links {
@@ -1564,11 +1570,15 @@ main {
     .auth-page {
         align-items: flex-start;
         padding: 18px;
+        align-items: center;
+        justify-content: center;
     }
 
     .login-card,
     .auth-card {
         margin-top: 30px;
+        align-items: center;
+        justify-content: center;
     }
 }
 
@@ -1581,12 +1591,16 @@ main {
     .login-page,
     .auth-page {
         padding: 12px;
+        align-items: center;
+        justify-content: center;
     }
 
     .login-card,
     .auth-card {
         padding: 23px 18px;
         border-radius: var(--radius-lg);
+        align-items: center;
+        justify-content: center;
     }
 
     .school-brand-name {
@@ -1595,15 +1609,21 @@ main {
 
     .dashboard-header {
         padding: 12px;
+        align-items: center;
+        justify-content: center;
     }
 
     .dashboard-main,
     .dashboard-content {
         padding: 16px 12px 30px;
+        align-items: center;
+        justify-content: center;
     }
 
     .form-actions {
         flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
 
     .form-actions .btn,
