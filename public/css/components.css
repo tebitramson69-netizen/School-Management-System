@@ -1,0 +1,803 @@
+/* =========================================================
+   SCHOOL MANAGEMENT SYSTEM
+   components.css
+   Shared reusable visual components
+   ========================================================= */
+
+/* =========================================================
+   SCHOOL BRAND
+   ========================================================= */
+
+.school-identity {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    min-width: 0;
+}
+
+.school-identity-logo {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border:
+        2px solid
+        var(--color-accent);
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--color-primary),
+            var(--color-primary-dark)
+        );
+
+    color: #fff;
+
+    font-family:
+        var(--font-heading);
+
+    font-weight: 700;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(214,158,46,.10);
+}
+
+.school-identity-logo img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+
+    background: #fff;
+}
+
+.school-identity-text {
+    min-width: 0;
+}
+
+.school-identity-name {
+    margin: 0;
+
+    color:
+        var(--color-primary-dark);
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.school-identity-motto {
+    margin: 2px 0 0;
+
+    color:
+        var(--color-text-muted);
+
+    font-size: .74rem;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================================================
+   SIDEBAR BRAND
+   ========================================================= */
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding:
+        20px
+        17px;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.09);
+}
+
+.sidebar-brand .school-identity-logo {
+    border-color:
+        var(--color-accent);
+}
+
+.sidebar-brand .school-identity-name {
+    color: #fff;
+}
+
+.sidebar-brand .school-identity-motto {
+    color:
+        rgba(255,255,255,.58);
+}
+
+/* =========================================================
+   SIDEBAR USER
+   ========================================================= */
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding:
+        15px
+        17px;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.09);
+}
+
+.sidebar-user-avatar {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,.10);
+
+    color: #fff;
+
+    font-size: .83rem;
+    font-weight: 800;
+}
+
+.sidebar-user-name {
+    min-width: 0;
+}
+
+.sidebar-user-name strong {
+    display: block;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #fff;
+
+    font-size: .82rem;
+}
+
+.sidebar-user-role {
+    display: block;
+
+    margin-top: 1px;
+
+    color:
+        rgba(255,255,255,.52);
+
+    font-size: .7rem;
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.sidebar-navigation {
+    padding:
+        12px;
+}
+
+.sidebar-navigation-section {
+    margin:
+        18px
+        8px
+        7px;
+
+    color:
+        rgba(255,255,255,.38);
+
+    font-size: .66rem;
+
+    font-weight: 800;
+
+    letter-spacing: .08em;
+
+    text-transform: uppercase;
+}
+
+.sidebar-navigation ul {
+    list-style: none;
+
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-navigation li {
+    margin-bottom: 3px;
+}
+
+.sidebar-navigation a {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    min-height: 43px;
+
+    padding:
+        9px
+        11px;
+
+    border-radius:
+        var(--radius-md);
+
+    color:
+        rgba(255,255,255,.80);
+
+    font-size: .84rem;
+
+    font-weight: 600;
+
+    transition:
+        background
+        var(--transition-fast),
+        color
+        var(--transition-fast);
+}
+
+.sidebar-navigation a:hover,
+.sidebar-navigation a.active {
+    background:
+        rgba(255,255,255,.10);
+
+    color: #fff;
+
+    text-decoration: none;
+}
+
+.sidebar-navigation a.active {
+    border-left:
+        3px solid
+        var(--color-accent);
+}
+
+.sidebar-navigation-icon {
+    width: 27px;
+    flex: 0 0 27px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: .85rem;
+}
+
+.sidebar-navigation-label {
+    min-width: 0;
+}
+
+/* =========================================================
+   TOPBAR USER MENU
+   ========================================================= */
+
+.user-menu {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    padding:
+        5px
+        8px
+        5px
+        5px;
+
+    border:
+        1px solid
+        var(--color-border);
+
+    border-radius:
+        999px;
+
+    background:
+        var(--color-surface);
+}
+
+.user-menu-avatar {
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        var(--color-primary-light);
+
+    color:
+        var(--color-primary);
+
+    font-weight: 800;
+}
+
+.user-menu-text {
+    min-width: 0;
+    padding-right: 4px;
+}
+
+.user-menu-name {
+    display: block;
+
+    max-width: 150px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    color:
+        var(--color-primary-dark);
+
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+.user-menu-role {
+    display: block;
+
+    color:
+        var(--color-text-muted);
+
+    font-size: .68rem;
+}
+
+/* =========================================================
+   NOTIFICATION BUTTON
+   ========================================================= */
+
+.notification-button {
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid
+        var(--color-border);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        var(--color-surface);
+
+    color:
+        var(--color-primary);
+
+    font-size: 1rem;
+}
+
+.notification-button:hover {
+    background:
+        var(--color-primary-light);
+
+    color:
+        var(--color-primary-dark);
+}
+
+.notification-count {
+    position: absolute;
+
+    right: -4px;
+    top: -5px;
+
+    min-width: 17px;
+    height: 17px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 4px;
+
+    border:
+        2px solid
+        var(--color-surface);
+
+    border-radius: 999px;
+
+    background:
+        var(--color-danger);
+
+    color: #fff;
+
+    font-size: .58rem;
+
+    font-weight: 800;
+}
+
+/* =========================================================
+   STAT CARD
+   ========================================================= */
+
+.premium-stat-card {
+    position: relative;
+
+    min-height: 132px;
+
+    padding:
+        19px;
+
+    overflow: hidden;
+
+    background:
+        var(--color-surface);
+
+    border:
+        1px solid
+        var(--color-border);
+
+    border-radius:
+        var(--radius-lg);
+
+    box-shadow:
+        var(--shadow-xs);
+}
+
+.premium-stat-card::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 4px;
+
+    background:
+        var(--color-primary);
+}
+
+.premium-stat-card.gold::before {
+    background:
+        var(--color-accent);
+}
+
+.premium-stat-card.green::before {
+    background:
+        var(--color-success);
+}
+
+.premium-stat-card.red::before {
+    background:
+        var(--color-danger);
+}
+
+.premium-stat-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+}
+
+.premium-stat-card-label {
+    color:
+        var(--color-text-secondary);
+
+    font-size: .72rem;
+
+    font-weight: 800;
+
+    letter-spacing: .05em;
+
+    text-transform: uppercase;
+}
+
+.premium-stat-card-icon {
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background:
+        var(--color-primary-light);
+
+    color:
+        var(--color-primary);
+
+    font-size: .9rem;
+}
+
+.premium-stat-card-value {
+    color:
+        var(--color-primary-dark);
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 1.85rem;
+
+    font-weight: 700;
+
+    line-height: 1;
+}
+
+.premium-stat-card-meta {
+    margin-top: 8px;
+
+    color:
+        var(--color-text-muted);
+
+    font-size: .72rem;
+}
+
+/* =========================================================
+   STATUS CHIP
+   ========================================================= */
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    min-height: 28px;
+
+    padding:
+        4px
+        9px;
+
+    border-radius:
+        999px;
+
+    font-size: .7rem;
+
+    font-weight: 800;
+}
+
+.status-chip::before {
+    content: "";
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+.status-chip.success {
+    background:
+        var(--color-success-bg);
+
+    color:
+        var(--color-success);
+}
+
+.status-chip.warning {
+    background:
+        var(--color-warning-bg);
+
+    color:
+        var(--color-warning);
+}
+
+.status-chip.danger {
+    background:
+        var(--color-danger-bg);
+
+    color:
+        var(--color-danger);
+}
+
+.status-chip.info {
+    background:
+        var(--color-info-bg);
+
+    color:
+        var(--color-info);
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.component-empty-state {
+    padding:
+        34px
+        20px;
+
+    border:
+        1px dashed
+        var(--color-border-dark);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        var(--color-surface-muted);
+
+    text-align: center;
+}
+
+.component-empty-icon {
+    width: 46px;
+    height: 46px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 11px;
+
+    border-radius: 50%;
+
+    background:
+        var(--color-primary-light);
+
+    color:
+        var(--color-primary);
+
+    font-weight: 800;
+}
+
+.component-empty-state h3 {
+    margin-bottom: 5px;
+}
+
+.component-empty-state p {
+    margin: 0;
+
+    color:
+        var(--color-text-muted);
+
+    font-size: .84rem;
+}
+
+/* =========================================================
+   ANNOUNCEMENT CARD
+   ========================================================= */
+
+.announcement-card {
+    padding:
+        16px
+        17px;
+
+    background:
+        var(--color-surface);
+
+    border:
+        1px solid
+        var(--color-border);
+
+    border-left:
+        4px solid
+        var(--color-accent);
+
+    border-radius:
+        var(--radius-md);
+
+    box-shadow:
+        var(--shadow-xs);
+}
+
+.announcement-card + .announcement-card {
+    margin-top: 11px;
+}
+
+.announcement-card-title {
+    margin: 0 0 4px;
+
+    color:
+        var(--color-primary-dark);
+
+    font-size: .95rem;
+
+    font-weight: 800;
+}
+
+.announcement-card-body {
+    margin: 0;
+
+    color:
+        var(--color-text-secondary);
+
+    font-size: .84rem;
+}
+
+.announcement-card-date {
+    display: block;
+
+    margin-top: 9px;
+
+    color:
+        var(--color-text-muted);
+
+    font-size: .7rem;
+}
+
+/* =========================================================
+   PRINT UTILITIES
+   ========================================================= */
+
+.print-title {
+    display: none;
+}
+
+@media print {
+
+    .print-title {
+        display: block;
+
+        margin-bottom: 20px;
+
+        color: #000;
+
+        text-align: center;
+    }
+
+    .school-identity-logo {
+        box-shadow: none;
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+    .school-identity-text {
+        min-width: 0;
+    }
+
+    .school-identity-name {
+        font-size: .88rem;
+    }
+
+    .school-identity-motto {
+        font-size: .66rem;
+    }
+
+    .user-menu-text {
+        display: none;
+    }
+
+    .notification-button {
+        width: 38px;
+        height: 38px;
+    }
+}
