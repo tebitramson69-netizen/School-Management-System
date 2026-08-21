@@ -1,11 +1,21 @@
 /*
  * =========================================================
  * SCHOOL MANAGEMENT SYSTEM
- * app.js
+ * public/js/app.js
  *
- * Plain vanilla JavaScript.
- * Designed for PHP 8+ / XAMPP / Apache.
- * No frameworks, npm packages or build tools.
+ * Global vanilla JavaScript
+ * PHP 8+ / XAMPP / Apache
+ * No frameworks / npm / build tools
+ *
+ * Responsibilities:
+ * - Alerts
+ * - Form submission protection
+ * - Unsaved POST form protection
+ * - Mobile sidebar
+ * - Status badges
+ * - Grade badges
+ * - Print controls
+ * - Basic dashboard interactions
  * =========================================================
  */
 
@@ -17,11 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeDirtyPostFormWarning();
     initializeStatusBadges();
     initializeGradeBadges();
+    initializeMobileSidebar();
+    initializeSidebarLinks();
     initializePrintButton();
 });
 
 /* =========================================================
-   1. AUTO-DISMISS SUCCESS ALERTS
+   1. ALERTS
    ========================================================= */
 
 function initializeAlerts() {
@@ -30,10 +42,6 @@ function initializeAlerts() {
     );
 
     successAlerts.forEach((alert) => {
-        /*
-         * Keep the alert visible long enough for the user
-         * to comfortably read a success message.
-         */
         window.setTimeout(() => {
             dismissElement(alert);
         }, 4500);
@@ -45,9 +53,6 @@ function dismissElement(element) {
         return;
     }
 
-    /*
-     * Respect reduced-motion preferences.
-     */
     const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -66,7 +71,6 @@ function dismissElement(element) {
     }, 220);
 }
 
-
 /* =========================================================
    2. FORM SUBMIT PROTECTION
    ========================================================= */
@@ -75,11 +79,7 @@ function initializeFormSubmitProtection() {
     const forms = document.querySelectorAll("form");
 
     forms.forEach((form) => {
-        form.addEventListener("submit", (event) => {
-            /*
-             * Mark the form as successfully submitted so the
-             * dirty-form navigation warning doesn't appear.
-             */
+        form.addEventListener("submit", () => {
             form.dataset.submitted = "true";
 
             const submitButtons = form.querySelectorAll(
@@ -87,9 +87,6 @@ function initializeFormSubmitProtection() {
             );
 
             submitButtons.forEach((button) => {
-                /*
-                 * Avoid changing an already disabled button.
-                 */
                 if (button.disabled) {
                     return;
                 }
@@ -112,7 +109,6 @@ function initializeFormSubmitProtection() {
     });
 }
 
-
 /* =========================================================
    3. UNSAVED POST FORM WARNING
    ========================================================= */
@@ -130,9 +126,6 @@ function initializeDirtyPostFormWarning() {
         form.dataset.dirty = "false";
         form.dataset.submitted = "false";
 
-        /*
-         * Track changes to inputs.
-         */
         form.addEventListener("input", () => {
             form.dataset.dirty = "true";
         });
@@ -141,19 +134,12 @@ function initializeDirtyPostFormWarning() {
             form.dataset.dirty = "true";
         });
 
-        /*
-         * A successful submit should clear the warning.
-         */
         form.addEventListener("submit", () => {
             form.dataset.submitted = "true";
             form.dataset.dirty = "false";
         });
     });
 
-    /*
-     * Browser-level warning when the user closes/reloads
-     * the page or enters another URL.
-     */
     window.addEventListener("beforeunload", (event) => {
         const dirtyFormExists = postForms.some((form) => {
             return (
@@ -167,17 +153,9 @@ function initializeDirtyPostFormWarning() {
         }
 
         event.preventDefault();
-
-        /*
-         * Modern browsers ignore custom text and display
-         * their own standard confirmation message.
-         */
         event.returnValue = "";
     });
 
-    /*
-     * Also protect normal internal navigation links.
-     */
     document.addEventListener("click", (event) => {
         const link = event.target.closest("a");
 
@@ -185,10 +163,6 @@ function initializeDirtyPostFormWarning() {
             return;
         }
 
-        /*
-         * Don't interfere with modifier-clicks, downloads,
-         * anchors, javascript links or new-tab navigation.
-         */
         if (
             event.ctrlKey ||
             event.metaKey ||
@@ -234,13 +208,10 @@ function initializeDirtyPostFormWarning() {
 
         if (!confirmed) {
             event.preventDefault();
-        } else {
-            /*
-             * Prevent the beforeunload handler from creating
-             * a second warning after the user has confirmed.
-             */
-            dirtyForm.dataset.dirty = "false";
+            return;
         }
+
+        dirtyForm.dataset.dirty = "false";
     });
 }
 
@@ -252,23 +223,133 @@ function isPostForm(form) {
     return method === "post";
 }
 
+/* =========================================================
+   4. MOBILE SIDEBAR
+   ========================================================= */
+
+function initializeMobileSidebar() {
+    const sidebar = document.querySelector(
+        ".sidebar, .dashboard-sidebar"
+    );
+
+    const toggle = document.querySelector(
+        "[data-sidebar-toggle]"
+    );
+
+    const overlay = document.querySelector(
+        "[data-sidebar-overlay]"
+    );
+
+    if (!sidebar || !toggle) {
+        return;
+    }
+
+    toggle.addEventListener("click", () => {
+        const isOpen = sidebar.classList.toggle("is-open");
+
+        toggle.setAttribute(
+            "aria-expanded",
+            isOpen ? "true" : "false"
+        );
+
+        if (overlay) {
+            overlay.classList.toggle("is-visible", isOpen);
+        }
+
+        document.body.classList.toggle(
+            "sidebar-open",
+            isOpen
+        );
+    });
+
+    if (overlay) {
+        overlay.addEventListener("click", () => {
+            closeMobileSidebar(
+                sidebar,
+                toggle,
+                overlay
+            );
+        });
+    }
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") {
+            return;
+        }
+
+        if (!sidebar.classList.contains("is-open")) {
+            return;
+        }
+
+        closeMobileSidebar(
+            sidebar,
+            toggle,
+            overlay
+        );
+    });
+}
+
+function closeMobileSidebar(sidebar, toggle, overlay) {
+    sidebar.classList.remove("is-open");
+
+    toggle.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+
+    if (overlay) {
+        overlay.classList.remove("is-visible");
+    }
+
+    document.body.classList.remove("sidebar-open");
+}
 
 /* =========================================================
-   4. STATUS BADGES
-   =========================================================
- *
- * Finds a table column by looking for a header whose text is
- * "Status", then converts plain text:
- *
- * Present -> green pill
- * Absent  -> red pill
- * Late    -> amber pill
- *
- * Existing markup does not need to change.
- */
+   5. SIDEBAR NAVIGATION
+   ========================================================= */
+
+function initializeSidebarLinks() {
+    const links = document.querySelectorAll(
+        ".sidebar a, .dashboard-sidebar a"
+    );
+
+    links.forEach((link) => {
+        link.addEventListener("click", () => {
+            const sidebar = document.querySelector(
+                ".sidebar.is-open, .dashboard-sidebar.is-open"
+            );
+
+            if (!sidebar) {
+                return;
+            }
+
+            const toggle = document.querySelector(
+                "[data-sidebar-toggle]"
+            );
+
+            const overlay = document.querySelector(
+                "[data-sidebar-overlay]"
+            );
+
+            if (toggle) {
+                closeMobileSidebar(
+                    sidebar,
+                    toggle,
+                    overlay
+                );
+            }
+        });
+    });
+}
+
+/* =========================================================
+   6. ATTENDANCE STATUS BADGES
+   ========================================================= */
 
 function initializeStatusBadges() {
-    const tables = document.querySelectorAll(".data-table");
+    const tables = document.querySelectorAll(
+        ".data-table"
+    );
 
     tables.forEach((table) => {
         const statusColumnIndex = findColumnIndex(
@@ -280,7 +361,9 @@ function initializeStatusBadges() {
             return;
         }
 
-        const rows = table.querySelectorAll("tbody tr");
+        const rows = table.querySelectorAll(
+            "tbody tr"
+        );
 
         rows.forEach((row) => {
             const cells = row.children;
@@ -291,10 +374,6 @@ function initializeStatusBadges() {
 
             const cell = cells[statusColumnIndex];
 
-            /*
-             * Do not modify cells containing form controls.
-             * Attendance entry radio buttons should remain usable.
-             */
             if (
                 cell.querySelector(
                     "input, select, textarea, button"
@@ -303,17 +382,21 @@ function initializeStatusBadges() {
                 return;
             }
 
-            const text = cell.textContent.trim();
-
-            const normalized = text.toLowerCase();
+            const normalized = cell.textContent
+                .trim()
+                .toLowerCase();
 
             let badgeClass = "";
 
             if (normalized === "present") {
                 badgeClass = "status-present";
-            } else if (normalized === "absent") {
+            }
+
+            if (normalized === "absent") {
                 badgeClass = "status-absent";
-            } else if (normalized === "late") {
+            }
+
+            if (normalized === "late") {
                 badgeClass = "status-late";
             }
 
@@ -321,9 +404,6 @@ function initializeStatusBadges() {
                 return;
             }
 
-            /*
-             * Avoid wrapping an existing badge.
-             */
             if (cell.querySelector(".status-badge")) {
                 return;
             }
@@ -333,9 +413,8 @@ function initializeStatusBadges() {
             badge.className =
                 "status-badge " + badgeClass;
 
-            badge.textContent = capitalizeFirstLetter(
-                normalized
-            );
+            badge.textContent =
+                capitalizeFirstLetter(normalized);
 
             cell.textContent = "";
             cell.appendChild(badge);
@@ -343,23 +422,14 @@ function initializeStatusBadges() {
     });
 }
 
-
 /* =========================================================
-   5. GRADE BADGES
-   =========================================================
- *
- * Finds a table column by matching the header "Grade".
- *
- * A -> green
- * B -> blue
- * C -> neutral
- * D -> amber
- * E -> orange
- * F -> red
- */
+   7. GRADE BADGES
+   ========================================================= */
 
 function initializeGradeBadges() {
-    const tables = document.querySelectorAll(".data-table");
+    const tables = document.querySelectorAll(
+        ".data-table"
+    );
 
     tables.forEach((table) => {
         const gradeColumnIndex = findColumnIndex(
@@ -371,7 +441,9 @@ function initializeGradeBadges() {
             return;
         }
 
-        const rows = table.querySelectorAll("tbody tr");
+        const rows = table.querySelectorAll(
+            "tbody tr"
+        );
 
         rows.forEach((row) => {
             const cells = row.children;
@@ -382,9 +454,6 @@ function initializeGradeBadges() {
 
             const cell = cells[gradeColumnIndex];
 
-            /*
-             * Don't touch editable grade/score controls.
-             */
             if (
                 cell.querySelector(
                     "input, select, textarea, button"
@@ -419,28 +488,30 @@ function initializeGradeBadges() {
     });
 }
 
-
 /* =========================================================
-   6. FIND TABLE COLUMN
+   8. TABLE COLUMN HELPER
    ========================================================= */
 
 function findColumnIndex(table, expectedHeader) {
-    const headerRows = table.querySelectorAll("thead tr");
+    const headerRow = table.querySelector(
+        "thead tr"
+    );
 
-    if (headerRows.length === 0) {
+    if (!headerRow) {
         return -1;
     }
 
-    /*
-     * Use the first header row.
-     */
-    const headerCells = headerRows[0].children;
+    const headerCells = headerRow.children;
 
     const target = expectedHeader
         .trim()
         .toLowerCase();
 
-    for (let index = 0; index < headerCells.length; index++) {
+    for (
+        let index = 0;
+        index < headerCells.length;
+        index++
+    ) {
         const text = headerCells[index]
             .textContent
             .trim()
@@ -454,19 +525,14 @@ function findColumnIndex(table, expectedHeader) {
     return -1;
 }
 
-
 /* =========================================================
-   7. PRINT BUTTON
-   =========================================================
- *
- * Whenever .data-table exists, inject a Print button beside
- * the page header.
- *
- * The button is generated only if one does not already exist.
- */
+   9. PRINT
+   ========================================================= */
 
 function initializePrintButton() {
-    const tables = document.querySelectorAll(".data-table");
+    const tables = document.querySelectorAll(
+        ".data-table"
+    );
 
     if (tables.length === 0) {
         return;
@@ -480,22 +546,23 @@ function initializePrintButton() {
         return;
     }
 
-    /*
-     * Don't create duplicate print controls.
-     */
-    const existingPrintButton = pageHeader.querySelector(
-        '[data-print-button="true"]'
-    );
-
-    if (existingPrintButton) {
+    if (
+        pageHeader.querySelector(
+            '[data-print-button="true"]'
+        )
+    ) {
         return;
     }
 
-    const printButton = document.createElement("button");
+    const printButton =
+        document.createElement("button");
 
     printButton.type = "button";
-    printButton.className = "btn btn-secondary no-print";
+    printButton.className =
+        "btn btn-secondary no-print";
+
     printButton.dataset.printButton = "true";
+
     printButton.setAttribute(
         "aria-label",
         "Print this page"
@@ -507,29 +574,48 @@ function initializePrintButton() {
         window.print();
     });
 
-    /*
-     * If the page header already contains an action/button
-     * container, put the Print button there.
-     */
     const actionContainer =
         pageHeader.querySelector(
-            ".actions, .buttons"
+            ".actions, .buttons, .page-actions"
         );
 
     if (actionContainer) {
-        actionContainer.appendChild(printButton);
-        return;
+        actionContainer.appendChild(
+            printButton
+        );
+    } else {
+        pageHeader.appendChild(
+            printButton
+        );
     }
-
-    /*
-     * Otherwise append directly to the page header.
-     */
-    pageHeader.appendChild(printButton);
 }
 
+/* =========================================================
+   10. FORM RESET
+   ========================================================= */
+
+document.addEventListener(
+    "reset",
+    (event) => {
+        const form = event.target;
+
+        if (!(form instanceof HTMLFormElement)) {
+            return;
+        }
+
+        if (!isPostForm(form)) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            form.dataset.dirty = "false";
+            form.dataset.submitted = "false";
+        }, 0);
+    }
+);
 
 /* =========================================================
-   8. SMALL UTILITY FUNCTIONS
+   11. UTILITY
    ========================================================= */
 
 function capitalizeFirstLetter(value) {
@@ -542,31 +628,3 @@ function capitalizeFirstLetter(value) {
         value.slice(1).toLowerCase()
     );
 }
-
-
-/* =========================================================
-   9. OPTIONAL FORM RESET HANDLING
-   =========================================================
- *
- * If a POST form is reset, consider it clean again.
- */
-
-document.addEventListener("reset", (event) => {
-    const form = event.target;
-
-    if (!(form instanceof HTMLFormElement)) {
-        return;
-    }
-
-    if (!isPostForm(form)) {
-        return;
-    }
-
-    /*
-     * Reset happens after the reset event has fired.
-     */
-    window.setTimeout(() => {
-        form.dataset.dirty = "false";
-        form.dataset.submitted = "false";
-    }, 0);
-});
