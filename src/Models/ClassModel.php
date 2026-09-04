@@ -17,7 +17,12 @@ class ClassModel
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
+public function getTotalCount(): int
+{
+    $sql = "SELECT COUNT(*) FROM classes";
 
+    return (int) $this->db->query($sql)->fetchColumn();
+}
     public function find(int $id): array|false
     {
         $sql = "SELECT * FROM classes WHERE id = :id LIMIT 1";

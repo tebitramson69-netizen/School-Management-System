@@ -1,11 +1,12 @@
 /* =========================================================
    SCHOOL MANAGEMENT SYSTEM
    dashboard.css
-   Shared dashboard shell
+   Admin dashboard shell + dashboard components
    ========================================================= */
 
+
 /* =========================================================
-   DASHBOARD ROOT
+   DASHBOARD SHELL
    ========================================================= */
 
 .dashboard-shell {
@@ -14,17 +15,11 @@
     color: var(--color-text);
 }
 
-/*
- * Optional school background image.
- *
- * This is intentionally subtle so that school branding
- * never competes with academic data.
- */
 .dashboard-shell.has-school-background {
     background:
         linear-gradient(
-            rgba(244, 247, 250, 0.96),
-            rgba(244, 247, 250, 0.98)
+            rgba(245, 247, 250, 0.96),
+            rgba(245, 247, 250, 0.98)
         ),
         var(--school-background-image, none);
 
@@ -32,10 +27,6 @@
     background-position: center;
     background-attachment: fixed;
 }
-
-/* =========================================================
-   APP SHELL
-   ========================================================= */
 
 .app-shell {
     min-height: 100vh;
@@ -49,15 +40,17 @@
     display: flex;
 }
 
+
 /* =========================================================
-   SIDEBAR + CONTENT
+   SIDEBAR / MAIN AREA
+   Shared sidebar styling itself remains in components.css.
    ========================================================= */
 
 .app-sidebar {
-    width: 260px;
-    flex: 0 0 260px;
+    width: var(--sidebar-width);
+    flex: 0 0 var(--sidebar-width);
 
-    min-height: calc(100vh - 72px);
+    min-height: calc(100vh - var(--topbar-height));
 
     background:
         linear-gradient(
@@ -68,7 +61,9 @@
 
     color: #fff;
 
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-right:
+        1px solid
+        rgba(255, 255, 255, 0.08);
 
     transition:
         width var(--transition-normal),
@@ -84,107 +79,31 @@
     overflow-x: hidden;
 }
 
+
 /* =========================================================
-   CONTENT AREA
+   MAIN CONTENT
    ========================================================= */
 
 .app-content {
-    width: min(
-        100%,
-        var(--content-width)
-    );
+    width: min(100%, var(--content-width));
 
     margin: 0 auto;
 
     padding:
-        28px
-        28px
-        50px;
+        32px
+        32px
+        56px;
 }
+
 
 /* =========================================================
-   TOP HEADER
-   ========================================================= */
-
-.app-topbar {
-    position: sticky;
-    top: 0;
-    z-index: 900;
-
-    min-height: 72px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 18px;
-
-    padding:
-        10px
-        24px;
-
-    background:
-        rgba(255, 255, 255, 0.96);
-
-    border-bottom:
-        1px solid var(--color-border);
-
-    box-shadow: var(--shadow-xs);
-
-    backdrop-filter: blur(10px);
-}
-
-.app-topbar-left,
-.app-topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.app-topbar-left {
-    min-width: 0;
-}
-
-.app-topbar-right {
-    flex-shrink: 0;
-}
-
-/* =========================================================
-   MOBILE MENU BUTTON
-   ========================================================= */
-
-.sidebar-toggle {
-    width: 42px;
-    height: 42px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-
-    background: var(--color-surface);
-    color: var(--color-primary);
-
-    font-size: 1.25rem;
-    line-height: 1;
-
-    box-shadow: var(--shadow-xs);
-}
-
-.sidebar-toggle:hover {
-    background: var(--color-primary-light);
-    color: var(--color-primary-dark);
-}
-
-/* =========================================================
-   OVERLAY FOR MOBILE SIDEBAR
+   SIDEBAR OVERLAY
    ========================================================= */
 
 .sidebar-overlay {
     position: fixed;
     inset: 0;
+
     z-index: 950;
 
     background: rgba(11, 41, 70, 0.55);
@@ -204,149 +123,145 @@
     pointer-events: auto;
 }
 
+
 /* =========================================================
-   PAGE HEADER AREA
+   ADMIN DASHBOARD
    ========================================================= */
 
-.app-page-header {
+.admin-dashboard {
+    width: 100%;
+}
+
+
+/* =========================================================
+   WELCOME
+   ========================================================= */
+
+.dashboard-welcome {
+    position: relative;
+
+    margin-bottom: 30px;
+
+    padding:
+        4px
+        0;
+}
+
+.dashboard-welcome-content {
+    max-width: 820px;
+}
+
+.dashboard-eyebrow {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--color-text-secondary);
+
+    font-size: 0.78rem;
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+}
+
+.dashboard-welcome-title {
+    margin: 0;
+
+    color: var(--color-primary-dark);
+
+    font-family: var(--font-heading);
+
+    font-size: clamp(2rem, 3vw, 2.65rem);
+
+    line-height: 1.15;
+
+    letter-spacing: -0.02em;
+}
+
+.dashboard-welcome-description {
+    margin: 9px 0 0;
+
+    color: var(--color-text-secondary);
+
+    font-size: 0.95rem;
+}
+
+
+/* =========================================================
+   STATUS MESSAGE
+   ========================================================= */
+
+.status-message {
+    margin-bottom: 24px;
+
+    padding:
+        12px
+        15px;
+
+    border-radius: var(--radius-md);
+
+    font-size: 0.88rem;
+}
+
+.status-message-success {
+    background: var(--color-success-bg);
+
+    border:
+        1px solid
+        rgba(22, 133, 91, 0.18);
+
+    color: var(--color-success);
+}
+
+
+/* =========================================================
+   DASHBOARD SECTION
+   ========================================================= */
+
+.dashboard-section {
+    margin-bottom: 32px;
+}
+
+.dashboard-section:last-child {
+    margin-bottom: 0;
+}
+
+.dashboard-section-heading {
     display: flex;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: space-between;
 
     gap: 20px;
 
-    margin-bottom: 26px;
+    margin-bottom: 15px;
 }
 
-.app-page-title {
-    min-width: 0;
-}
-
-.app-page-title h1,
-.app-page-title h2 {
-    margin: 0;
-}
-
-.app-page-title p {
-    margin: 6px 0 0;
-    color: var(--color-text-secondary);
-}
-
-.app-page-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-
-    gap: 8px;
-
-    flex-shrink: 0;
-}
-
-/* =========================================================
-   WELCOME PANEL
-   ========================================================= */
-
-.welcome-panel {
-    position: relative;
-
-    margin-bottom: 24px;
-    padding: 26px 28px;
-
-    overflow: hidden;
-
-    border-radius: var(--radius-lg);
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--color-primary-dark),
-            var(--color-primary)
-        );
-
-    color: #fff;
-
-    box-shadow: var(--shadow-md);
-}
-
-.welcome-panel::after {
-    content: "";
-
-    position: absolute;
-    right: -70px;
-    top: -80px;
-
-    width: 220px;
-    height: 220px;
-
-    border-radius: 50%;
-
-    background:
-        rgba(214, 158, 46, 0.11);
-}
-
-.welcome-panel h1,
-.welcome-panel h2,
-.welcome-panel h3 {
-    position: relative;
-    z-index: 1;
-
+.dashboard-section-title {
     margin: 0;
 
-    color: #fff;
+    color: var(--color-primary-dark);
+
+    font-family: var(--font-heading);
+
+    font-size: 1.45rem;
+
+    line-height: 1.2;
 }
 
-.welcome-panel p {
-    position: relative;
-    z-index: 1;
+.dashboard-section-description {
+    margin: 0;
 
-    margin:
-        7px
-        0
-        0;
+    color: var(--color-text-muted);
 
-    color:
-        rgba(255, 255, 255, 0.76);
+    font-size: 0.82rem;
 }
+
 
 /* =========================================================
-   CONTENT GRID
+   STATISTICS
    ========================================================= */
 
-.app-grid {
-    display: grid;
-    gap: 18px;
-}
-
-.app-grid-2 {
-    grid-template-columns:
-        repeat(
-            2,
-            minmax(0, 1fr)
-        );
-}
-
-.app-grid-3 {
-    grid-template-columns:
-        repeat(
-            3,
-            minmax(0, 1fr)
-        );
-}
-
-.app-grid-4 {
-    grid-template-columns:
-        repeat(
-            4,
-            minmax(0, 1fr)
-        );
-}
-
-/* =========================================================
-   STATISTICS ROW
-   ========================================================= */
-
-.stats-grid {
+.dashboard-stats-grid {
     display: grid;
 
     grid-template-columns:
@@ -356,15 +271,13 @@
         );
 
     gap: 16px;
-
-    margin-bottom: 24px;
 }
 
-/* =========================================================
-   DASHBOARD PANELS
-   ========================================================= */
+.dashboard-stat-card {
+    min-width: 0;
 
-.dashboard-panel {
+    padding: 20px;
+
     background: var(--color-surface);
 
     border:
@@ -375,7 +288,115 @@
 
     box-shadow: var(--shadow-xs);
 
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-normal),
+        border-color var(--transition-normal);
+}
+
+.dashboard-stat-card:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        var(--color-border-dark);
+
+    box-shadow: var(--shadow-sm);
+}
+
+.dashboard-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 15px;
+}
+
+.dashboard-stat-label {
+    color: var(--color-text-secondary);
+
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.dashboard-stat-icon {
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: var(--color-primary-light);
+
+    color: var(--color-primary);
+
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.dashboard-stat-value {
+    display: block;
+
+    margin: 0;
+
+    color: var(--color-primary-dark);
+
+    font-size: 1.85rem;
+    font-weight: 800;
+
+    line-height: 1;
+}
+
+.dashboard-stat-note {
+    display: block;
+
+    margin-top: 8px;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.75rem;
+}
+
+
+/* =========================================================
+   MAIN DASHBOARD GRID
+   ========================================================= */
+
+.dashboard-main-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.65fr)
+        minmax(300px, 0.85fr);
+
+    gap: 18px;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.dashboard-panel {
+    min-width: 0;
+
     overflow: hidden;
+
+    background: var(--color-surface);
+
+    border:
+        1px solid
+        var(--color-border);
+
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-xs);
 }
 
 .dashboard-panel-header {
@@ -383,18 +404,198 @@
     align-items: center;
     justify-content: space-between;
 
-    gap: 12px;
+    gap: 16px;
 
     padding:
-        16px
-        18px;
+        18px
+        20px;
 
     border-bottom:
         1px solid
         var(--color-border);
 }
 
-.dashboard-panel-title {
+.dashboard-panel-eyebrow {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.72rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dashboard-panel-header h3 {
+    margin: 0;
+
+    color: var(--color-primary-dark);
+
+    font-family: var(--font-heading);
+
+    font-size: 1.15rem;
+}
+
+.dashboard-panel-body {
+    padding: 20px;
+}
+
+
+/* =========================================================
+   PERFORMANCE
+   ========================================================= */
+
+.dashboard-performance-panel {
+    min-height: 330px;
+}
+
+.dashboard-chart-placeholder {
+    min-height: 190px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px 20px;
+
+    text-align: center;
+
+    border-bottom:
+        1px solid
+        var(--color-border);
+}
+
+.chart-placeholder-icon {
+    width: 44px;
+    height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 12px;
+
+    border-radius: 12px;
+
+    background: var(--color-primary-light);
+
+    color: var(--color-primary);
+
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.dashboard-chart-placeholder h4 {
+    margin: 0;
+
+    color: var(--color-primary-dark);
+
+    font-family: var(--font-heading);
+
+    font-size: 1.1rem;
+}
+
+.dashboard-chart-placeholder p {
+    max-width: 460px;
+
+    margin: 7px 0 0;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.8rem;
+
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   PERFORMANCE SUMMARY
+   ========================================================= */
+
+.performance-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 1px;
+
+    background: var(--color-border);
+}
+
+.performance-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding:
+        15px
+        20px;
+
+    background: var(--color-surface);
+}
+
+.performance-item span {
+    color: var(--color-text-secondary);
+
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.performance-item strong {
+    color: var(--color-primary);
+
+    font-size: 1.05rem;
+}
+
+
+/* =========================================================
+   UPCOMING / EMPTY STATE
+   ========================================================= */
+
+.dashboard-empty-content {
+    min-height: 230px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px 24px;
+
+    text-align: center;
+}
+
+.dashboard-empty-icon {
+    width: 40px;
+    height: 40px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 12px;
+
+    border-radius: 50%;
+
+    background: var(--color-surface-soft);
+
+    color: var(--color-text-muted);
+
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.dashboard-empty-content h4 {
     margin: 0;
 
     color: var(--color-primary-dark);
@@ -404,23 +605,24 @@
     font-size: 1.05rem;
 }
 
-.dashboard-panel-subtitle {
-    margin: 3px 0 0;
+.dashboard-empty-content p {
+    max-width: 390px;
+
+    margin: 7px 0 0;
 
     color: var(--color-text-muted);
 
-    font-size: 0.8rem;
+    font-size: 0.79rem;
+
+    line-height: 1.55;
 }
 
-.dashboard-panel-body {
-    padding: 18px;
-}
 
 /* =========================================================
    QUICK ACTIONS
    ========================================================= */
 
-.quick-actions {
+.dashboard-quick-actions {
     display: grid;
 
     grid-template-columns:
@@ -432,15 +634,15 @@
     gap: 14px;
 }
 
-.quick-action {
+.dashboard-action {
+    min-width: 0;
+
     display: flex;
-    align-items: flex-start;
+    align-items: center;
 
-    gap: 13px;
+    gap: 12px;
 
-    min-height: 100px;
-
-    padding: 16px;
+    padding: 15px;
 
     background: var(--color-surface);
 
@@ -452,32 +654,34 @@
 
     color: var(--color-text);
 
+    text-decoration: none;
+
     box-shadow: var(--shadow-xs);
 
     transition:
-        transform var(--transition-normal),
+        transform var(--transition-fast),
         border-color var(--transition-normal),
         box-shadow var(--transition-normal);
 }
 
-.quick-action:hover {
+.dashboard-action:hover {
     transform: translateY(-2px);
 
     border-color:
         var(--color-primary);
 
-    box-shadow:
-        var(--shadow-md);
+    box-shadow: var(--shadow-sm);
 
     color: var(--color-text);
 
     text-decoration: none;
 }
 
-.quick-action-icon {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+.dashboard-action-icon {
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
 
     display: inline-flex;
     align-items: center;
@@ -485,111 +689,79 @@
 
     border-radius: 10px;
 
-    background:
-        var(--color-primary-light);
+    background: var(--color-primary-light);
 
-    color:
-        var(--color-primary);
+    color: var(--color-primary);
 
+    font-size: 0.85rem;
     font-weight: 800;
 }
 
-.quick-action-title {
-    margin: 0 0 3px;
+.dashboard-action-content {
+    min-width: 0;
 
-    color:
-        var(--color-primary-dark);
+    flex: 1;
+}
 
+.dashboard-action-content strong {
+    display: block;
+
+    color: var(--color-primary-dark);
+
+    font-size: 0.84rem;
     font-weight: 800;
 }
 
-.quick-action-description {
-    margin: 0;
+.dashboard-action-content small {
+    display: block;
 
-    color:
-        var(--color-text-muted);
+    margin-top: 3px;
 
-    font-size: 0.8rem;
+    overflow: hidden;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.73rem;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
+
+.dashboard-action-arrow {
+    flex: 0 0 auto;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.9rem;
+
+    transition:
+        transform var(--transition-fast),
+        color var(--transition-fast);
+}
+
+.dashboard-action:hover .dashboard-action-arrow {
+    transform: translateX(3px);
+
+    color: var(--color-primary);
+}
+
 
 /* =========================================================
-   ACTIVITY LIST
+   ACTIVITY
    ========================================================= */
 
-.activity-list {
-    list-style: none;
-
-    margin: 0;
-    padding: 0;
+.dashboard-activity-empty {
+    min-height: 190px;
 }
 
-.activity-item {
-    display: flex;
-    align-items: flex-start;
-
-    gap: 12px;
-
-    padding:
-        13px
-        0;
-
-    border-bottom:
-        1px solid
-        var(--color-border);
-}
-
-.activity-item:first-child {
-    padding-top: 0;
-}
-
-.activity-item:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
-}
-
-.activity-dot {
-    width: 9px;
-    height: 9px;
-    flex: 0 0 9px;
-
-    margin-top: 7px;
-
-    border-radius: 50%;
-
-    background:
-        var(--color-accent);
-}
-
-.activity-content {
-    min-width: 0;
-}
-
-.activity-title {
-    margin: 0;
-
-    color:
-        var(--color-primary-dark);
-
-    font-weight: 700;
-}
-
-.activity-meta {
-    margin: 3px 0 0;
-
-    color:
-        var(--color-text-muted);
-
-    font-size: 0.76rem;
-}
 
 /* =========================================================
-   RESPONSIVE GRID
+   RESPONSIVE — LARGE TABLET
    ========================================================= */
 
 @media (max-width: 1200px) {
 
-    .stats-grid,
-    .app-grid-4 {
+    .dashboard-stats-grid {
         grid-template-columns:
             repeat(
                 2,
@@ -597,7 +769,7 @@
             );
     }
 
-    .quick-actions {
+    .dashboard-quick-actions {
         grid-template-columns:
             repeat(
                 2,
@@ -605,11 +777,17 @@
             );
     }
 }
+
+
+/* =========================================================
+   RESPONSIVE — SIDEBAR
+   ========================================================= */
 
 @media (max-width: 900px) {
 
     .app-sidebar {
         position: fixed;
+
         left: 0;
         top: 0;
         bottom: 0;
@@ -617,19 +795,18 @@
         z-index: 1000;
 
         width: 280px;
+
         min-height: 100vh;
 
-        transform:
-            translateX(-100%);
+        transform: translateX(-100%);
 
         box-shadow:
             12px 0 35px
-            rgba(0, 0, 0, .14);
+            rgba(0, 0, 0, 0.14);
     }
 
     .app-sidebar.is-open {
-        transform:
-            translateX(0);
+        transform: translateX(0);
     }
 
     .app-body {
@@ -637,63 +814,107 @@
     }
 
     .app-content {
+        width: 100%;
+
         padding:
+            26px
             22px
-            20px
-            40px;
+            44px;
     }
 
-    .app-topbar {
-        padding:
-            10px
-            16px;
-    }
-
-    .app-page-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .app-page-actions {
-        justify-content: flex-start;
-    }
-
-    .app-grid-3 {
-        grid-template-columns:
-            repeat(
-                2,
-                minmax(0, 1fr)
-            );
-    }
-}
-
-@media (max-width: 640px) {
-
-    .stats-grid,
-    .app-grid-2,
-    .app-grid-3,
-    .app-grid-4,
-    .quick-actions {
+    .dashboard-main-grid {
         grid-template-columns: 1fr;
     }
 
-    .app-content {
-        padding:
-            18px
-            13px
-            34px;
-    }
-
-    .welcome-panel {
-        padding:
-            21px
-            20px;
-    }
-
-    .app-topbar {
-        min-height: 64px;
+    .dashboard-section-heading {
+        align-items: flex-start;
     }
 }
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+    .app-content {
+        padding:
+            22px
+            15px
+            36px;
+    }
+
+    .dashboard-welcome {
+        margin-bottom: 25px;
+    }
+
+    .dashboard-welcome-title {
+        font-size: 1.8rem;
+    }
+
+    .dashboard-section {
+        margin-bottom: 26px;
+    }
+
+    .dashboard-section-heading {
+        margin-bottom: 12px;
+    }
+
+    .dashboard-section-title {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-stats-grid,
+    .dashboard-quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-stat-card {
+        padding: 17px;
+    }
+
+    .dashboard-panel-header {
+        padding:
+            16px
+            17px;
+    }
+
+    .dashboard-chart-placeholder {
+        min-height: 170px;
+
+        padding:
+            25px
+            17px;
+    }
+
+    .performance-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .performance-item {
+        padding:
+            13px
+            17px;
+    }
+
+    .dashboard-action {
+        padding: 14px;
+    }
+}
+
+
+/* =========================================================
+   MOBILE BODY LOCK
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+}
+
 
 /* =========================================================
    REDUCED MOTION
@@ -703,7 +924,9 @@
 
     .app-sidebar,
     .sidebar-overlay,
-    .quick-action {
+    .dashboard-stat-card,
+    .dashboard-action,
+    .dashboard-action-arrow {
         transition: none;
     }
 }

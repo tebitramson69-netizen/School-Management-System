@@ -2,35 +2,58 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$pageTitle = 'Parent Dashboard';
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent Dashboard - School Management System</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth.css">
-</head>
-<body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>Welcome, <?= htmlspecialchars($parent['full_name']) ?></h1>
-            <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">Logout</a>
-        </header>
 
-        <h2>Your Children</h2>
-
-        <?php if (empty($children)): ?>
-            <p>No children are linked to your account yet. Please contact the administrator.</p>
-        <?php else: ?>
-            <div class="dashboard-actions">
-                <?php foreach ($children as $child): ?>
-                    <a href="<?= BASE_URL ?>/index.php?action=parent_child_detail&student_id=<?= $child['id'] ?>" class="btn-card">
-                        <?= htmlspecialchars($child['full_name']) ?>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+<section class="page-header">
+    <div>
+        <span class="page-eyebrow">PARENT PORTAL</span>
+        <h1>Welcome, <?= htmlspecialchars($parent['full_name'], ENT_QUOTES, 'UTF-8') ?></h1>
+        <p>Select a child to view their academic profile, attendance and results.</p>
     </div>
-</body>
-</html>
+</section>
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <h2>Your Children</h2>
+        </div>
+    </div>
+
+    <?php if (empty($children)): ?>
+
+        <div class="empty-state">
+            <div class="empty-state-icon">i</div>
+            <h3>No children linked</h3>
+            <p>No children are linked to your account yet. Please contact the administrator.</p>
+        </div>
+
+    <?php else: ?>
+
+        <div class="dashboard-quick-actions">
+            <?php foreach ($children as $child): ?>
+                <a
+                    href="<?= BASE_URL ?>/index.php?action=parent_child_detail&student_id=<?= (int) $child['id'] ?>"
+                    class="dashboard-action"
+                >
+                    <span class="dashboard-action-icon">👤</span>
+                    <span class="dashboard-action-content">
+                        <strong><?= htmlspecialchars($child['full_name'], ENT_QUOTES, 'UTF-8') ?></strong>
+                        <small>View academic profile</small>
+                    </span>
+                    <span class="dashboard-action-arrow">→</span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
+    <?php endif; ?>
+
+</section>
+
+<?php
+$content = ob_get_clean();
+require __DIR__ . '/../layouts/dashboard.php';

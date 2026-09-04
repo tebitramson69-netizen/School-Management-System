@@ -2,27 +2,38 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$pageTitle = htmlspecialchars($class['name'] ?? 'Class', ENT_QUOTES, 'UTF-8') . ' — Class List';
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($class['name']) ?> - Class List</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth.css">
-</head>
-<body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1><?= htmlspecialchars($class['name']) ?> — Class List</h1>
-            <a href="<?= BASE_URL ?>/index.php?action=view_classes" class="btn-logout">Back to Classes</a>
-        </header>
 
-        <p><?= count($students) ?> student<?= count($students) === 1 ? '' : 's' ?> enrolled</p>
+<section class="page-header">
+    <div>
+        <span class="page-eyebrow">ADMINISTRATION</span>
+        <h1><?= htmlspecialchars($class['name'], ENT_QUOTES, 'UTF-8') ?> — Class List</h1>
+        <p><?= count($students) ?> student<?= count($students) === 1 ? '' : 's' ?> enrolled.</p>
+    </div>
+    <div>
+        <a href="<?= BASE_URL ?>/index.php?action=view_classes" class="btn btn-secondary">
+            ← Back to Classes
+        </a>
+    </div>
+</section>
 
-        <?php if (empty($students)): ?>
+<section class="dashboard-section">
+
+    <?php if (empty($students)): ?>
+
+        <div class="empty-state">
+            <div class="empty-state-icon">i</div>
+            <h3>No students enrolled</h3>
             <p>No students are enrolled in this class yet.</p>
-        <?php else: ?>
+        </div>
+
+    <?php else: ?>
+
+        <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -35,12 +46,17 @@ if (session_status() === PHP_SESSION_NONE) {
                     <?php foreach ($students as $student): ?>
                         <tr>
                             <td><?= $serialNumber++ ?></td>
-                            <td><?= htmlspecialchars($student['full_name']) ?></td>
+                            <td><?= htmlspecialchars($student['full_name'], ENT_QUOTES, 'UTF-8') ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
-    </div>
-</body>
-</html>
+        </div>
+
+    <?php endif; ?>
+
+</section>
+
+<?php
+$content = ob_get_clean();
+require __DIR__ . '/../layouts/dashboard.php';

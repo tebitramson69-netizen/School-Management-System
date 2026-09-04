@@ -13,6 +13,7 @@ unset($_SESSION['login_error']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - School Management System</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth.css">
+    <script src="<?= BASE_URL ?>/js/app.js" defer></script>
 </head>
 <body>
     <div class="login-container">
@@ -27,6 +28,7 @@ unset($_SESSION['login_error']);
             <?php endif; ?>
 
             <form method="POST" action="<?= BASE_URL ?>/index.php?action=login_submit">
+                <?= Security::csrfField() ?>
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required autofocus>

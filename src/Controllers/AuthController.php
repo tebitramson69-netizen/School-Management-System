@@ -47,6 +47,18 @@ class AuthController
             exit;
         }
 
+        if (!Security::checkLoginRateLimit()) {
+            $_SESSION['login_error'] =
+                'Too many login attempts. Please wait 5 minutes before trying again.';
+
+            header(
+                'Location: ' .
+                BASE_URL .
+                '/index.php?action=login'
+            );
+            exit;
+        }
+
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
@@ -96,6 +108,8 @@ class AuthController
                 $user['password_hash']
             )
         ) {
+            Security::recordLoginAttempt();
+
             $_SESSION['login_error'] =
                 'Invalid email or password.';
 
@@ -149,9 +163,8 @@ class AuthController
                 ? (bool) $user['must_change_password']
                 : false;
 
-        /*
-         * Remove old login errors after successful login.
-         */
+        Security::clearLoginAttempts();
+
         unset($_SESSION['login_error']);
 
         /*
@@ -235,22 +248,16 @@ class AuthController
 
         $errors = [];
 
-        /*
-         * Password validation.
-         */
         if ($newPassword === '') {
             $errors[] = 'Please enter a new password.';
-        } elseif (strlen($newPassword) < 6) {
-            $errors[] =
-                'New password must be at least 6 characters.';
+        } else {
+            $errors = array_merge($errors, Security::validatePasswordStrength($newPassword));
         }
 
         if ($confirmPassword === '') {
-            $errors[] =
-                'Please confirm your new password.';
+            $errors[] = 'Please confirm your new password.';
         } elseif ($newPassword !== $confirmPassword) {
-            $errors[] =
-                'Passwords do not match.';
+            $errors[] = 'Passwords do not match.';
         }
 
         /*

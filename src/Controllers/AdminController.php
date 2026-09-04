@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * =========================================================
+ * SCHOOL MANAGEMENT SYSTEM
+ * AdminController.php
+ *
+ * Handles administrator operations:
+ *
+ * - Admin dashboard
+ * - Teacher creation
+ * - Student creation
+ * - Parent creation
+ * - Teacher/class/subject assignments
+ * - Class lists
+ * - Announcements
+ *
+ * PHP 8+
+ * XAMPP / Apache
+ * =========================================================
+ */
+
 require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/../Models/Teacher.php';
 require_once __DIR__ . '/../Models/Student.php';
@@ -8,7 +28,12 @@ require_once __DIR__ . '/../Models/ParentModel.php';
 require_once __DIR__ . '/../Models/Subject.php';
 require_once __DIR__ . '/../Models/ClassSubjectTeacher.php';
 require_once __DIR__ . '/../Models/Announcement.php';
+
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../Core/School.php';
+require_once __DIR__ . '/../Core/Security.php';
+require_once __DIR__ . '/../Models/AcademicYear.php';
+
 
 class AdminController
 {
@@ -20,7 +45,14 @@ class AdminController
     private Subject $subjectModel;
     private ClassSubjectTeacher $assignmentModel;
     private Announcement $announcementModel;
+    private AcademicYear $academicYearModel;
 
+
+    /**
+     * -----------------------------------------------------
+     * Constructor
+     * -----------------------------------------------------
+     */
     public function __construct()
     {
         $this->userModel = new User();
@@ -31,231 +63,668 @@ class AdminController
         $this->subjectModel = new Subject();
         $this->assignmentModel = new ClassSubjectTeacher();
         $this->announcementModel = new Announcement();
+        $this->academicYearModel = new AcademicYear();
     }
 
-    public function dashboard(): void
-    {
-        AuthMiddleware::requireRole('admin');
-        require __DIR__ . '/../../views/admin/dashboard.php';
-    }
+
+    /**
+     * -----------------------------------------------------
+     * ADMIN DASHBOARD
+     * -----------------------------------------------------
+     */
+   public function dashboard(): void
+{
+    AuthMiddleware::requireRole('admin');
+
+    /*
+     * -----------------------------------------------------
+     * DASHBOARD STATISTICS
+     * -----------------------------------------------------
+     *
+     * Gather the current school statistics from the
+     * existing models before loading the dashboard view.
+     */
+
+    $studentStatistics =
+        $this->studentModel->getDashboardStatistics();
+
+    $dashboardStats = [
+        'students' =>
+            $studentStatistics['total_students'] ?? 0,
+
+        'teachers' =>
+            $this->teacherModel->getTotalCount(),
+
+        'classes' =>
+            $this->classModel->getTotalCount(),
+
+        'gce_candidates' =>
+            $studentStatistics['gce_candidates'] ?? 0,
+    ];
+
+
+    /*
+     * -----------------------------------------------------
+     * LOAD DASHBOARD
+     * -----------------------------------------------------
+     */
+
+    require __DIR__ . '/../../views/admin/dashboard.php';
+}
+
+
+    /**
+     * -----------------------------------------------------
+     * CREATE TEACHER
+     * -----------------------------------------------------
+     */
 
     public function showCreateTeacherForm(): void
     {
         AuthMiddleware::requireRole('admin');
+
         require __DIR__ . '/../../views/admin/create_teacher.php';
     }
+
 
     public function createTeacher(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        self::startSession();
 
         $username = trim($_POST['username'] ?? '');
         $email = $username . SCHOOL_EMAIL_DOMAIN;
+
         $fullName = trim($_POST['full_name'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        // Basic validation
         $errors = [];
 
-        if (empty($username) || !preg_match('/^[a-zA-Z0-9._-]+$/', $username)) {
-            $errors[] = 'Username is required and can only contain letters, numbers, dots, underscores, and hyphens.';
+
+        /*
+         * Username validation
+         */
+        if (
+            empty($username) ||
+            !preg_match('/^[a-zA-Z0-9._-]+$/', $username)
+        ) {
+            $errors[] =
+                'Username is required and can only contain letters, numbers, dots, underscores, and hyphens.';
         }
 
-        if (empty($fullName)) {
+
+        /*
+         * Full name validation
+         */
+        if ($fullName === '') {
             $errors[] = 'Full name is required.';
         }
 
-        if (empty($password) || strlen($password) < 6) {
-            $errors[] = 'Password must be at least 6 characters.';
+
+        /*
+         * Password validation
+         */
+        $passwordErrors =
+            Security::validatePasswordStrength($password);
+
+        if (!empty($passwordErrors)) {
+            $errors = array_merge($errors, $passwordErrors);
         }
 
-        if ($this->userModel->emailExists($email)) {
+
+        /*
+         * Username/email uniqueness
+         */
+        if (
+            $username !== '' &&
+            $this->userModel->emailExists($email)
+        ) {
             $errors[] = 'This username is already taken.';
         }
 
+
+        /*
+         * Return validation errors to form
+         */
         if (!empty($errors)) {
+
             $_SESSION['form_errors'] = $errors;
-            $_SESSION['old_input'] = ['username' => $username, 'full_name' => $fullName, 'phone' => $phone];
-            header('Location: ' . BASE_URL . '/index.php?action=create_teacher_form');
-            exit;
+
+            $_SESSION['old_input'] = [
+                'username' => $username,
+                'full_name' => $fullName,
+                'phone' => $phone
+            ];
+
+            self::redirect(
+                'create_teacher_form'
+            );
         }
 
-        // Create the user record, then the teacher profile linked to it
-        $userId = $this->userModel->create($email, $password, 'teacher');
-        $this->teacherModel->create($userId, $fullName, $phone);
 
-        $_SESSION['success_message'] = "Teacher account created successfully for {$fullName}.";
-        header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
-        exit;
+        /*
+         * Create authentication account
+         */
+        $userId = $this->userModel->create(
+            $email,
+            $password,
+            'teacher'
+        );
+
+
+        /*
+         * Create teacher profile
+         */
+        $this->teacherModel->create(
+            $userId,
+            $fullName,
+            $phone
+        );
+
+
+        $_SESSION['success_message'] =
+            "Teacher account created successfully for {$fullName}.";
+
+
+        self::redirect('admin_dashboard');
     }
+
+
+    /**
+     * -----------------------------------------------------
+     * CREATE STUDENT
+     * -----------------------------------------------------
+     */
 
     public function showCreateStudentForm(): void
     {
         AuthMiddleware::requireRole('admin');
+
         $classes = $this->classModel->all();
+
         require __DIR__ . '/../../views/admin/create_student.php';
     }
+
 
     public function createStudent(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        self::startSession();
 
         $username = trim($_POST['username'] ?? '');
         $email = $username . SCHOOL_EMAIL_DOMAIN;
+
         $fullName = trim($_POST['full_name'] ?? '');
         $dob = trim($_POST['dob'] ?? '');
         $gender = trim($_POST['gender'] ?? '');
-        $classId = (int) ($_POST['class_id'] ?? 0);
+        $admissionNo = trim($_POST['admission_no'] ?? '');
+
+        $classId = (int) (
+            $_POST['class_id'] ?? 0
+        );
+
         $password = $_POST['password'] ?? '';
 
         $errors = [];
 
-        if (empty($username) || !preg_match('/^[a-zA-Z0-9._-]+$/', $username)) {
-            $errors[] = 'Username is required and can only contain letters, numbers, dots, underscores, and hyphens.';
+
+        /*
+         * Username
+         */
+        if (
+            empty($username) ||
+            !preg_match('/^[a-zA-Z0-9._-]+$/', $username)
+        ) {
+            $errors[] =
+                'Username is required and can only contain letters, numbers, dots, underscores, and hyphens.';
         }
 
-        if (empty($fullName)) {
+
+        /*
+         * Full name
+         */
+        if ($fullName === '') {
             $errors[] = 'Full name is required.';
         }
 
-        if (empty($dob)) {
+
+        /*
+         * Admission number
+         */
+        if ($admissionNo === '') {
+            $errors[] = 'Admission number is required.';
+        } elseif (strlen($admissionNo) > 30) {
+            $errors[] = 'Admission number must not exceed 30 characters.';
+        }
+
+
+        /*
+         * Date of birth
+         */
+        if ($dob === '') {
             $errors[] = 'Date of birth is required.';
         }
 
+
+        /*
+         * Gender
+         */
         if (!in_array($gender, ['M', 'F'], true)) {
             $errors[] = 'Please select a gender.';
         }
 
+
+        /*
+         * Class
+         */
         if ($classId <= 0) {
             $errors[] = 'Please select a class.';
         }
 
-        if (empty($password) || strlen($password) < 6) {
-            $errors[] = 'Password must be at least 6 characters.';
+
+        /*
+         * Password
+         */
+        $passwordErrors =
+            Security::validatePasswordStrength($password);
+
+        if (!empty($passwordErrors)) {
+            $errors = array_merge($errors, $passwordErrors);
         }
 
-        if (!empty($username) && $this->userModel->emailExists($email)) {
+
+        /*
+         * Username uniqueness
+         */
+        if (
+            $username !== '' &&
+            $this->userModel->emailExists($email)
+        ) {
             $errors[] = 'This username is already taken.';
         }
 
+
+        /*
+         * Return errors
+         */
         if (!empty($errors)) {
+
             $_SESSION['form_errors'] = $errors;
+
             $_SESSION['old_input'] = [
-                'username' => $username, 'full_name' => $fullName, 'dob' => $dob,
-                'gender' => $gender, 'class_id' => $classId
+                'username' => $username,
+                'full_name' => $fullName,
+                'admission_no' => $admissionNo,
+                'dob' => $dob,
+                'gender' => $gender,
+                'class_id' => $classId
             ];
-            header('Location: ' . BASE_URL . '/index.php?action=create_student_form');
-            exit;
+
+            self::redirect(
+                'create_student_form'
+            );
         }
+/*
+ * ---------------------------------------------------------
+ * CURRENT ACADEMIC YEAR
+ * ---------------------------------------------------------
+ *
+ * A student cannot be registered without an active
+ * academic year because enrollment is tied to the
+ * academic year.
+ */
+$currentAcademicYear =
+    $this->academicYearModel->getCurrent();
 
-        // Create user + student profile, then enroll into the current academic year
-        $userId = $this->userModel->create($email, $password, 'student');
-        $studentId = $this->studentModel->create($userId, $fullName, $dob, $gender);
-        $this->studentModel->enroll($studentId, $classId, 1); // academic_year_id 1 = 2025/2026 (current)
+if (!$currentAcademicYear) {
 
-        $_SESSION['success_message'] = "Student account created successfully for {$fullName}.";
-        header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
-        exit;
+    $_SESSION['form_errors'] = [
+        'No active academic year has been configured. Please ask the administrator to activate an academic year before registering students.'
+    ];
+
+    $_SESSION['old_input'] = [
+        'username' => $username,
+        'full_name' => $fullName,
+        'admission_no' => $admissionNo,
+        'dob' => $dob,
+        'gender' => $gender,
+        'class_id' => $classId
+    ];
+
+    self::redirect(
+        'create_student_form'
+    );
+}
+
+$currentAcademicYearId =
+    (int) $currentAcademicYear['id'];
+
+
+/*
+ * ---------------------------------------------------------
+ * CREATE STUDENT TRANSACTION
+ * ---------------------------------------------------------
+ *
+ * User account, student profile and enrollment must either
+ * all succeed or all fail.
+ */
+$db = Database::getConnection();
+
+try {
+
+    /*
+     * Start transaction.
+     */
+    $db->beginTransaction();
+
+
+    /*
+     * -----------------------------------------------------
+     * 1. CREATE USER ACCOUNT
+     * -----------------------------------------------------
+     */
+    $userId =
+        $this->userModel->create(
+            $email,
+            $password,
+            'student'
+        );
+
+
+    /*
+     * -----------------------------------------------------
+     * 2. CREATE STUDENT PROFILE
+     * -----------------------------------------------------
+     */
+    $studentId =
+        $this->studentModel->create(
+            $userId,
+            $fullName,
+            $dob,
+            $gender,
+            $admissionNo
+        );
+
+
+    /*
+     * -----------------------------------------------------
+     * 3. ENROLL STUDENT
+     * -----------------------------------------------------
+     */
+    $this->studentModel->enroll(
+        $studentId,
+        $classId,
+        $currentAcademicYearId
+    );
+
+
+    /*
+     * -----------------------------------------------------
+     * 4. COMMIT
+     * -----------------------------------------------------
+     */
+    $db->commit();
+
+
+    $_SESSION['success_message'] =
+        "Student account created successfully for {$fullName}.";
+
+    self::redirect(
+        'admin_dashboard'
+    );
+
+
+} catch (Throwable $e) {
+
+    /*
+     * -----------------------------------------------------
+     * ROLLBACK
+     * -----------------------------------------------------
+     *
+     * If any operation failed, remove everything created
+     * during this registration attempt.
+     */
+    if ($db->inTransaction()) {
+        $db->rollBack();
     }
+
+
+    /*
+     * Keep technical database details away from the user.
+     * We can log them properly later.
+     */
+    $_SESSION['form_errors'] = [
+        'Student registration could not be completed. Please try again.'
+    ];
+
+
+    $_SESSION['old_input'] = [
+        'username' => $username,
+        'full_name' => $fullName,
+        'admission_no' => $admissionNo,
+        'dob' => $dob,
+        'gender' => $gender,
+        'class_id' => $classId
+    ];
+
+
+    self::redirect(
+        'create_student_form'
+    );
+}
+}
+
+    /**
+     * -----------------------------------------------------
+     * CREATE PARENT
+     * -----------------------------------------------------
+     */
 
     public function showCreateParentForm(): void
     {
         AuthMiddleware::requireRole('admin');
+
         $students = $this->studentModel->all();
+
         require __DIR__ . '/../../views/admin/create_parent.php';
     }
+
 
     public function createParent(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        self::startSession();
 
         $username = trim($_POST['username'] ?? '');
         $email = $username . SCHOOL_EMAIL_DOMAIN;
+
         $fullName = trim($_POST['full_name'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
         $password = $_POST['password'] ?? '';
-        $studentIds = $_POST['student_ids'] ?? []; // array of selected student IDs from multi-select
+
+        $studentIds = $_POST['student_ids'] ?? [];
+
+
+        /*
+         * Ensure student IDs are always treated as an array.
+         */
+        if (!is_array($studentIds)) {
+            $studentIds = [];
+        }
+
+
+        /*
+         * Normalize student IDs.
+         */
+        $studentIds = array_values(
+            array_unique(
+                array_filter(
+                    array_map(
+                        'intval',
+                        $studentIds
+                    ),
+                    static fn ($id) => $id > 0
+                )
+            )
+        );
+
 
         $errors = [];
 
-        if (empty($username) || !preg_match('/^[a-zA-Z0-9._-]+$/', $username)) {
-            $errors[] = 'Username is required and can only contain letters, numbers, dots, underscores, and hyphens.';
+
+        /*
+         * Username
+         */
+        if (
+            empty($username) ||
+            !preg_match('/^[a-zA-Z0-9._-]+$/', $username)
+        ) {
+            $errors[] =
+                'Username is required and can only contain letters, numbers, dots, underscores, and hyphens.';
         }
 
-        if (empty($fullName)) {
+
+        /*
+         * Full name
+         */
+        if ($fullName === '') {
             $errors[] = 'Full name is required.';
         }
 
-        if (empty($password) || strlen($password) < 6) {
-            $errors[] = 'Password must be at least 6 characters.';
+
+        /*
+         * Password
+         */
+        $passwordErrors =
+            Security::validatePasswordStrength($password);
+
+        if (!empty($passwordErrors)) {
+            $errors = array_merge($errors, $passwordErrors);
         }
 
+
+        /*
+         * Child selection
+         */
         if (empty($studentIds)) {
-            $errors[] = 'Please select at least one child.';
+            $errors[] =
+                'Please select at least one child.';
         }
 
-        if (!empty($username) && $this->userModel->emailExists($email)) {
+
+        /*
+         * Username uniqueness
+         */
+        if (
+            $username !== '' &&
+            $this->userModel->emailExists($email)
+        ) {
             $errors[] = 'This username is already taken.';
         }
 
+
+        /*
+         * Return errors
+         */
         if (!empty($errors)) {
+
             $_SESSION['form_errors'] = $errors;
+
             $_SESSION['old_input'] = [
-                'username' => $username, 'full_name' => $fullName, 'phone' => $phone,
+                'username' => $username,
+                'full_name' => $fullName,
+                'phone' => $phone,
                 'student_ids' => $studentIds
             ];
-            header('Location: ' . BASE_URL . '/index.php?action=create_parent_form');
-            exit;
+
+            self::redirect(
+                'create_parent_form'
+            );
         }
 
-        // Create user + parent profile, then link every selected child
-        $userId = $this->userModel->create($email, $password, 'parent');
-        $parentId = $this->parentModel->create($userId, $fullName, $phone);
 
+        /*
+         * Create user account
+         */
+        $userId = $this->userModel->create(
+            $email,
+            $password,
+            'parent'
+        );
+
+
+        /*
+         * Create parent profile
+         */
+        $parentId = $this->parentModel->create(
+            $userId,
+            $fullName,
+            $phone
+        );
+
+
+        /*
+         * Link children
+         */
         foreach ($studentIds as $studentId) {
-            $this->parentModel->linkChild($parentId, (int) $studentId);
+
+            $this->parentModel->linkChild(
+                $parentId,
+                $studentId
+            );
         }
 
-        $_SESSION['success_message'] = "Parent account created successfully for {$fullName}.";
-        header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
-        exit;
+
+        $_SESSION['success_message'] =
+            "Parent account created successfully for {$fullName}.";
+
+
+        self::redirect('admin_dashboard');
     }
+
+
+    /**
+     * -----------------------------------------------------
+     * TEACHER ASSIGNMENT
+     * -----------------------------------------------------
+     */
 
     public function showAssignTeacherForm(): void
     {
         AuthMiddleware::requireRole('admin');
+
         $classes = $this->classModel->all();
         $subjects = $this->subjectModel->all();
         $teachers = $this->teacherModel->all();
+
         require __DIR__ . '/../../views/admin/assign_teacher.php';
     }
+
 
     public function assignTeacher(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        self::startSession();
 
-        $classId = (int) ($_POST['class_id'] ?? 0);
-        $subjectId = (int) ($_POST['subject_id'] ?? 0);
-        $teacherId = (int) ($_POST['teacher_id'] ?? 0);
+        $classId = (int) (
+            $_POST['class_id'] ?? 0
+        );
+
+        $subjectId = (int) (
+            $_POST['subject_id'] ?? 0
+        );
+
+        $teacherId = (int) (
+            $_POST['teacher_id'] ?? 0
+        );
 
         $errors = [];
+
 
         if ($classId <= 0) {
             $errors[] = 'Please select a class.';
@@ -269,114 +738,377 @@ class AdminController
             $errors[] = 'Please select a teacher.';
         }
 
-        if ($classId > 0 && $subjectId > 0 && $this->assignmentModel->existsForClassSubject($classId, $subjectId)) {
-            $errors[] = 'This class already has a teacher assigned for this subject.';
+
+        /*
+         * Prevent duplicate class/subject assignment.
+         */
+        if (
+            $classId > 0 &&
+            $subjectId > 0 &&
+            $this->assignmentModel
+                ->existsForClassSubject(
+                    $classId,
+                    $subjectId
+                )
+        ) {
+            $errors[] =
+                'This class already has a teacher assigned for this subject.';
         }
+
 
         if (!empty($errors)) {
+
             $_SESSION['form_errors'] = $errors;
-            header('Location: ' . BASE_URL . '/index.php?action=assign_teacher_form');
-            exit;
+
+            self::redirect(
+                'assign_teacher_form'
+            );
         }
 
-        $this->assignmentModel->assign($classId, $subjectId, $teacherId);
 
-        $_SESSION['success_message'] = "Teacher assigned successfully.";
-        header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
-        exit;
+        /*
+         * Create assignment.
+         */
+        $this->assignmentModel->assign(
+            $classId,
+            $subjectId,
+            $teacherId
+        );
+
+
+        $_SESSION['success_message'] =
+            'Teacher assigned successfully.';
+
+
+        self::redirect('admin_dashboard');
     }
+
+
+    /**
+     * -----------------------------------------------------
+     * VIEW TEACHER ASSIGNMENTS
+     * -----------------------------------------------------
+     */
 
     public function viewTeacherAssignments(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        $assignments = $this->assignmentModel->all();
+        $assignments =
+            $this->assignmentModel->all();
 
-        // Group flat assignment rows by teacher, so the view can list
-        // each teacher once with all their classes/subjects nested underneath
+
+        /*
+         * Group assignments by teacher.
+         */
         $byTeacher = [];
+
+
         foreach ($assignments as $assignment) {
-            $byTeacher[$assignment['teacher_name']][] = $assignment;
+
+            $teacherName =
+                $assignment['teacher_name']
+                ?? 'Unknown Teacher';
+
+            $byTeacher[$teacherName][] =
+                $assignment;
         }
+
+
         ksort($byTeacher);
 
-        require __DIR__ . '/../../views/admin/teacher_assignments.php';
+
+        require __DIR__ .
+            '/../../views/admin/teacher_assignments.php';
     }
+
+
+    /**
+     * -----------------------------------------------------
+     * VIEW CLASSES
+     * -----------------------------------------------------
+     */
 
     public function viewClasses(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        $classes = $this->classModel->all();
+        $classes =
+            $this->classModel->all();
 
-        require __DIR__ . '/../../views/admin/classes.php';
+        require __DIR__ .
+            '/../../views/admin/classes.php';
     }
+
+
+    /**
+     * -----------------------------------------------------
+     * VIEW CLASS LIST
+     * -----------------------------------------------------
+     */
 
     public function viewClassList(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        $classId = (int) ($_GET['class_id'] ?? 0);
-        $class = $this->classModel->find($classId);
+        $classId = (int) (
+            $_GET['class_id'] ?? 0
+        );
 
-        if (!$class) {
-            http_response_code(404);
-            echo "Class not found.";
-            exit;
+
+        if ($classId <= 0) {
+            self::notFound('Class not found.');
         }
 
-        $students = $this->studentModel->allByClass($classId);
 
-        require __DIR__ . '/../../views/admin/class_list.php';
+        $class =
+            $this->classModel->find($classId);
+
+
+        if (!$class) {
+            self::notFound('Class not found.');
+        }
+
+
+        $students =
+            $this->studentModel->allByClass(
+                $classId
+            );
+
+
+        require __DIR__ .
+            '/../../views/admin/class_list.php';
     }
+
+
+    /**
+     * -----------------------------------------------------
+     * ANNOUNCEMENTS
+     * -----------------------------------------------------
+     */
 
     public function showPostAnnouncementForm(): void
     {
         AuthMiddleware::requireRole('admin');
-        $classes = $this->classModel->all();
-        require __DIR__ . '/../../views/admin/post_announcement.php';
+
+        $classes =
+            $this->classModel->all();
+
+        require __DIR__ .
+            '/../../views/admin/post_announcement.php';
     }
+
 
     public function postAnnouncement(): void
     {
         AuthMiddleware::requireRole('admin');
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        self::startSession();
 
-        $title = trim($_POST['title'] ?? '');
-        $body = trim($_POST['body'] ?? '');
-        $classId = (int) ($_POST['class_id'] ?? 0);
-        $classId = $classId > 0 ? $classId : null; // 0 or empty means "school-wide"
+        $title = trim(
+            $_POST['title'] ?? ''
+        );
+
+        $body = trim(
+            $_POST['body'] ?? ''
+        );
+
+        $classId = (int) (
+            $_POST['class_id'] ?? 0
+        );
+
+        /*
+         * 0 means school-wide announcement.
+         */
+        $classId =
+            $classId > 0
+                ? $classId
+                : null;
+
 
         $errors = [];
 
-        if (empty($title)) {
-            $errors[] = 'Title is required.';
+
+        if ($title === '') {
+            $errors[] =
+                'Title is required.';
         }
 
-        if (empty($body)) {
-            $errors[] = 'Announcement body is required.';
+
+        if ($body === '') {
+            $errors[] =
+                'Announcement body is required.';
         }
+
 
         if (!empty($errors)) {
-            $_SESSION['form_errors'] = $errors;
-            header('Location: ' . BASE_URL . '/index.php?action=post_announcement_form');
-            exit;
+
+            $_SESSION['form_errors'] =
+                $errors;
+
+            $_SESSION['old_input'] = [
+                'title' => $title,
+                'body' => $body,
+                'class_id' => $classId
+            ];
+
+            self::redirect(
+                'post_announcement_form'
+            );
         }
 
-        $this->announcementModel->create($_SESSION['user_id'], $classId, $title, $body);
 
-        $_SESSION['success_message'] = "Announcement posted successfully.";
-        header('Location: ' . BASE_URL . '/index.php?action=admin_dashboard');
-        exit;
+        /*
+         * Make sure the authenticated user ID exists
+         * before creating the announcement.
+         */
+        $postedBy =
+            (int) ($_SESSION['user_id'] ?? 0);
+
+
+        if ($postedBy <= 0) {
+            self::redirectToLogin();
+        }
+
+
+        $this->announcementModel->create(
+            $postedBy,
+            $classId,
+            $title,
+            $body
+        );
+
+
+        $_SESSION['success_message'] =
+            'Announcement posted successfully.';
+
+
+        self::redirect('admin_dashboard');
     }
+
+
+    /**
+     * -----------------------------------------------------
+     * VIEW ANNOUNCEMENTS
+     * -----------------------------------------------------
+     */
 
     public function viewAnnouncements(): void
     {
         AuthMiddleware::requireRole('admin');
-        $announcements = $this->announcementModel->all();
-        require __DIR__ . '/../../views/admin/announcements.php';
+
+        $announcements =
+            $this->announcementModel->all();
+
+        require __DIR__ .
+            '/../../views/admin/announcements.php';
+    }
+
+
+    /**
+     * =====================================================
+     * PRIVATE HELPERS
+     * =====================================================
+     */
+
+
+    /**
+     * Start session safely.
+     */
+    private static function startSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+
+
+    /**
+     * Redirect to an application action.
+     */
+    private static function redirect(
+        string $action
+    ): void {
+
+        header(
+            'Location: ' .
+            BASE_URL .
+            '/index.php?action=' .
+            rawurlencode($action)
+        );
+
+        exit;
+    }
+
+
+    /**
+     * Redirect to login.
+     */
+    private static function redirectToLogin(): void
+    {
+        header(
+            'Location: ' .
+            BASE_URL .
+            '/index.php?action=login'
+        );
+
+        exit;
+    }
+
+
+    /**
+     * Render a basic 404 response.
+     */
+    private static function notFound(
+        string $message = 'Page not found.'
+    ): void {
+
+        http_response_code(404);
+
+        echo '<!DOCTYPE html>';
+        echo '<html lang="en">';
+        echo '<head>';
+        echo '<meta charset="UTF-8">';
+        echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+        echo '<title>Not Found - School Management System</title>';
+        echo '</head>';
+        echo '<body>';
+
+        echo '<main style="
+            max-width: 700px;
+            margin: 80px auto;
+            padding: 30px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        ">';
+
+        echo '<h1>404</h1>';
+
+        echo '<h2>' .
+            htmlspecialchars(
+                $message,
+                ENT_QUOTES,
+                'UTF-8'
+            ) .
+            '</h2>';
+
+        echo '<p>
+            <a href="' .
+            htmlspecialchars(
+                BASE_URL . '/index.php?action=admin_dashboard',
+                ENT_QUOTES,
+                'UTF-8'
+            ) .
+            '">
+                Return to Dashboard
+            </a>
+        </p>';
+
+        echo '</main>';
+
+        echo '</body>';
+        echo '</html>';
+
+        exit;
     }
 }

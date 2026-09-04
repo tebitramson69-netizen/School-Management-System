@@ -13,6 +13,7 @@ unset($_SESSION['form_errors']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Change Password - School Management System</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth.css">
+    <script src="<?= BASE_URL ?>/js/app.js" defer></script>
 </head>
 <body>
     <div class="login-container">
@@ -31,9 +32,10 @@ unset($_SESSION['form_errors']);
             <?php endif; ?>
 
             <form method="POST" action="<?= BASE_URL ?>/index.php?action=change_password">
+                <?= Security::csrfField() ?>
                 <div class="form-group">
                     <label for="new_password">New Password</label>
-                    <input type="password" id="new_password" name="new_password" required minlength="6">
+                    <input type="password" id="new_password" name="new_password" required minlength="8">
                 </div>
 
                 <div class="form-group">

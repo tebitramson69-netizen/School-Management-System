@@ -10,6 +10,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin', 'teacher', 'student', 'parent') NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
+    must_change_password BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -94,6 +95,7 @@ CREATE TABLE terms (
     academic_year_id INT NOT NULL,
     name VARCHAR(30) NOT NULL,          -- e.g. "Term 1"
     sequence_number INT NOT NULL,       -- 1 or 2 (each term has 2 sequences)
+    is_current BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -113,14 +115,14 @@ CREATE TABLE enrollments (
 CREATE TABLE attendance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
-    class_id INT NOT NULL,
+    class_subject_teacher_id INT NOT NULL,
     date DATE NOT NULL,
     status ENUM('present', 'absent', 'late') NOT NULL,
-    marked_by INT NOT NULL,             -- teacher's user_id
+    marked_by INT NOT NULL,             -- teacher's id from teachers table
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_subject_teacher_id) REFERENCES class_subject_teacher(id) ON DELETE CASCADE,
     FOREIGN KEY (marked_by) REFERENCES teachers(id),
-    UNIQUE (student_id, date)           -- one attendance record per student per day
+    UNIQUE (student_id, class_subject_teacher_id, date) -- one record per student per subject-period per day
 ) ENGINE=InnoDB;
 
 -- 7. SCORES (raw per-sequence entries; averages calculated on the fly)
@@ -159,7 +161,36 @@ CREATE TABLE announcements (
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 10. SEED DATA: default Cameroon GCE grade scale (admin can edit later)
+-- 10. SCHOOL SETTINGS
+CREATE TABLE school_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    school_name VARCHAR(200) NOT NULL DEFAULT 'School Management System',
+    motto VARCHAR(255) DEFAULT NULL,
+    logo_path VARCHAR(255) DEFAULT NULL,
+    address TEXT DEFAULT NULL,
+    phone VARCHAR(30) DEFAULT NULL,
+    email VARCHAR(150) DEFAULT NULL,
+    website VARCHAR(200) DEFAULT NULL,
+    school_type VARCHAR(50) DEFAULT NULL,
+    primary_color VARCHAR(20) DEFAULT '#123B63',
+    secondary_color VARCHAR(20) DEFAULT '#D69E2E',
+    pass_mark DECIMAL(5,2) NOT NULL DEFAULT 10.00, -- pass threshold on the 0-20 scale
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 11. SUBJECT COEFFICIENTS (per class weighting for GCE subjects)
+CREATE TABLE subject_coefficients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_id INT NOT NULL,
+    class_id INT NOT NULL,
+    coefficient INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    UNIQUE (subject_id, class_id)
+) ENGINE=InnoDB;
+
+-- 12. SEED DATA: default Cameroon GCE grade scale (admin can edit later)
 INSERT INTO grade_scale (min_score, max_score, letter, remark) VALUES
 (16.00, 20.00, 'A', 'Excellent'),
 (14.00, 15.99, 'B', 'Very Good'),
@@ -167,3 +198,6 @@ INSERT INTO grade_scale (min_score, max_score, letter, remark) VALUES
 (10.00, 11.99, 'D', 'Fair'),
 (8.00, 9.99, 'E', 'Weak'),
 (0.00, 7.99, 'F', 'Fail');
+
+-- 13. SEED DATA: default school settings row
+INSERT INTO school_settings (school_name) VALUES ('School Management System');

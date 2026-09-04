@@ -1,117 +1,299 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+
+declare(strict_types=1);
+
+/**
+ * Student Dashboard View — uses the shared dashboard layout.
+ * Business logic lives in StudentController.
+ */
+
+$student = $student ?? [];
+$attendance = $attendance ?? [];
+$scores = $scores ?? [];
+$announcements = $announcements ?? [];
+$reportCard = $reportCard ?? [];
+$overallAverage = $overallAverage ?? null;
+$overallGrade = $overallGrade ?? null;
+$classPosition = $classPosition ?? null;
+$classSize = $classSize ?? null;
+
+$studentName =
+    $student['full_name']
+    ?? $student['name']
+    ?? 'Student';
+
+$studentEmail = $student['email'] ?? '';
+$admissionNo = $student['admission_no'] ?? '';
+$className = $student['class_name'] ?? $student['class'] ?? '';
+
+$totalAttendance = is_array($attendance) ? count($attendance) : 0;
+$totalScores = is_array($scores) ? count($scores) : 0;
+$totalAnnouncements = is_array($announcements) ? count($announcements) : 0;
+
+/*
+ * Ordinal helper for ranking position (1st, 2nd, 3rd...).
+ */
+$positionLabel = null;
+if ($classPosition !== null) {
+    $n = (int) $classPosition;
+    $suffix = 'th';
+    if (!in_array($n % 100, [11, 12, 13], true)) {
+        $suffix = match ($n % 10) {
+            1 => 'st',
+            2 => 'nd',
+            3 => 'rd',
+            default => 'th',
+        };
+    }
+    $positionLabel = $n . $suffix;
 }
+
+$pageTitle = 'Student Dashboard';
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - School Management System</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth.css">
-</head>
-<body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>Welcome, <?= htmlspecialchars($student['full_name']) ?></h1>
-            <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">Logout</a>
-        </header>
 
-        <h2>Announcements</h2>
-        <?php if (empty($announcements)): ?>
-            <p>No announcements right now.</p>
-        <?php else: ?>
-            <?php foreach ($announcements as $announcement): ?>
-                <div class="alert alert-success">
-                    <strong><?= htmlspecialchars($announcement['title']) ?></strong><br>
-                    <?= nl2br(htmlspecialchars($announcement['body'])) ?><br>
-                    <small><?= date('F j, Y', strtotime($announcement['created_at'])) ?></small>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+<section class="page-header">
+    <div>
+        <span class="page-eyebrow">STUDENT PORTAL</span>
+        <h1>Welcome, <?= htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8') ?></h1>
+        <p>
+            View your academic information, attendance, scores,
+            report card and school announcements.
+        </p>
+    </div>
+</section>
 
-        <h2>Report Card</h2>
-        <?php if (empty($reportCard)): ?>
-            <p>No scores recorded yet.</p>
-        <?php else: ?>
+
+<!-- STUDENT INFORMATION -->
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <h2>Student Information</h2>
+        </div>
+    </div>
+
+    <div class="dashboard-stats-grid">
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Name</span>
+            <strong class="dashboard-stat-value" style="font-size:1.1rem;">
+                <?= htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8') ?>
+            </strong>
+        </article>
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Admission No.</span>
+            <strong class="dashboard-stat-value" style="font-size:1.1rem;">
+                <?= $admissionNo !== '' ? htmlspecialchars($admissionNo, ENT_QUOTES, 'UTF-8') : 'Not available' ?>
+            </strong>
+        </article>
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Class</span>
+            <strong class="dashboard-stat-value" style="font-size:1.1rem;">
+                <?= $className !== '' ? htmlspecialchars($className, ENT_QUOTES, 'UTF-8') : 'Not assigned' ?>
+            </strong>
+        </article>
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Email</span>
+            <strong class="dashboard-stat-value" style="font-size:1.1rem;">
+                <?= $studentEmail !== '' ? htmlspecialchars($studentEmail, ENT_QUOTES, 'UTF-8') : 'Not available' ?>
+            </strong>
+        </article>
+
+    </div>
+</section>
+
+
+<!-- ACADEMIC SUMMARY -->
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <h2>Academic Summary</h2>
+        </div>
+    </div>
+
+    <div class="dashboard-stats-grid">
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Overall Average</span>
+            <strong class="dashboard-stat-value">
+                <?= $overallAverage !== null
+                    ? htmlspecialchars(number_format((float) $overallAverage, 2), ENT_QUOTES, 'UTF-8')
+                    : '—' ?>
+            </strong>
+            <span class="dashboard-stat-note">out of 20</span>
+        </article>
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Class Position</span>
+            <strong class="dashboard-stat-value">
+                <?= $positionLabel !== null
+                    ? htmlspecialchars($positionLabel, ENT_QUOTES, 'UTF-8')
+                    : '—' ?>
+            </strong>
+            <span class="dashboard-stat-note">
+                <?= $classSize ? 'of ' . (int) $classSize . ' ranked' : 'Not ranked yet' ?>
+            </span>
+        </article>
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Overall Grade</span>
+            <strong class="dashboard-stat-value">
+                <?= htmlspecialchars($overallGrade['letter'] ?? '—', ENT_QUOTES, 'UTF-8') ?>
+            </strong>
+            <span class="dashboard-stat-note">
+                <?= htmlspecialchars($overallGrade['remark'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+            </span>
+        </article>
+
+        <article class="dashboard-stat-card">
+            <span class="dashboard-stat-label">Announcements</span>
+            <strong class="dashboard-stat-value"><?= (int) $totalAnnouncements ?></strong>
+            <span class="dashboard-stat-note">School updates</span>
+        </article>
+
+    </div>
+</section>
+
+
+<!-- REPORT CARD -->
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <h2>Report Card</h2>
+            <p>Coefficient-weighted subject averages for the latest term.</p>
+        </div>
+    </div>
+
+    <?php if (!empty($reportCard)): ?>
+
+        <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Subject</th>
-                        <th>Average</th>
+                        <th>Average Score</th>
                         <th>Grade</th>
                         <th>Remark</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($reportCard as $row): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($row['subject_name']) ?></td>
-                            <td><?= number_format($row['average_score'], 2) ?> / <?= htmlspecialchars($row['max_score']) ?></td>
-                            <td><?= htmlspecialchars($row['letter']) ?></td>
-                            <td><?= htmlspecialchars($row['remark']) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <?php if ($overallAverage !== null): ?>
-                        <tr>
-                            <td><strong>Overall Average</strong></td>
-                            <td><strong><?= number_format($overallAverage, 2) ?> / 20</strong></td>
-                            <td><strong><?= htmlspecialchars($overallGrade['letter'] ?? '—') ?></strong></td>
-                            <td><strong><?= htmlspecialchars($overallGrade['remark'] ?? '—') ?></strong></td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-
-        <h2>My Scores (Detailed)</h2>
-        <?php if (empty($scores)): ?>
-            <p>No scores have been recorded yet.</p>
-        <?php else: ?>
-            <table class="data-table">
-                <thead>
+                <?php foreach ($reportCard as $row): ?>
                     <tr>
-                        <th>Subject</th>
-                        <th>Sequence</th>
-                        <th>Score</th>
+                        <td><?= htmlspecialchars($row['subject_name'] ?? 'Unknown Subject', ENT_QUOTES, 'UTF-8') ?></td>
+                        <td>
+                            <?= isset($row['average_score'])
+                                ? htmlspecialchars(number_format((float) $row['average_score'], 2), ENT_QUOTES, 'UTF-8')
+                                : '—' ?>
+                        </td>
+                        <td><?= htmlspecialchars($row['letter'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars($row['remark'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($scores as $score): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($score['subject_name']) ?></td>
-                            <td><?= htmlspecialchars($score['term_name']) ?> — Sequence <?= $score['sequence_number'] ?></td>
-                            <td><?= htmlspecialchars($score['score']) ?> / <?= htmlspecialchars($score['max_score']) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
+                <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
+        </div>
 
-        <h2>My Attendance</h2>
-        <?php if (empty($attendance)): ?>
-            <p>No attendance records yet.</p>
-        <?php else: ?>
+    <?php else: ?>
+
+        <div class="empty-state">
+            <div class="empty-state-icon">i</div>
+            <h3>No report card yet</h3>
+            <p>No report card records are available for you yet.</p>
+        </div>
+
+    <?php endif; ?>
+
+</section>
+
+
+<!-- ATTENDANCE -->
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <h2>Attendance</h2>
+            <p><?= (int) $totalAttendance ?> record<?= $totalAttendance === 1 ? '' : 's' ?> on file.</p>
+        </div>
+    </div>
+
+    <?php if (!empty($attendance)): ?>
+
+        <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Subject</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($attendance as $record): ?>
-                        <tr>
-                            <td><?= date('F j, Y', strtotime($record['date'])) ?></td>
-                            <td><?= htmlspecialchars($record['subject_name']) ?></td>
-                            <td><?= htmlspecialchars(ucfirst($record['status'])) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
+                <?php foreach ($attendance as $record): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($record['date'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars(ucfirst($record['status'] ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
+                    </tr>
+                <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
+        </div>
+
+    <?php else: ?>
+
+        <div class="empty-state">
+            <div class="empty-state-icon">i</div>
+            <h3>No attendance records</h3>
+            <p>No attendance records are available yet.</p>
+        </div>
+
+    <?php endif; ?>
+
+</section>
+
+
+<!-- ANNOUNCEMENTS -->
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <h2>School Announcements</h2>
+        </div>
     </div>
-</body>
-</html>
+
+    <?php if (!empty($announcements)): ?>
+
+        <div class="announcement-list">
+            <?php foreach ($announcements as $announcement): ?>
+                <article class="announcement-card">
+                    <div class="announcement-card-header">
+                        <h3><?= htmlspecialchars($announcement['title'] ?? 'Announcement', ENT_QUOTES, 'UTF-8') ?></h3>
+                        <?php if (!empty($announcement['created_at'])): ?>
+                            <time><?= date('F j, Y', strtotime($announcement['created_at'])) ?></time>
+                        <?php endif; ?>
+                    </div>
+                    <p><?= nl2br(htmlspecialchars($announcement['body'] ?? $announcement['message'] ?? '', ENT_QUOTES, 'UTF-8')) ?></p>
+                </article>
+            <?php endforeach; ?>
+        </div>
+
+    <?php else: ?>
+
+        <div class="empty-state">
+            <div class="empty-state-icon">i</div>
+            <h3>No announcements</h3>
+            <p>There are no announcements at the moment.</p>
+        </div>
+
+    <?php endif; ?>
+
+</section>
+
+<?php
+$content = ob_get_clean();
+require __DIR__ . '/../layouts/dashboard.php';

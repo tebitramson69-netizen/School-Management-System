@@ -2,46 +2,64 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classes - School Management System</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth.css">
-</head>
-<body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>Classes</h1>
-            <a href="<?= BASE_URL ?>/index.php?action=admin_dashboard" class="btn-logout">Back to Dashboard</a>
-        </header>
 
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Class</th>
-                    <th>Level</th>
-                    <th>Option</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($classes as $class): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($class['name']) ?></td>
-                        <td><?= htmlspecialchars($class['level']) ?></td>
-                        <td><?= htmlspecialchars($class['class_option'] ?? '—') ?></td>
-                        <td>
-                            <a href="<?= BASE_URL ?>/index.php?action=view_class_list&class_id=<?= $class['id'] ?>">
-                                View Class List
-                            </a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+$pageTitle = 'Classes';
+
+ob_start();
+?>
+
+<section class="page-header">
+    <div>
+        <span class="page-eyebrow">ADMINISTRATION</span>
+        <h1>Classes</h1>
+        <p>All classes configured in the school.</p>
     </div>
-</body>
-</html>
+</section>
+
+<section class="dashboard-section">
+
+    <?php if (empty($classes)): ?>
+
+        <div class="empty-state">
+            <div class="empty-state-icon">i</div>
+            <h3>No classes</h3>
+            <p>No classes have been configured yet.</p>
+        </div>
+
+    <?php else: ?>
+
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Level</th>
+                        <th>Option</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($classes as $class): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($class['name'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars($class['level'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars($class['class_option'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td>
+                                <a class="btn btn-sm btn-primary"
+                                   href="<?= BASE_URL ?>/index.php?action=view_class_list&class_id=<?= (int) $class['id'] ?>">
+                                    View Class List
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+    <?php endif; ?>
+
+</section>
+
+<?php
+$content = ob_get_clean();
+require __DIR__ . '/../layouts/dashboard.php';

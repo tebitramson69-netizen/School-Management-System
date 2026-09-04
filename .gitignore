@@ -1,0 +1,5 @@
+.env
+
+# Local environment secrets - never commit
+.env
+config/env.php

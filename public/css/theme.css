@@ -1,0 +1,465 @@
+/* =========================================================
+   SCHOOL MANAGEMENT SYSTEM
+   theme.css
+   Premium Design System
+   ========================================================= */
+
+:root {
+
+    /* =====================================================
+       BRAND / IDENTITY
+       ===================================================== */
+
+    --color-primary: #123B63;
+    --color-primary-dark: #0B2945;
+    --color-primary-light: #EAF1F7;
+
+    --color-accent: #D6A23A;
+    --color-accent-light: #FBF4E8;
+
+
+    /* =====================================================
+       BACKGROUNDS
+       ===================================================== */
+
+    --color-background: #F4F7FA;
+    --color-surface: #FFFFFF;
+    --color-surface-muted: #F8FAFC;
+    --color-surface-soft: #EEF3F7;
+
+
+    /* =====================================================
+       TEXT
+       ===================================================== */
+
+    --color-text: #172033;
+    --color-text-secondary: #526174;
+    --color-text-muted: #7A8797;
+
+
+    /* =====================================================
+       BORDERS
+       ===================================================== */
+
+    --color-border: #DCE4EC;
+    --color-border-dark: #C5D0DC;
+
+
+    /* =====================================================
+       STATUS COLORS
+       ===================================================== */
+
+    --color-success: #16855B;
+    --color-success-bg: #EAF7F1;
+
+    --color-warning: #B7791F;
+    --color-warning-bg: #FFF7E6;
+
+    --color-danger: #C74646;
+    --color-danger-bg: #FDEEEE;
+    --color-danger-border: #F3C5C5;
+
+    --color-info: #2563A6;
+    --color-info-bg: #EBF4FF;
+
+
+    /* =====================================================
+       TYPOGRAPHY
+       ===================================================== */
+
+    --font-body:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    --font-heading:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+
+    /* =====================================================
+       LAYOUT
+       ===================================================== */
+
+    --sidebar-width: 260px;
+    --topbar-height: 70px;
+
+    --content-width: 1440px;
+
+
+    /* =====================================================
+       BORDER RADIUS
+       ===================================================== */
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+
+
+    /* =====================================================
+       SHADOWS
+       ===================================================== */
+
+    --shadow-xs:
+        0 1px 2px rgba(15, 23, 42, 0.04);
+
+    --shadow-sm:
+        0 4px 12px rgba(15, 23, 42, 0.06);
+
+    --shadow-md:
+        0 10px 30px rgba(15, 23, 42, 0.08);
+
+    --shadow-lg:
+        0 20px 45px rgba(15, 23, 42, 0.10);
+
+
+    /* =====================================================
+       TRANSITIONS
+       ===================================================== */
+
+    --transition-fast: 160ms ease;
+    --transition-normal: 240ms ease;
+    --transition-slow: 350ms ease;
+}
+
+/* =========================================================
+   GLOBAL RESET
+   ========================================================= */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+
+    font-family: var(--font-body);
+
+    background: var(--color-background);
+
+    color: var(--color-text);
+
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+
+/* =========================================================
+   GLOBAL TYPOGRAPHY
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+
+    color: var(--color-primary-dark);
+
+    font-weight: 700;
+
+    letter-spacing: -0.015em;
+}
+
+p {
+    color: var(--color-text-secondary);
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+a {
+    color: var(--color-primary);
+
+    transition:
+        color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+}
+
+
+/* =========================================================
+   SELECTION
+   ========================================================= */
+
+::selection {
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+}
+
+
+/* =========================================================
+   FOCUS ACCESSIBILITY
+   ========================================================= */
+
+:focus-visible {
+    outline: 3px solid rgba(42, 161, 152, 0.25);
+
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-surface-soft);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #B8C4D1;
+
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+
+/* =========================================================
+   BOOTSTRAP OVERRIDES
+   ========================================================= */
+
+.btn {
+    font-family: var(--font-body);
+
+    font-weight: 700;
+
+    border-radius: var(--radius-md);
+
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast),
+        background var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: var(--color-primary);
+
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: var(--color-primary-dark);
+
+    border-color: var(--color-primary-dark);
+}
+
+.btn-success {
+    background: var(--color-success);
+
+    border-color: var(--color-success);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+
+    border-color: var(--color-danger);
+}
+
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+.form-control,
+.form-select {
+    min-height: 42px;
+
+    border:
+        1px solid
+        var(--color-border);
+
+    border-radius:
+        var(--radius-md);
+
+    background:
+        var(--color-surface);
+
+    color:
+        var(--color-text);
+
+    box-shadow:
+        var(--shadow-xs);
+
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color:
+        var(--color-primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(23, 107, 135, 0.12);
+}
+
+
+/* =========================================================
+   TABLE FOUNDATION
+   ========================================================= */
+
+.data-table {
+    width: 100%;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    background: var(--color-surface);
+
+    border:
+        1px solid
+        var(--color-border);
+
+    border-radius:
+        var(--radius-lg);
+
+    overflow: hidden;
+}
+
+.data-table thead th {
+    background:
+        var(--color-surface-soft);
+
+    color:
+        var(--color-text-secondary);
+
+    font-size: .72rem;
+
+    font-weight: 800;
+
+    letter-spacing: .04em;
+
+    text-transform: uppercase;
+
+    border-bottom:
+        1px solid
+        var(--color-border);
+}
+
+.data-table tbody td {
+    color:
+        var(--color-text);
+
+    border-bottom:
+        1px solid
+        var(--color-border);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.data-table tbody tr {
+    transition:
+        background var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+    background:
+        var(--color-surface-muted);
+}
+
+
+/* =========================================================
+   PREMIUM CARD FOUNDATION
+   ========================================================= */
+
+.card,
+.dashboard-panel {
+    border:
+        1px solid
+        var(--color-border);
+
+    border-radius:
+        var(--radius-lg);
+
+    background:
+        var(--color-surface);
+
+    box-shadow:
+        var(--shadow-xs);
+}
+
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.status-badge,
+.grade-badge {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 30px;
+
+    min-height: 25px;
+
+    padding:
+        4px 9px;
+
+    border-radius:
+        999px;
+
+    font-size: .7rem;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+
+    body {
+        background: #fff;
+    }
+
+    .no-print,
+    .app-sidebar,
+    .app-topbar {
+        display: none !important;
+    }
+
+    .app-content {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+    }
+}

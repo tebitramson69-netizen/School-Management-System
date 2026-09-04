@@ -41,4 +41,10 @@ class Teacher
         $stmt->execute(['user_id' => $userId]);
         return $stmt->fetch();
     }
+    public function getTotalCount(): int
+{
+    $sql = "SELECT COUNT(*) FROM teachers";
+
+    return (int) $this->db->query($sql)->fetchColumn();
+}
 }
