@@ -1,4 +1,3 @@
-```javascript
 /*
  * =========================================================
  * SCHOOL MANAGEMENT SYSTEM
@@ -942,4 +941,4 @@ function capitalizeFirstLetter(value) {
         value.slice(1).toLowerCase()
     );
 }
-```
+
