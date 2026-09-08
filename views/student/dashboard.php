@@ -23,7 +23,7 @@ $studentName =
     ?? 'Student';
 
 $studentEmail = $student['email'] ?? '';
-$admissionNo = $student['admission_no'] ?? '';
+
 $className = $student['class_name'] ?? $student['class'] ?? '';
 
 $totalAttendance = is_array($attendance) ? count($attendance) : 0;
@@ -83,12 +83,7 @@ ob_start();
             </strong>
         </article>
 
-        <article class="dashboard-stat-card">
-            <span class="dashboard-stat-label">Admission No.</span>
-            <strong class="dashboard-stat-value" style="font-size:1.1rem;">
-                <?= $admissionNo !== '' ? htmlspecialchars($admissionNo, ENT_QUOTES, 'UTF-8') : 'Not available' ?>
-            </strong>
-        </article>
+
 
         <article class="dashboard-stat-card">
             <span class="dashboard-stat-label">Class</span>

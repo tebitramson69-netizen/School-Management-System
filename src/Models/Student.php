@@ -10,16 +10,15 @@ class Student
     {
         $this->db = Database::getConnection();
     }
-
+    
     public function create(
         int $userId,
         string $fullName,
         string $dob,
-        string $gender,
-        string $admissionNo
+        string $gender
     ): int {
-        $sql = "INSERT INTO students (user_id, full_name, dob, gender, admission_no)
-                VALUES (:user_id, :full_name, :dob, :gender, :admission_no)";
+        $sql = "INSERT INTO students (user_id, full_name, dob, gender)
+                VALUES (:user_id, :full_name, :dob, :gender)";
 
         $stmt = $this->db->prepare($sql);
 
@@ -27,8 +26,7 @@ class Student
             'user_id' => $userId,
             'full_name' => $fullName,
             'dob' => $dob,
-            'gender' => $gender,
-            'admission_no' => $admissionNo
+            'gender' => $gender
         ]);
 
         return (int) $this->db->lastInsertId();

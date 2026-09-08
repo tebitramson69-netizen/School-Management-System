@@ -36,7 +36,7 @@ CREATE TABLE students (
     full_name VARCHAR(150) NOT NULL,
     dob DATE,
     gender ENUM('M', 'F') NOT NULL,
-    admission_no VARCHAR(30) NOT NULL UNIQUE,
+  
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

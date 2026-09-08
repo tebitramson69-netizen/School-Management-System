@@ -52,13 +52,7 @@ ob_start();
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="admission_no">Admission Number</label>
-                <input type="text" id="admission_no" name="admission_no"
-                       value="<?= htmlspecialchars($old['admission_no'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                       required maxlength="30"
-                       placeholder="e.g. ADM-2026-001">
-            </div>
+        
 
             <div class="form-group">
                 <label for="dob">Date of Birth</label>
