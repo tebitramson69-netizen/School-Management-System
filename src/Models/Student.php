@@ -82,6 +82,47 @@ class Student
         return $stmt->fetchAll();
     }
 
+    
+    /**
+     * -----------------------------------------------------
+     * ALL STUDENTS ENROLLED IN THE CURRENT ACADEMIC YEAR
+     * -----------------------------------------------------
+     *
+     * Returns one row per student who has an enrollment in
+     * the academic year currently marked as current.
+     *
+     * Because enrollments are UNIQUE per (student, year) and
+     * both the enrollment and academic-year joins are INNER,
+     * each current-year student appears exactly once — no
+     * duplicates, and no students carried over from previous
+     * academic years.
+     */
+    public function allEnrolledInCurrentYear(): array
+    {
+        $sql = "SELECT
+                    s.id,
+                    s.full_name,
+                    s.gender,
+                    u.email,
+                    u.is_active,
+                    c.name AS class_name
+                FROM students s
+                JOIN users u
+                    ON s.user_id = u.id
+                JOIN enrollments e
+                    ON e.student_id = s.id
+                JOIN academic_years ay
+                    ON e.academic_year_id = ay.id
+                    AND ay.is_current = TRUE
+                LEFT JOIN classes c
+                    ON e.class_id = c.id
+                ORDER BY s.full_name";
+
+        $stmt = $this->db->query($sql);
+
+        return $stmt->fetchAll();
+    }
+
     public function allByClass(int $classId): array
     {
         $sql = "SELECT

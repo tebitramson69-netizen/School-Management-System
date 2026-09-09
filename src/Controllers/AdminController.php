@@ -260,7 +260,7 @@ class AdminController
         $fullName = trim($_POST['full_name'] ?? '');
         $dob = trim($_POST['dob'] ?? '');
         $gender = trim($_POST['gender'] ?? '');
-        $admissionNo = trim($_POST['admission_no'] ?? '');
+      
 
         $classId = (int) (
             $_POST['class_id'] ?? 0
@@ -291,14 +291,6 @@ class AdminController
         }
 
 
-        /*
-         * Admission number
-         */
-        if ($admissionNo === '') {
-            $errors[] = 'Admission number is required.';
-        } elseif (strlen($admissionNo) > 30) {
-            $errors[] = 'Admission number must not exceed 30 characters.';
-        }
 
 
         /*
@@ -357,7 +349,7 @@ class AdminController
             $_SESSION['old_input'] = [
                 'username' => $username,
                 'full_name' => $fullName,
-                'admission_no' => $admissionNo,
+                
                 'dob' => $dob,
                 'gender' => $gender,
                 'class_id' => $classId
@@ -388,7 +380,7 @@ if (!$currentAcademicYear) {
     $_SESSION['old_input'] = [
         'username' => $username,
         'full_name' => $fullName,
-        'admission_no' => $admissionNo,
+       
         'dob' => $dob,
         'gender' => $gender,
         'class_id' => $classId
@@ -445,7 +437,7 @@ try {
             $fullName,
             $dob,
             $gender,
-            $admissionNo
+            
         );
 
 
@@ -504,7 +496,6 @@ try {
     $_SESSION['old_input'] = [
         'username' => $username,
         'full_name' => $fullName,
-        'admission_no' => $admissionNo,
         'dob' => $dob,
         'gender' => $gender,
         'class_id' => $classId
@@ -527,7 +518,7 @@ try {
     {
         AuthMiddleware::requireRole('admin');
 
-        $students = $this->studentModel->all();
+               $students = $this->studentModel->allEnrolledInCurrentYear();
 
         require __DIR__ . '/../../views/admin/create_parent.php';
     }
