@@ -95,8 +95,9 @@ CREATE TABLE terms (
     academic_year_id INT NOT NULL,
     name VARCHAR(30) NOT NULL,          -- e.g. "Term 1"
     sequence_number INT NOT NULL,       -- 1 or 2 (each term has 2 sequences)
-    is_current BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE
+      is_current BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE,
+    UNIQUE (academic_year_id, name, sequence_number)
 ) ENGINE=InnoDB;
 
 -- Which class a student belongs to, per academic year (supports promotions)
