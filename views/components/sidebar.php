@@ -655,11 +655,46 @@ function sidebarIsActive(
 
                     </li>
 
-
-                    <!-- Post Announcement -->
+ <!-- Academic Management -->
 
                     <li class="sidebar-menu-item">
 
+                        <a
+                            href="<?= BASE_URL ?>/index.php?action=academic_years"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'academic_years',
+                                'create_academic_year',
+                                'activate_academic_year'
+                            ]) ?>"
+                        >
+
+                            <span
+                                class="sidebar-menu-icon"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <rect x="3" y="4" width="18" height="17" rx="2" />
+                                    <path d="M3 9h18" />
+                                    <path d="M8 2v4" />
+                                    <path d="M16 2v4" />
+                                </svg>
+                            </span>
+
+                            <span class="sidebar-menu-label">
+                                Academic Management
+                            </span>
+
+                        </a>
+
+                    </li>
+                    <!-- Post Announcement -->
+
+                    <li class="sidebar-menu-item">
                         <a
                             href="<?= BASE_URL ?>/index.php?action=post_announcement_form"
                             class="sidebar-menu-link <?= sidebarIsActive('post_announcement_form') ?>"
