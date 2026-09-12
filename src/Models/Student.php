@@ -230,6 +230,40 @@ class Student
             ]
             : null;
     }
+        /**
+     * Get the student's current class (full row) for the active
+     * academic year: id, name, level, class_option.
+     *
+     * Scoped by enrollments JOIN academic_years (is_current = TRUE),
+     * the same current-year rule used by getCurrentClassId() and
+     * getCurrentEnrollment(). Returns null when the student has no
+     * enrollment in the current academic year.
+     */
+    public function getCurrentClass(int $studentId): ?array
+    {
+        $sql = "SELECT c.id,
+                       c.name,
+                       c.level,
+                       c.class_option
+                FROM enrollments e
+                JOIN academic_years ay
+                    ON e.academic_year_id = ay.id
+                JOIN classes c
+                    ON e.class_id = c.id
+                WHERE e.student_id = :student_id
+                AND ay.is_current = TRUE
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'student_id' => $studentId
+        ]);
+
+        $result = $stmt->fetch();
+
+        return $result ?: null;
+    }
 
     public function allByClassDetailed(int $classId): array
     {

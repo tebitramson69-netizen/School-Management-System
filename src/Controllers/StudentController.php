@@ -222,6 +222,32 @@ class StudentController
 
         /*
          * -------------------------------------------------
+         * 8b. CURRENT CLASS DETAILS (NAME + DESCRIPTORS)
+         * -------------------------------------------------
+         *
+         * getCurrentClassId() above returns only the class id.
+         * The dashboard view displays the class *name*, so we
+         * fetch the full class row (scoped to the current
+         * academic year) and merge it into $student. This is
+         * why the header previously showed "Not assigned".
+         */
+
+        $currentClass =
+            $this->studentModel->getCurrentClass(
+                $studentId
+            );
+
+        $student['class_name'] =
+            $currentClass['name'] ?? null;
+
+        $student['class_level'] =
+            $currentClass['level'] ?? null;
+
+        $student['class_option'] =
+            $currentClass['class_option'] ?? null;
+
+        /*
+         * -------------------------------------------------
          * 9. ANNOUNCEMENTS
          * -------------------------------------------------
          */
