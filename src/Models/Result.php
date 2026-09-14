@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/Score.php';
 
 class Result
 {
     private PDO $db;
 
+    private Score $scoreModel;
+
     public function __construct()
     {
         $this->db = Database::getConnection();
+        $this->scoreModel = new Score();
     }
 
     /**
@@ -156,29 +160,28 @@ class Result
     /**
      * Calculate the overall average for one student in one term.
      *
-     * Each subject receives equal weight.
+     * COEFFICIENT-WEIGHTED. The overall figure is produced by the
+     * SAME engine the student's report card uses —
+     * Score::overallAverageForStudentTerm() — so a student's rank
+     * and their displayed overall average always share one
+     * definition (weighting AND term-name/sequence aggregation).
+     *
+     * $classId is required for weighting: it selects the per-class
+     * coefficients. When it is 0 (or no coefficients are configured)
+     * every subject defaults to coefficient 1, reproducing the
+     * previous equal-weight mean — so existing callers that cannot
+     * supply a class id keep their old behaviour.
      */
     public function getStudentOverallResult(
         int $studentId,
-        int $termId
+        int $termId,
+        int $classId = 0
     ): array {
         $subjects = $this->getStudentSubjectResults(
             $studentId,
             $termId
         );
 
-        if (empty($subjects)) {
-            return [
-                'student_id' => $studentId,
-                'subject_count' => 0,
-                'overall_average' => null,
-                'grade' => null,
-                'remark' => null,
-                'status' => 'NO RESULT'
-            ];
-        }
-
-        $total = 0.0;
         $subjectCount = 0;
 
         foreach ($subjects as $subject) {
@@ -186,11 +189,21 @@ class Result
                 continue;
             }
 
-            $total += (float) $subject['average_score'];
             $subjectCount++;
         }
 
-        if ($subjectCount === 0) {
+        /*
+         * Delegate the overall figure to the shared Score engine so
+         * ranking == displayed report-card average by construction.
+         */
+        $overallAverage =
+            $this->scoreModel->overallAverageForStudentTerm(
+                $studentId,
+                $termId,
+                $classId
+            );
+
+        if ($overallAverage === null) {
             return [
                 'student_id' => $studentId,
                 'subject_count' => 0,
@@ -200,11 +213,6 @@ class Result
                 'status' => 'NO RESULT'
             ];
         }
-
-        $overallAverage = round(
-            $total / $subjectCount,
-            2
-        );
 
         $grade = $this->getGrade($overallAverage);
 
@@ -261,7 +269,8 @@ class Result
 
             $studentResult = $this->getStudentOverallResult(
                 (int) $student['student_id'],
-                $termId
+                $termId,
+                $classId
             );
 
             $results[] = array_merge(
