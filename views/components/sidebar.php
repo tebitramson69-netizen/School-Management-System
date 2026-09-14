@@ -873,10 +873,31 @@ function sidebarIsActive(
 
                     </li>
 
-                    <!--
-                        Report Card / Attendance / Announcements links
-                        will be added here as those pages are split out.
-                    -->
+                    <!-- Report Card -->
+
+                    <li class="sidebar-menu-item">
+
+                        <a
+                            href="<?= BASE_URL ?>/index.php?action=student_report_card"
+                            class="sidebar-menu-link <?= sidebarIsActive('student_report_card') ?>"
+                        >
+
+                            <span class="sidebar-menu-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M9 3h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1V4a1 1 0 0 1 1-1z" />
+                                    <path d="M9 3.5h6" />
+                                    <path d="M9 12h6" />
+                                    <path d="M9 16h4" />
+                                </svg>
+                            </span>
+
+                            <span class="sidebar-menu-label">
+                                Report Card
+                            </span>
+
+                        </a>
+
+                    </li>
 
                 </ul>
 

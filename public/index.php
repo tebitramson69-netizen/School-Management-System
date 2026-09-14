@@ -527,6 +527,18 @@ switch ($action) {
         break;
 
 
+    case 'student_report_card':
+
+        require_once __DIR__ .
+            '/../src/Controllers/StudentController.php';
+
+        $studentController = new StudentController();
+
+        $studentController->reportCard();
+
+        break;
+
+
     case 'student_dashboard':
 
         /*

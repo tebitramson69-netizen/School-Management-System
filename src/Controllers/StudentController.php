@@ -268,6 +268,171 @@ class StudentController
 
     /*
      * =====================================================
+     * STUDENT REPORT CARD PAGE
+     * =====================================================
+     *
+     * Latest-term subject averages (with grade/remark), the
+     * academic summary (overall average, class position,
+     * overall grade) and the class ranking. Carved out of
+     * dashboard() steps 10–15.
+     */
+
+    public function reportCard(): void
+    {
+        $context = $this->bootStudentContext();
+
+        $student   = $context['student'];
+        $studentId = $context['studentId'];
+        $classId   = $context['classId'];
+        $school    = $context['school'];
+
+
+        /*
+         * -------------------------------------------------
+         * FIND LATEST TERM
+         * -------------------------------------------------
+         */
+
+        $latestTermId =
+            $this->scoreModel->latestTermIdForStudent(
+                $studentId
+            );
+
+
+        /*
+         * -------------------------------------------------
+         * INITIAL REPORT CARD VALUES
+         * -------------------------------------------------
+         */
+
+        $reportCard = [];
+
+        $overallAverage = null;
+
+        $overallGrade = null;
+
+
+        /*
+         * -------------------------------------------------
+         * BUILD REPORT CARD
+         * -------------------------------------------------
+         */
+
+        if ($latestTermId !== null) {
+
+            $reportCard =
+                $this->scoreModel->subjectAveragesForStudentTerm(
+                    $studentId,
+                    $latestTermId
+                );
+
+
+            /*
+             * ADD GRADE AND REMARK TO EACH SUBJECT
+             */
+
+            foreach ($reportCard as &$row) {
+
+                $averageScore =
+                    (float) (
+                        $row['average_score'] ?? 0
+                    );
+
+
+                $grade =
+                    $this->gradeScaleModel->forScore(
+                        $averageScore
+                    );
+
+
+                $row['letter'] =
+                    $grade['letter'] ?? '—';
+
+
+                $row['remark'] =
+                    $grade['remark'] ?? '—';
+            }
+
+
+            unset($row);
+
+
+            /*
+             * CALCULATE OVERALL AVERAGE
+             */
+
+            $overallAverage =
+                $this->scoreModel->overallAverageForStudentTerm(
+                    $studentId,
+                    $latestTermId,
+                    (int) ($classId ?? 0)
+                );
+
+
+            /*
+             * CALCULATE OVERALL GRADE
+             */
+
+            if ($overallAverage !== null) {
+
+                $overallGrade =
+                    $this->gradeScaleModel->forScore(
+                        $overallAverage
+                    );
+            }
+        }
+
+
+        /*
+         * -------------------------------------------------
+         * CLASS POSITION (RANKING)
+         * -------------------------------------------------
+         */
+
+        $classPosition = null;
+        $classSize = null;
+
+        $enrollment =
+            $this->studentModel->getCurrentEnrollment($studentId);
+
+        if ($latestTermId !== null && $enrollment !== null) {
+
+            $classResults =
+                $this->resultModel->getClassResults(
+                    $enrollment['class_id'],
+                    $enrollment['academic_year_id'],
+                    $latestTermId
+                );
+
+            foreach ($classResults as $classResult) {
+
+                if ((int) $classResult['student_id'] === $studentId) {
+                    $classPosition = $classResult['position'];
+                    break;
+                }
+            }
+
+            /*
+             * Class size counts only students who have results,
+             * so the position denominator is meaningful.
+             */
+            $classSize = 0;
+
+            foreach ($classResults as $classResult) {
+                if ($classResult['overall_average'] !== null) {
+                    $classSize++;
+                }
+            }
+        }
+
+
+        require __DIR__ .
+            '/../../views/student/report_card.php';
+    }
+
+
+    /*
+     * =====================================================
      * STUDENT DASHBOARD
      * =====================================================
      */
