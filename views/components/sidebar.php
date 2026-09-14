@@ -655,6 +655,44 @@ function sidebarIsActive(
 
                     </li>
 
+ <!-- Subject Coefficients -->
+
+                    <li class="sidebar-menu-item">
+
+                        <a
+                            href="<?= BASE_URL ?>/index.php?action=class_coefficients_form"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'class_coefficients_form'
+                            ]) ?>"
+                        >
+
+                            <span
+                                class="sidebar-menu-icon"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <line x1="4" y1="6" x2="20" y2="6" />
+                                    <circle cx="9" cy="6" r="2" />
+                                    <line x1="4" y1="12" x2="20" y2="12" />
+                                    <circle cx="15" cy="12" r="2" />
+                                    <line x1="4" y1="18" x2="20" y2="18" />
+                                    <circle cx="8" cy="18" r="2" />
+                                </svg>
+                            </span>
+
+                            <span class="sidebar-menu-label">
+                                Subject Coefficients
+                            </span>
+
+                        </a>
+
+                    </li>
+
  <!-- Academic Management -->
 
                     <li class="sidebar-menu-item">

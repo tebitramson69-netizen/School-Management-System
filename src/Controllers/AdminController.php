@@ -27,6 +27,7 @@ require_once __DIR__ . '/../Models/ClassModel.php';
 require_once __DIR__ . '/../Models/ParentModel.php';
 require_once __DIR__ . '/../Models/Subject.php';
 require_once __DIR__ . '/../Models/ClassSubjectTeacher.php';
+require_once __DIR__ . '/../Models/SubjectCoefficient.php';
 require_once __DIR__ . '/../Models/Announcement.php';
 
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
@@ -44,6 +45,7 @@ class AdminController
     private ParentModel $parentModel;
     private Subject $subjectModel;
     private ClassSubjectTeacher $assignmentModel;
+    private SubjectCoefficient $coefficientModel;
     private Announcement $announcementModel;
     private AcademicYear $academicYearModel;
 
@@ -62,6 +64,7 @@ class AdminController
         $this->parentModel = new ParentModel();
         $this->subjectModel = new Subject();
         $this->assignmentModel = new ClassSubjectTeacher();
+        $this->coefficientModel = new SubjectCoefficient();
         $this->announcementModel = new Announcement();
         $this->academicYearModel = new AcademicYear();
     }
@@ -772,6 +775,181 @@ try {
 
 
         self::redirect('admin_dashboard');
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECT COEFFICIENTS — CONFIGURATION FORM
+     * -----------------------------------------------------
+     *
+     * Per-class subject coefficients for GCE weighting.
+     *
+     * When no class is selected the view shows a class picker.
+     * When a class is selected we list the subjects actually
+     * taught in that class (from class_subject_teacher) and
+     * pre-fill each coefficient with the stored value, or 1
+     * where none has been configured yet.
+     */
+    public function showClassCoefficientsForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $classes = $this->classModel->all();
+
+        $classId = (int) (
+            $_GET['class_id'] ?? 0
+        );
+
+        $selectedClass = null;
+        $subjects = [];
+
+        if ($classId > 0) {
+
+            $selectedClass =
+                $this->classModel->find($classId);
+
+            if ($selectedClass) {
+
+                /*
+                 * Only subjects genuinely taught in this class,
+                 * merged with any coefficient already stored.
+                 */
+                $taughtSubjects =
+                    $this->assignmentModel
+                        ->subjectsForClass($classId);
+
+                $existingCoefficients =
+                    $this->coefficientModel
+                        ->getForClass($classId);
+
+                foreach ($taughtSubjects as $subject) {
+
+                    $subjectId = (int) $subject['id'];
+
+                    $subject['coefficient'] =
+                        $existingCoefficients[$subjectId] ?? 1;
+
+                    $subjects[] = $subject;
+                }
+            }
+        }
+
+        require __DIR__ .
+            '/../../views/admin/class_coefficients.php';
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECT COEFFICIENTS — SAVE
+     * -----------------------------------------------------
+     *
+     * Persists the submitted per-class coefficients via the
+     * transactional SubjectCoefficient::saveBulk(). Every
+     * coefficient must be a positive integer, matching the
+     * table's CHECK (coefficient > 0).
+     */
+    public function saveClassCoefficients(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $classId = (int) (
+            $_POST['class_id'] ?? 0
+        );
+
+        $submitted = $_POST['coefficients'] ?? [];
+
+        $errors = [];
+
+
+        if ($classId <= 0) {
+            $errors[] = 'Please select a class.';
+        }
+
+
+        if (!is_array($submitted) || empty($submitted)) {
+            $errors[] = 'No coefficients were submitted.';
+        }
+
+
+        /*
+         * Validate every coefficient: positive integer only.
+         * Reject blanks, non-numeric, decimals, zero, negatives.
+         */
+        $coefficients = [];
+
+        if (is_array($submitted)) {
+
+            foreach ($submitted as $subjectId => $rawValue) {
+
+                $subjectId = (int) $subjectId;
+
+                if ($subjectId <= 0) {
+                    continue;
+                }
+
+                $rawValue = trim((string) $rawValue);
+
+                if ($rawValue === '' || !ctype_digit($rawValue)) {
+                    $errors[] =
+                        'Each coefficient must be a whole number of 1 or more.';
+                    break;
+                }
+
+                $value = (int) $rawValue;
+
+                if ($value <= 0) {
+                    $errors[] =
+                        'Each coefficient must be 1 or more.';
+                    break;
+                }
+
+                $coefficients[$subjectId] = $value;
+            }
+        }
+
+
+        if (!empty($errors)) {
+
+            $_SESSION['form_errors'] = $errors;
+
+            header(
+                'Location: ' .
+                BASE_URL .
+                '/index.php?action=class_coefficients_form&class_id=' .
+                $classId
+            );
+
+            exit;
+        }
+
+
+        try {
+
+            $this->coefficientModel->saveBulk(
+                $classId,
+                $coefficients
+            );
+
+            $_SESSION['success_message'] =
+                'Subject coefficients saved successfully.';
+
+        } catch (Throwable $e) {
+
+            $_SESSION['form_errors'] = [
+                'Coefficients could not be saved. Please try again.'
+            ];
+        }
+
+
+        self::redirect(
+            'class_coefficients_form&class_id=' . $classId
+        );
     }
 
 

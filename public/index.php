@@ -361,6 +361,36 @@ switch ($action) {
 
     /*
      * -----------------------------------------------------
+     * Subject coefficients (per-class GCE weighting)
+     * -----------------------------------------------------
+     */
+
+    case 'class_coefficients_form':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->showClassCoefficientsForm();
+
+        break;
+
+
+    case 'save_class_coefficients':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->saveClassCoefficients();
+
+        break;
+
+
+    /*
+     * -----------------------------------------------------
      * Teacher/class viewing
      * -----------------------------------------------------
      */

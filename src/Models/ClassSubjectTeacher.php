@@ -56,6 +56,28 @@ class ClassSubjectTeacher
         return $stmt->fetchAll();
     }
 
+    /**
+     * Get the subjects actually taught in a class.
+     *
+     * A class "offers" a subject only when a teacher has been
+     * assigned to teach it there, so the authoritative list of a
+     * class's subjects is the set of class_subject_teacher rows —
+     * not every subject in the subjects table.
+     *
+     * Returns one row per subject: id, name, code.
+     */
+    public function subjectsForClass(int $classId): array
+    {
+        $sql = "SELECT s.id, s.name, s.code
+                FROM class_subject_teacher cst
+                JOIN subjects s ON cst.subject_id = s.id
+                WHERE cst.class_id = :class_id
+                ORDER BY s.name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['class_id' => $classId]);
+        return $stmt->fetchAll();
+    }
+
     public function find(int $id): array|false
     {
         $sql = "SELECT cst.id, cst.class_id, cst.subject_id, cst.teacher_id, 
