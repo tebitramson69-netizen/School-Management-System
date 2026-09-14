@@ -461,6 +461,35 @@ class StudentController
 
     /*
      * =====================================================
+     * STUDENT ANNOUNCEMENTS PAGE
+     * =====================================================
+     *
+     * Carved out of dashboard() steps 8 + 9.
+     */
+
+    public function announcements(): void
+    {
+        $context = $this->bootStudentContext();
+
+        $student   = $context['student'];
+        $studentId = $context['studentId'];
+        $classId   = $context['classId'];
+        $school    = $context['school'];
+
+
+        $announcements =
+            $this->announcementModel->forDashboard(
+                $classId
+            );
+
+
+        require __DIR__ .
+            '/../../views/student/announcements.php';
+    }
+
+
+    /*
+     * =====================================================
      * STUDENT DASHBOARD
      * =====================================================
      */

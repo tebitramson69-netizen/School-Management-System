@@ -551,6 +551,18 @@ switch ($action) {
         break;
 
 
+    case 'student_announcements':
+
+        require_once __DIR__ .
+            '/../src/Controllers/StudentController.php';
+
+        $studentController = new StudentController();
+
+        $studentController->announcements();
+
+        break;
+
+
     case 'student_dashboard':
 
         /*
