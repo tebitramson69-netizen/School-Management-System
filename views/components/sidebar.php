@@ -899,6 +899,34 @@ function sidebarIsActive(
 
                     </li>
 
+
+                    <!-- Attendance -->
+
+                    <li class="sidebar-menu-item">
+
+                        <a
+                            href="<?= BASE_URL ?>/index.php?action=student_attendance"
+                            class="sidebar-menu-link <?= sidebarIsActive('student_attendance') ?>"
+                        >
+
+                            <span class="sidebar-menu-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <rect x="3" y="4" width="18" height="17" rx="2" />
+                                    <path d="M3 9h18" />
+                                    <path d="M8 2v4" />
+                                    <path d="M16 2v4" />
+                                    <path d="M9 15l2 2 4-4" />
+                                </svg>
+                            </span>
+
+                            <span class="sidebar-menu-label">
+                                Attendance
+                            </span>
+
+                        </a>
+
+                    </li>
+
                 </ul>
 
             </div>

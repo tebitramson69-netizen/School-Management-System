@@ -539,6 +539,18 @@ switch ($action) {
         break;
 
 
+    case 'student_attendance':
+
+        require_once __DIR__ .
+            '/../src/Controllers/StudentController.php';
+
+        $studentController = new StudentController();
+
+        $studentController->attendance();
+
+        break;
+
+
     case 'student_dashboard':
 
         /*

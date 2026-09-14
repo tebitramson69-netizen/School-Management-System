@@ -433,6 +433,34 @@ class StudentController
 
     /*
      * =====================================================
+     * STUDENT ATTENDANCE PAGE
+     * =====================================================
+     *
+     * Carved out of dashboard() step 6.
+     */
+
+    public function attendance(): void
+    {
+        $context = $this->bootStudentContext();
+
+        $student   = $context['student'];
+        $studentId = $context['studentId'];
+        $school    = $context['school'];
+
+
+        $attendance =
+            $this->attendanceModel->forStudent(
+                $studentId
+            );
+
+
+        require __DIR__ .
+            '/../../views/student/attendance.php';
+    }
+
+
+    /*
+     * =====================================================
      * STUDENT DASHBOARD
      * =====================================================
      */
