@@ -162,6 +162,35 @@ class Student
         return $stmt->fetch();
     }
 
+    /**
+     * Find a student by their linked user account, including the
+     * account email.
+     *
+     * findByUserId() selects only the students table, so the view
+     * never receives an email (it shows "Not available"). This
+     * additive variant JOINs users and adds u.email alongside the
+     * full student row. The existing findByUserId() is left intact
+     * for its other callers.
+     */
+    public function findByUserIdWithEmail(int $userId): array|false
+    {
+        $sql = "SELECT s.*,
+                       u.email
+                FROM students s
+                JOIN users u
+                    ON s.user_id = u.id
+                WHERE s.user_id = :user_id
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'user_id' => $userId
+        ]);
+
+        return $stmt->fetch();
+    }
+
     public function find(int $id): array|false
     {
         $sql = "SELECT *

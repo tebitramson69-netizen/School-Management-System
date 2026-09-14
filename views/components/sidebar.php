@@ -845,11 +845,14 @@ function sidebarIsActive(
 
                 <ul class="sidebar-menu">
 
+                    <!-- Student Information -->
+
                     <li class="sidebar-menu-item">
 
                         <a
-                            href="<?= BASE_URL ?>/index.php?action=student_dashboard"
+                            href="<?= BASE_URL ?>/index.php?action=student_information"
                             class="sidebar-menu-link <?= sidebarIsActive([
+                                'student_information',
                                 'student_dashboard',
                                 ''
                             ]) ?>"
@@ -857,20 +860,23 @@ function sidebarIsActive(
 
                             <span class="sidebar-menu-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                    <rect x="3" y="3" width="7" height="7" rx="1" />
-                                    <rect x="14" y="3" width="7" height="7" rx="1" />
-                                    <rect x="3" y="14" width="7" height="7" rx="1" />
-                                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                                    <circle cx="12" cy="8" r="4" />
+                                    <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
                                 </svg>
                             </span>
 
                             <span class="sidebar-menu-label">
-                                Dashboard
+                                Student Information
                             </span>
 
                         </a>
 
                     </li>
+
+                    <!--
+                        Report Card / Attendance / Announcements links
+                        will be added here as those pages are split out.
+                    -->
 
                 </ul>
 

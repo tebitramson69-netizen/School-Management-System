@@ -515,16 +515,37 @@ switch ($action) {
      * =====================================================
      */
 
-    case 'student_dashboard':
+    case 'student_information':
 
         require_once __DIR__ .
             '/../src/Controllers/StudentController.php';
 
         $studentController = new StudentController();
 
-        $studentController->dashboard();
+        $studentController->information();
 
         break;
+
+
+    case 'student_dashboard':
+
+        /*
+         * The monolithic dashboard is being split into separate
+         * pages. Student Information is the first page, so the old
+         * dashboard URL now redirects there — existing bookmarks
+         * keep working. dashboard() remains in the controller until
+         * the remaining pages are split out.
+         */
+
+        header(
+            'Location: ' .
+            BASE_URL .
+            '/index.php?action=student_information',
+            true,
+            301
+        );
+
+        exit;
 
 
     /*
