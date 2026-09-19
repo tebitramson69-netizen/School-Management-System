@@ -565,6 +565,45 @@ function sidebarIsActive(
                     </li>
 
 
+                    <!-- Subjects -->
+
+                    <li class="sidebar-menu-item">
+
+                        <a
+                            href="<?= BASE_URL ?>/index.php?action=view_subjects"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'view_subjects',
+                                'create_subject_form',
+                                'edit_subject_form'
+                            ]) ?>"
+                        >
+
+                            <span
+                                class="sidebar-menu-icon"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+                                    <path d="M14 3v6h6" />
+                                    <path d="M8 13h8" />
+                                    <path d="M8 17h5" />
+                                </svg>
+                            </span>
+
+                            <span class="sidebar-menu-label">
+                                Subjects
+                            </span>
+
+                        </a>
+
+                    </li>
+
+
                     <!-- Assign Teachers -->
 
                     <li class="sidebar-menu-item">

@@ -391,6 +391,84 @@ switch ($action) {
 
     /*
      * -----------------------------------------------------
+     * Subject management
+     * -----------------------------------------------------
+     */
+
+    case 'view_subjects':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->viewSubjects();
+
+        break;
+
+
+    case 'create_subject_form':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->showCreateSubjectForm();
+
+        break;
+
+
+    case 'create_subject':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->createSubject();
+
+        break;
+
+
+    case 'edit_subject_form':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->showEditSubjectForm();
+
+        break;
+
+
+    case 'update_subject':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->updateSubject();
+
+        break;
+
+
+    case 'delete_subject':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->deleteSubject();
+
+        break;
+
+
+    /*
+     * -----------------------------------------------------
      * Teacher/class viewing
      * -----------------------------------------------------
      */

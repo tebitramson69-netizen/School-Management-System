@@ -960,6 +960,242 @@ try {
 
     /**
      * -----------------------------------------------------
+     * SUBJECTS — LIST
+     * -----------------------------------------------------
+     */
+    public function viewSubjects(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $subjects = $this->subjectModel->all();
+
+        require __DIR__ . '/../../views/admin/subjects.php';
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECTS — CREATE FORM
+     * -----------------------------------------------------
+     */
+    public function showCreateSubjectForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        require __DIR__ . '/../../views/admin/create_subject.php';
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECTS — CREATE
+     * -----------------------------------------------------
+     */
+    public function createSubject(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $name = trim($_POST['name'] ?? '');
+        $code = strtoupper(trim($_POST['code'] ?? ''));
+
+        $errors = $this->validateSubjectInput($name, $code, null);
+
+        if (!empty($errors)) {
+
+            $_SESSION['form_errors'] = $errors;
+
+            $_SESSION['old_input'] = [
+                'name' => $name,
+                'code' => $code
+            ];
+
+            self::redirect('create_subject_form');
+        }
+
+        $this->subjectModel->create($name, $code);
+
+        $_SESSION['success_message'] =
+            "Subject \"{$name}\" created successfully.";
+
+        self::redirect('view_subjects');
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECTS — EDIT FORM
+     * -----------------------------------------------------
+     */
+    public function showEditSubjectForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $subjectId = (int) ($_GET['subject_id'] ?? 0);
+
+        $subject = $this->subjectModel->find($subjectId);
+
+        if (!$subject) {
+
+            $_SESSION['form_errors'] = [
+                'The requested subject could not be found.'
+            ];
+
+            self::redirect('view_subjects');
+        }
+
+        require __DIR__ . '/../../views/admin/edit_subject.php';
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECTS — UPDATE
+     * -----------------------------------------------------
+     */
+    public function updateSubject(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $subjectId = (int) ($_POST['subject_id'] ?? 0);
+
+        $existing = $this->subjectModel->find($subjectId);
+
+        if (!$existing) {
+
+            $_SESSION['form_errors'] = [
+                'The requested subject could not be found.'
+            ];
+
+            self::redirect('view_subjects');
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $code = strtoupper(trim($_POST['code'] ?? ''));
+
+        $errors = $this->validateSubjectInput($name, $code, $subjectId);
+
+        if (!empty($errors)) {
+
+            $_SESSION['form_errors'] = $errors;
+
+            $_SESSION['old_input'] = [
+                'name' => $name,
+                'code' => $code
+            ];
+
+            header(
+                'Location: ' .
+                BASE_URL .
+                '/index.php?action=edit_subject_form&subject_id=' .
+                $subjectId
+            );
+
+            exit;
+        }
+
+        $this->subjectModel->update($subjectId, $name, $code);
+
+        $_SESSION['success_message'] =
+            "Subject \"{$name}\" updated successfully.";
+
+        self::redirect('view_subjects');
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECTS — DELETE
+     * -----------------------------------------------------
+     *
+     * Blocked when the subject is referenced by scores,
+     * teacher assignments or coefficients, because those
+     * foreign keys cascade on delete and would destroy
+     * recorded marks.
+     */
+    public function deleteSubject(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $subjectId = (int) ($_POST['subject_id'] ?? 0);
+
+        $subject = $this->subjectModel->find($subjectId);
+
+        if (!$subject) {
+
+            $_SESSION['form_errors'] = [
+                'The requested subject could not be found.'
+            ];
+
+            self::redirect('view_subjects');
+        }
+
+        if ($this->subjectModel->isInUse($subjectId)) {
+
+            $_SESSION['form_errors'] = [
+                "\"{$subject['name']}\" is in use (scores, teacher assignments or coefficients) and cannot be deleted."
+            ];
+
+            self::redirect('view_subjects');
+        }
+
+        $this->subjectModel->delete($subjectId);
+
+        $_SESSION['success_message'] =
+            "Subject \"{$subject['name']}\" deleted successfully.";
+
+        self::redirect('view_subjects');
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * SUBJECTS — SHARED VALIDATION
+     * -----------------------------------------------------
+     *
+     * $excludeId is the subject being edited (so its own code
+     * does not clash with itself); null when creating.
+     */
+    private function validateSubjectInput(
+        string $name,
+        string $code,
+        ?int $excludeId
+    ): array {
+
+        $errors = [];
+
+        if ($name === '') {
+            $errors[] = 'Subject name is required.';
+        } elseif (mb_strlen($name) > 100) {
+            $errors[] = 'Subject name must be 100 characters or fewer.';
+        }
+
+        if ($code === '') {
+            $errors[] = 'Subject code is required.';
+        } elseif (!preg_match('/^[A-Z0-9]{1,20}$/', $code)) {
+            $errors[] =
+                'Subject code may only contain letters and numbers (up to 20 characters).';
+        } elseif ($this->subjectModel->codeExists($code, $excludeId)) {
+            $errors[] = 'This subject code is already in use.';
+        }
+
+        return $errors;
+    }
+
+
+    /**
+     * -----------------------------------------------------
      * VIEW TEACHER ASSIGNMENTS
      * -----------------------------------------------------
      */
