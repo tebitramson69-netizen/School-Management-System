@@ -947,9 +947,14 @@ try {
         }
 
 
-        self::redirect(
-            'class_coefficients_form&class_id=' . $classId
+        header(
+            'Location: ' .
+            BASE_URL .
+            '/index.php?action=class_coefficients_form&class_id=' .
+            $classId
         );
+
+        exit;
     }
 
 
