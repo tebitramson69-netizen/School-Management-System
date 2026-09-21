@@ -4,7 +4,16 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 $errors = $_SESSION['form_errors'] ?? [];
-unset($_SESSION['form_errors']);
+$old = $_SESSION['old_input'] ?? [];
+unset($_SESSION['form_errors'], $_SESSION['old_input']);
+
+$classes = $classes ?? [];
+$teachers = $teachers ?? [];
+$classSubjectsMap = $classSubjectsMap ?? [];
+
+$oldClassId = (int) ($old['class_id'] ?? 0);
+$oldSubjectId = (int) ($old['subject_id'] ?? 0);
+$oldTeacherId = (int) ($old['teacher_id'] ?? 0);
 
 $pageTitle = 'Assign Teacher';
 
@@ -15,7 +24,7 @@ ob_start();
     <div>
         <span class="page-eyebrow">ADMINISTRATION</span>
         <h1>Assign Teacher</h1>
-        <p>Assign a teacher to teach a subject in a class.</p>
+        <p>Assign a teacher to teach a subject in a class. Only subjects the class offers can be chosen.</p>
     </div>
 </section>
 
@@ -49,19 +58,20 @@ ob_start();
                     <select id="class_id" name="class_id" required>
                         <option value="">-- Select a class --</option>
                         <?php foreach ($classes as $class): ?>
-                            <option value="<?= (int) $class['id'] ?>"><?= htmlspecialchars($class['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="<?= (int) $class['id'] ?>" <?= $oldClassId === (int) $class['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($class['name'], ENT_QUOTES, 'UTF-8') ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="subject_id">Subject</label>
-                    <select id="subject_id" name="subject_id" required>
-                        <option value="">-- Select a subject --</option>
-                        <?php foreach ($subjects as $subject): ?>
-                            <option value="<?= (int) $subject['id'] ?>"><?= htmlspecialchars($subject['name'], ENT_QUOTES, 'UTF-8') ?></option>
-                        <?php endforeach; ?>
+                    <select id="subject_id" name="subject_id" required disabled
+                            data-preselect="<?= $oldSubjectId ?>">
+                        <option value="">-- Select a class first --</option>
                     </select>
+                    <small class="form-help">The list shows only subjects offered by the selected class.</small>
                 </div>
 
                 <div class="form-group">
@@ -69,7 +79,9 @@ ob_start();
                     <select id="teacher_id" name="teacher_id" required>
                         <option value="">-- Select a teacher --</option>
                         <?php foreach ($teachers as $teacher): ?>
-                            <option value="<?= (int) $teacher['id'] ?>"><?= htmlspecialchars($teacher['full_name'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="<?= (int) $teacher['id'] ?>" <?= $oldTeacherId === (int) $teacher['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($teacher['full_name'], ENT_QUOTES, 'UTF-8') ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -79,6 +91,69 @@ ob_start();
                     <a href="<?= BASE_URL ?>/index.php?action=admin_dashboard" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
+
+            <script>
+                (function () {
+                    "use strict";
+
+                    var classSubjects = <?= json_encode(
+                        $classSubjectsMap,
+                        JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+                    ) ?>;
+
+                    var classSel = document.getElementById("class_id");
+                    var subjectSel = document.getElementById("subject_id");
+                    var preselect = String(subjectSel.getAttribute("data-preselect") || "0");
+
+                    function setPlaceholder(text) {
+                        subjectSel.replaceChildren();
+                        var opt = document.createElement("option");
+                        opt.value = "";
+                        opt.textContent = text;
+                        subjectSel.appendChild(opt);
+                    }
+
+                    function populateSubjects() {
+                        var cid = classSel.value;
+
+                        if (!cid) {
+                            setPlaceholder("-- Select a class first --");
+                            subjectSel.disabled = true;
+                            return;
+                        }
+
+                        var list = classSubjects[cid] || [];
+
+                        if (list.length === 0) {
+                            setPlaceholder("-- No subjects set for this class --");
+                            subjectSel.disabled = true;
+                            return;
+                        }
+
+                        subjectSel.replaceChildren();
+
+                        var placeholder = document.createElement("option");
+                        placeholder.value = "";
+                        placeholder.textContent = "-- Select a subject --";
+                        subjectSel.appendChild(placeholder);
+
+                        list.forEach(function (s) {
+                            var opt = document.createElement("option");
+                            opt.value = s.id;
+                            opt.textContent = s.name;
+                            if (String(s.id) === preselect) {
+                                opt.selected = true;
+                            }
+                            subjectSel.appendChild(opt);
+                        });
+
+                        subjectSel.disabled = false;
+                    }
+
+                    classSel.addEventListener("change", populateSubjects);
+                    populateSubjects();
+                })();
+            </script>
 
         <?php endif; ?>
 

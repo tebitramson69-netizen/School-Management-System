@@ -694,9 +694,17 @@ try {
     {
         AuthMiddleware::requireRole('admin');
 
+        self::startSession();
+
         $classes = $this->classModel->all();
-        $subjects = $this->subjectModel->all();
         $teachers = $this->teacherModel->all();
+
+        /*
+         * Teacher assignment is constrained to the subjects a class
+         * actually offers (class_subjects). The view uses this map
+         * to filter the subject dropdown by the chosen class.
+         */
+        $classSubjectsMap = $this->classSubjectModel->mapByClass();
 
         require __DIR__ . '/../../views/admin/assign_teacher.php';
     }
@@ -737,6 +745,25 @@ try {
 
 
         /*
+         * The subject must be one the class actually offers
+         * (class_subjects). This mirrors the constraint the form's
+         * dependent dropdown enforces, and blocks a tampered POST.
+         */
+        if (
+            $classId > 0 &&
+            $subjectId > 0 &&
+            !in_array(
+                $subjectId,
+                $this->classSubjectModel->getSubjectIdsForClass($classId),
+                true
+            )
+        ) {
+            $errors[] =
+                'That subject is not offered by the selected class. Set it on the Class Subjects screen first.';
+        }
+
+
+        /*
          * Prevent duplicate class/subject assignment.
          */
         if (
@@ -756,6 +783,12 @@ try {
         if (!empty($errors)) {
 
             $_SESSION['form_errors'] = $errors;
+
+            $_SESSION['old_input'] = [
+                'class_id' => $classId,
+                'subject_id' => $subjectId,
+                'teacher_id' => $teacherId
+            ];
 
             self::redirect(
                 'assign_teacher_form'

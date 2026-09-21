@@ -34,6 +34,33 @@ class ClassSubject
     }
 
     /**
+     * All offered subjects grouped by class, for building a
+     * dependent (class -> subjects) picker.
+     *
+     * Returns [ classId => [ ['id' => int, 'name' => string], ... ] ].
+     */
+    public function mapByClass(): array
+    {
+        $sql = "SELECT cs.class_id, s.id, s.name
+                FROM class_subjects cs
+                JOIN subjects s ON cs.subject_id = s.id
+                ORDER BY cs.class_id, s.name";
+
+        $rows = $this->db->query($sql)->fetchAll();
+
+        $map = [];
+
+        foreach ($rows as $row) {
+            $map[(int) $row['class_id']][] = [
+                'id' => (int) $row['id'],
+                'name' => $row['name'],
+            ];
+        }
+
+        return $map;
+    }
+
+    /**
      * Just the offered subject ids, for pre-checking a form.
      */
     public function getSubjectIdsForClass(int $classId): array
