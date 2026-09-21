@@ -391,6 +391,36 @@ switch ($action) {
 
     /*
      * -----------------------------------------------------
+     * Class subjects (which subjects a class offers)
+     * -----------------------------------------------------
+     */
+
+    case 'class_subjects_form':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->showClassSubjectsForm();
+
+        break;
+
+
+    case 'save_class_subjects':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->saveClassSubjects();
+
+        break;
+
+
+    /*
+     * -----------------------------------------------------
      * Subject management
      * -----------------------------------------------------
      */

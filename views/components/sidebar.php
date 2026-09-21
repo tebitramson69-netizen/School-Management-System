@@ -604,6 +604,41 @@ function sidebarIsActive(
                     </li>
 
 
+                    <!-- Class Subjects -->
+
+                    <li class="sidebar-menu-item">
+
+                        <a
+                            href="<?= BASE_URL ?>/index.php?action=class_subjects_form"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'class_subjects_form'
+                            ]) ?>"
+                        >
+
+                            <span
+                                class="sidebar-menu-icon"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <path d="M9 11l3 3 8-8" />
+                                    <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" />
+                                </svg>
+                            </span>
+
+                            <span class="sidebar-menu-label">
+                                Class Subjects
+                            </span>
+
+                        </a>
+
+                    </li>
+
+
                     <!-- Assign Teachers -->
 
                     <li class="sidebar-menu-item">

@@ -27,6 +27,7 @@ require_once __DIR__ . '/../Models/ClassModel.php';
 require_once __DIR__ . '/../Models/ParentModel.php';
 require_once __DIR__ . '/../Models/Subject.php';
 require_once __DIR__ . '/../Models/ClassSubjectTeacher.php';
+require_once __DIR__ . '/../Models/ClassSubject.php';
 require_once __DIR__ . '/../Models/SubjectCoefficient.php';
 require_once __DIR__ . '/../Models/Announcement.php';
 
@@ -45,6 +46,7 @@ class AdminController
     private ParentModel $parentModel;
     private Subject $subjectModel;
     private ClassSubjectTeacher $assignmentModel;
+    private ClassSubject $classSubjectModel;
     private SubjectCoefficient $coefficientModel;
     private Announcement $announcementModel;
     private AcademicYear $academicYearModel;
@@ -64,6 +66,7 @@ class AdminController
         $this->parentModel = new ParentModel();
         $this->subjectModel = new Subject();
         $this->assignmentModel = new ClassSubjectTeacher();
+        $this->classSubjectModel = new ClassSubject();
         $this->coefficientModel = new SubjectCoefficient();
         $this->announcementModel = new Announcement();
         $this->academicYearModel = new AcademicYear();
@@ -955,6 +958,161 @@ try {
         );
 
         exit;
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * CLASS SUBJECTS — CONFIGURATION FORM
+     * -----------------------------------------------------
+     *
+     * Defines which subjects a class offers. When no class is
+     * selected the view shows a class picker. When a class is
+     * selected we show every subject as a checkbox, pre-checking
+     * the class's saved set — or, if none is saved yet, the
+     * (level + stream) defaults for the admin to review and save.
+     */
+    public function showClassSubjectsForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $classes = $this->classModel->all();
+
+        $allSubjects = $this->subjectModel->all();
+
+        $classId = (int) ($_GET['class_id'] ?? 0);
+
+        $selectedClass = null;
+        $checkedIds = [];
+        $usingDefaults = false;
+
+        if ($classId > 0) {
+
+            $selectedClass = $this->classModel->find($classId);
+
+            if ($selectedClass) {
+
+                $checkedIds =
+                    $this->classSubjectModel
+                        ->getSubjectIdsForClass($classId);
+
+                /*
+                 * Nothing saved yet: pre-select the stream defaults
+                 * (not persisted until the admin clicks Save).
+                 */
+                if (empty($checkedIds)) {
+
+                    $checkedIds = $this->defaultSubjectIdsForClass(
+                        $selectedClass,
+                        $allSubjects
+                    );
+
+                    $usingDefaults = !empty($checkedIds);
+                }
+            }
+        }
+
+        require __DIR__ .
+            '/../../views/admin/class_subjects.php';
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * CLASS SUBJECTS — SAVE
+     * -----------------------------------------------------
+     */
+    public function saveClassSubjects(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $classId = (int) ($_POST['class_id'] ?? 0);
+
+        $submitted = $_POST['subjects'] ?? [];
+
+        if ($classId <= 0 || !$this->classModel->find($classId)) {
+
+            $_SESSION['form_errors'] = [
+                'Please select a valid class.'
+            ];
+
+            self::redirect('class_subjects_form');
+        }
+
+        $subjectIds = is_array($submitted)
+            ? array_map('intval', $submitted)
+            : [];
+
+        try {
+
+            $this->classSubjectModel->saveForClass(
+                $classId,
+                $subjectIds
+            );
+
+            $_SESSION['success_message'] =
+                'Class subjects saved successfully.';
+
+        } catch (Throwable $e) {
+
+            $_SESSION['form_errors'] = [
+                'Class subjects could not be saved. Please try again.'
+            ];
+        }
+
+        header(
+            'Location: ' .
+            BASE_URL .
+            '/index.php?action=class_subjects_form&class_id=' .
+            $classId
+        );
+
+        exit;
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * CLASS SUBJECTS — RESOLVE STREAM DEFAULTS TO IDS
+     * -----------------------------------------------------
+     *
+     * Maps the (level + option) default subject CODES to the ids
+     * present in this install's subjects table. Codes with no
+     * matching subject are simply skipped.
+     */
+    private function defaultSubjectIdsForClass(
+        array $class,
+        array $allSubjects
+    ): array {
+
+        $codes = ClassSubject::defaultSubjectCodes(
+            $class['level'] ?? null,
+            $class['class_option'] ?? null
+        );
+
+        if (empty($codes)) {
+            return [];
+        }
+
+        $idByCode = [];
+
+        foreach ($allSubjects as $subject) {
+            $idByCode[$subject['code']] = (int) $subject['id'];
+        }
+
+        $ids = [];
+
+        foreach ($codes as $code) {
+            if (isset($idByCode[$code])) {
+                $ids[] = $idByCode[$code];
+            }
+        }
+
+        return $ids;
     }
 
 

@@ -191,6 +191,17 @@ CREATE TABLE subject_coefficients (
     UNIQUE (subject_id, class_id)
 ) ENGINE=InnoDB;
 
+-- 11b. CLASS SUBJECTS (which subjects a class offers, independent of teacher)
+CREATE TABLE class_subjects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    class_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+    UNIQUE (class_id, subject_id)
+) ENGINE=InnoDB;
+
 -- 12. SEED DATA: default Cameroon GCE grade scale (admin can edit later)
 INSERT INTO grade_scale (min_score, max_score, letter, remark) VALUES
 (16.00, 20.00, 'A', 'Excellent'),
