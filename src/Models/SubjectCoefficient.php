@@ -278,4 +278,45 @@ class SubjectCoefficient
             'class_id' => $classId
         ]);
     }
+
+    /**
+     * Remove coefficient rows for a class whose subject is not in
+     * $keepSubjectIds. Used to keep coefficients aligned with the
+     * subjects a class actually offers. An empty keep-list clears
+     * all of the class's coefficients.
+     */
+    public function pruneForClass(int $classId, array $keepSubjectIds): void
+    {
+        if ($classId <= 0) {
+            return;
+        }
+
+        $keep = array_values(
+            array_unique(
+                array_filter(
+                    array_map('intval', $keepSubjectIds),
+                    static fn (int $id): bool => $id > 0
+                )
+            )
+        );
+
+        if (empty($keep)) {
+
+            $stmt = $this->db->prepare(
+                "DELETE FROM subject_coefficients WHERE class_id = ?"
+            );
+            $stmt->execute([$classId]);
+
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($keep), '?'));
+
+        $sql = "DELETE FROM subject_coefficients
+                WHERE class_id = ?
+                  AND subject_id NOT IN ($placeholders)";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array_merge([$classId], $keep));
+    }
 }

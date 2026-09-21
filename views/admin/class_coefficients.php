@@ -118,8 +118,8 @@ ob_start();
 
             <div class="empty-state">
                 <div class="empty-state-icon">i</div>
-                <h3>No subjects assigned</h3>
-                <p>No subjects are taught in this class yet. Assign a teacher to a subject for this class first.</p>
+                <h3>No subjects for this class</h3>
+                <p>This class has no subjects yet. Set them on the Class Subjects screen first, then return here to assign coefficients.</p>
             </div>
 
         <?php else: ?>

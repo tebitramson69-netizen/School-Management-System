@@ -817,18 +817,20 @@ try {
             if ($selectedClass) {
 
                 /*
-                 * Only subjects genuinely taught in this class,
-                 * merged with any coefficient already stored.
+                 * The subjects this class OFFERS (class_subjects),
+                 * merged with any coefficient already stored. This
+                 * is the authoritative subject list, independent of
+                 * whether a teacher has been assigned.
                  */
-                $taughtSubjects =
-                    $this->assignmentModel
-                        ->subjectsForClass($classId);
+                $offeredSubjects =
+                    $this->classSubjectModel
+                        ->getForClass($classId);
 
                 $existingCoefficients =
                     $this->coefficientModel
                         ->getForClass($classId);
 
-                foreach ($taughtSubjects as $subject) {
+                foreach ($offeredSubjects as $subject) {
 
                     $subjectId = (int) $subject['id'];
 
@@ -937,6 +939,16 @@ try {
             $this->coefficientModel->saveBulk(
                 $classId,
                 $coefficients
+            );
+
+            /*
+             * Keep coefficients consistent with the class's offered
+             * subjects: drop any stale coefficient rows for subjects
+             * no longer offered (e.g. left over from old data).
+             */
+            $this->coefficientModel->pruneForClass(
+                $classId,
+                array_keys($coefficients)
             );
 
             $_SESSION['success_message'] =
