@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>School Management System — Technical Documentation</title>
+<style>
+  @page { size: A4; margin: 17mm 15mm 15mm 15mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "DejaVu Sans","Segoe UI",Arial,sans-serif; font-size: 10pt; line-height: 1.52; color: #23272c; margin: 0; }
+  h1,h2,h3,h4 { color: #123B63; line-height: 1.22; }
+  h1 { font-size: 23pt; margin: 0 0 4px; }
+  h2 { font-size: 14.5pt; margin: 24px 0 9px; padding-bottom: 5px; border-bottom: 2.5px solid #D69E2E; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 16px 0 5px; color: #1b5183; page-break-after: avoid; }
+  h4 { font-size: 10pt; margin: 11px 0 3px; color: #44525f; page-break-after: avoid; }
+  p, li { orphans: 3; widows: 3; }
+  code, pre { font-family: "DejaVu Sans Mono",Consolas,monospace; }
+  code { background: #eef2f7; padding: 1px 4px; border-radius: 3px; font-size: 8.5pt; }
+  pre { background: #1c2430; color: #e6edf3; padding: 9px 11px; border-radius: 6px; font-size: 8pt;
+        line-height: 1.42; white-space: pre-wrap; overflow-wrap: break-word; page-break-inside: avoid; margin: 7px 0; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 9px 0; font-size: 8.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #c9d4e0; padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: #123B63; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f5f8fb; }
+  .cover { page-break-after: always; padding-top: 50mm; text-align: center; }
+  .cover .sub { font-size: 12.5pt; color: #3f4a55; margin-top: 6px; }
+  .cover .rule { width: 78px; height: 4px; background: #D69E2E; margin: 16px auto; }
+  .cover .meta { margin-top: 40mm; font-size: 9.5pt; color: #4a5560; line-height: 1.95; }
+  .page-break { page-break-before: always; }
+  .callout { border-left: 4px solid #123B63; background: #eef4fa; padding: 8px 11px; margin: 9px 0; page-break-inside: avoid; }
+  .callout.warn { border-left-color: #D69E2E; background: #fdf6e8; }
+  .callout.danger { border-left-color: #b3261e; background: #fbecea; }
+  .callout.good { border-left-color: #1e7a4d; background: #eaf6ef; }
+  .callout p { margin: 0; }
+  .callout p + p { margin-top: 5px; }
+  .sev { font-weight: 700; padding: 1px 5px; border-radius: 3px; color: #fff; font-size: 7.5pt; white-space: nowrap; }
+  .sev.crit { background: #7d1a12; } .sev.high { background: #b3261e; }
+  .sev.med { background: #c97a12; }  .sev.low { background: #5f7183; }
+  .sev.ok { background: #1e7a4d; }
+  ul, ol { margin: 5px 0; padding-left: 19px; } li { margin-bottom: 2.5px; }
+  .toc ol { list-style: none; padding-left: 0; counter-reset: s; }
+  .toc > ol > li { counter-increment: s; margin-bottom: 4px; font-weight: 600; }
+  .toc > ol > li::before { content: counter(s) ". "; color: #D69E2E; }
+  .toc ol ol { padding-left: 17px; font-weight: 400; margin-top: 2px; }
+  .toc ol ol li::before { content: "– "; color: #8aa0b5; }
+  .ascii { font-family: "DejaVu Sans Mono",monospace; font-size: 7.4pt; line-height: 1.32;
+           background: #f5f8fb; border: 1px solid #c9d4e0; border-radius: 6px; padding: 9px;
+           white-space: pre; page-break-inside: avoid; }
+  .small { font-size: 8.5pt; color: #5a6672; }
+  .lead { font-size: 10.5pt; color: #37414b; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>School Management System</h1>
+  <div class="rule"></div>
+  <div class="sub">Technical Documentation &amp; Developer Handover Guide</div>
+  <div class="sub small" style="margin-top:8px">Cameroon Anglophone Secondary (GCE) &nbsp;·&nbsp; PHP&nbsp;8 Custom MVC</div>
+  <div class="meta">
+    <strong>Repository:</strong> tebitramson69-netizen/School-Management-System<br>
+    <strong>Author:</strong> Tebit Ramson Titih<br>
+    <strong>Stack:</strong> PHP 8 · MySQL/MariaDB (PDO) · Bootstrap 5.3 · Vanilla JS · Apache (XAMPP)<br>
+    <strong>Size:</strong> 74 files · ~19,300 lines · 4 user roles · 12 tables<br>
+    <strong>Documented at commit:</strong> e9f23ca<br>
+    <strong>Document version:</strong> 1.0 &nbsp;·&nbsp; 21 September 2026<br>
+    <strong>Audience:</strong> Developers joining, reviewing or deploying this codebase
+  </div>
+</div>
+
+<h2>Table of Contents</h2>
+<div class="toc">
+<ol>
+  <li>Executive Summary</li>
+  <li>Domain Primer — The Cameroon GCE System
+    <ol><li>Why a developer must read this first</li><li>Terms, sequences and the 0–20 scale</li><li>Coefficients and weighted averages</li></ol></li>
+  <li>Technology Stack &amp; Runtime</li>
+  <li>Project Structure</li>
+  <li>Architecture
+    <ol><li>Layering</li><li>Front controller &amp; request lifecycle</li><li>The view layout system</li></ol></li>
+  <li>Routing Reference</li>
+  <li>Authentication &amp; Authorization
+    <ol><li>Login flow</li><li>Role enforcement</li><li>Forced password change</li><li>CSRF, rate limiting, session hardening</li></ol></li>
+  <li>Database Design
+    <ol><li>Entity-relationship overview</li><li>Table reference</li><li>The terms/sequence modelling decision</li><li>Migrations</li></ol></li>
+  <li>The Academic Engine
+    <ol><li>Score entry</li><li>Subject averages and term aggregation</li><li>Coefficient-weighted overall average</li><li>Grade scale</li><li>Class rankings</li></ol></li>
+  <li>Feature Walkthrough by Role</li>
+  <li>Front-End Architecture</li>
+  <li>Installation &amp; Setup</li>
+  <li>Security Review</li>
+  <li>Verified Defects &amp; Root-Cause Analysis</li>
+  <li>Documentation Drift</li>
+  <li>Improvement Roadmap</li>
+  <li>Appendix A — Route Table</li>
+  <li>Appendix B — Model API Reference</li>
+  <li>Appendix C — Glossary</li>
+</ol>
+</div>
+
+<h2 class="page-break">1. Executive Summary</h2>
+<p class="lead">This is a custom-built, framework-free PHP 8 MVC application that manages the academic operations of a
+Cameroonian Anglophone secondary school: user accounts across four roles, classes and subjects, teacher assignments,
+attendance, score entry per sequence, coefficient-weighted averages, grading, class rankings, report cards and
+announcements.</p>
+
+<p>It is a genuinely substantial system — roughly 19,300 lines across 74 files, with a clean separation between a
+front controller, controllers, models, middleware and views. It is not a tutorial project. The domain logic in
+particular (term/sequence aggregation, coefficient weighting, competition-style ranking) reflects real
+understanding of how Cameroonian secondary schools actually compute results.</p>
+
+<h3>Current state at a glance</h3>
+<table>
+  <tr><th style="width:26%">Area</th><th style="width:13%">State</th><th>Summary</th></tr>
+  <tr><td>Authentication</td><td><span class="sev ok">Solid</span></td><td>Session-based, hashed passwords, session regeneration on login, rate limiting, forced password change on first login.</td></tr>
+  <tr><td>Authorization</td><td><span class="sev ok">Solid</span></td><td>Role middleware on every controller action; ownership checks on teacher assignments and parent–child links.</td></tr>
+  <tr><td>CSRF protection</td><td><span class="sev ok">Solid</span></td><td>Validated globally for every POST in the front controller — one chokepoint, impossible to forget per-form.</td></tr>
+  <tr><td>SQL injection defence</td><td><span class="sev ok">Solid</span></td><td>PDO prepared statements with named parameters throughout. No string-concatenated SQL found.</td></tr>
+  <tr><td>Output escaping</td><td><span class="sev ok">Solid</span></td><td>167 <code>htmlspecialchars()</code> calls with <code>ENT_QUOTES</code>; numeric output int-cast before echo.</td></tr>
+  <tr><td>Academic engine</td><td><span class="sev med">Mostly right</span></td><td>Weighted averages and rankings are implemented and share one definition. Pass/fail threshold is hard-coded and contradicts the configurable setting (§14.2).</td></tr>
+  <tr><td>Deployability</td><td><span class="sev crit">Blocked</span></td><td>A fresh clone cannot boot: <code>config/env.php</code> is required but git-ignored (§14.1). One include also breaks on Linux due to file casing (§14.3).</td></tr>
+  <tr><td>Web-root exposure</td><td><span class="sev crit">Critical</span></td><td><code>.htaccess</code> is empty; with the documented BASE_URL, <code>.env</code> and all source are fetchable over HTTP (§13.1).</td></tr>
+  <tr><td>Administrative CRUD</td><td><span class="sev med">Partial</span></td><td>Create works for all entities; no edit, deactivate or delete anywhere.</td></tr>
+  <tr><td>Automated tests</td><td><span class="sev high">None</span></td><td>No test suite, no CI workflow.</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>The honest one-paragraph verdict.</strong> The security fundamentals and the domain modelling are
+  well above what this kind of project usually shows — CSRF at a single chokepoint, prepared statements without
+  exception, and a ranking engine deliberately built to share one averaging definition with the report card are
+  all senior-level decisions. What stands between this and a deployable product is not architecture; it is three
+  concrete blockers (§13.1, §14.1, §14.3), a hard-coded pass mark that is wrong for Cameroon (§14.2), and the
+  absence of edit/delete operations. Those are days of work, not months.</p>
+</div>
+
+<h2 class="page-break">2. Domain Primer — The Cameroon GCE System</h2>
+
+<h3>2.1 Why a developer must read this first</h3>
+<p>Most of the non-obvious code in this project exists because of how Cameroonian schools grade. A developer who
+skips this section will read the <code>terms</code> table or <code>Score::subjectAveragesForStudentTerm()</code>
+and conclude they are buggy. They are not — they encode real rules.</p>
+
+<h3>2.2 Terms, sequences and the 0–20 scale</h3>
+<table>
+  <tr><th style="width:26%">Concept</th><th>Meaning in this system</th></tr>
+  <tr><td>Cycles</td><td>First Cycle covers Forms 1–5, ending with the GCE Ordinary Level at Form 5. Second Cycle covers Lower Sixth and Upper Sixth, ending with the GCE Advanced Level.</td></tr>
+  <tr><td>Academic year</td><td>Named like <code>2026/2027</code>. Exactly one is flagged current at a time.</td></tr>
+  <tr><td>Term</td><td>Three per academic year: Term 1, Term 2, Term 3.</td></tr>
+  <tr><td>Sequence</td><td>Each term contains <strong>two</strong> assessment sequences, giving six sequences per year. A subject's term mark is the mean of its two sequence marks.</td></tr>
+  <tr><td>Marking scale</td><td>Every mark is out of 20. The database stores <code>score</code> and <code>max_score</code>, with <code>max_score</code> fixed at <code>20.00</code> on insert.</td></tr>
+  <tr><td>Pass mark</td><td>10 out of 20 is the standard threshold. It is configurable in <code>school_settings.pass_mark</code> — but see §14.2, where the code ignores that column.</td></tr>
+</table>
+
+<h3>2.3 Coefficients and weighted averages</h3>
+<p>Subjects are not equal. A science stream weights Physics and Mathematics more heavily than, say, Food Science.
+Each subject carries a <em>coefficient</em> — an integer multiplier — and the overall average is:</p>
+<pre><code>overall average = Σ(subject_average × coefficient) / Σ(coefficients)</code></pre>
+<p>Coefficients are standardised by MINESEC but vary by class and stream, so this system stores them per
+subject <em>per class</em> in the <code>subject_coefficients</code> table and lets an administrator edit them.
+A plain arithmetic mean of subject marks is <strong>mathematically wrong</strong> for a Cameroonian report card —
+which is why the weighting logic in §9.3 matters so much.</p>
+
+<h2>3. Technology Stack &amp; Runtime</h2>
+<table>
+  <tr><th style="width:22%">Layer</th><th style="width:26%">Technology</th><th>Notes</th></tr>
+  <tr><td>Language</td><td>PHP 8+</td><td>Typed properties, union return types (<code>array|false</code>), <code>declare(strict_types=1)</code> in newer files. No Composer, no autoloader — explicit <code>require_once</code> everywhere.</td></tr>
+  <tr><td>Database</td><td>MySQL / MariaDB via PDO</td><td>Singleton connection (<code>Database::getConnection()</code>), <code>utf8mb4</code>, exceptions on error, default fetch mode <code>FETCH_ASSOC</code>.</td></tr>
+  <tr><td>Web server</td><td>Apache (XAMPP)</td><td>Document root is the project's parent; the app is served from <code>public/</code> via <code>BASE_URL</code>.</td></tr>
+  <tr><td>CSS framework</td><td>Bootstrap 5.3.3 (CDN)</td><td>Supplemented by 5 local stylesheets totalling ~4,900 lines.</td></tr>
+  <tr><td>JavaScript</td><td>Vanilla, one file</td><td><code>public/js/app.js</code> (944 lines) — no framework, no build step, no bundler.</td></tr>
+  <tr><td>Configuration</td><td><code>.env</code> + <code>config/env.php</code></td><td>Credentials externalised from code. See §14.1 for the blocker this currently creates.</td></tr>
+  <tr><td>Testing / CI</td><td>None</td><td>No PHPUnit, no GitHub Actions workflow.</td></tr>
+</table>
+<p class="small">Verified: all 74 PHP files pass <code>php -l</code> syntax checking under PHP 8.4.</p>
+
+<h2 class="page-break">4. Project Structure</h2>
+<div class="ascii">School-Management-System/
+├── .env.example                 Template for local credentials
+├── .gitignore                   Ignores .env AND config/env.php  ← see §14.1
+├── .htaccess                    EMPTY (0 bytes)                  ← see §13.1
+├── CLAUDE.md                    Architecture + conventions notes
+├── PROJECT_PROGRESS.md          Phase log and roadmap
+│
+├── config/
+│   ├── database.php             PDO singleton + BASE_URL/SCHOOL_EMAIL_DOMAIN constants
+│   └── env.php                  .env parser — NOT IN THE REPOSITORY (git-ignored)
+│
+├── database/
+│   ├── schema.sql               Full schema, 12 tables + seed data
+│   ├── migration_001_sync_schema.sql      Adds columns the app expected
+│   ├── migration_002_pass_mark.sql        Adds school_settings.pass_mark
+│   └── migration_003_terms_unique_constraint.sql
+│
+├── public/                      ← the only directory that should be web-reachable
+│   ├── index.php                Front controller / router (707 lines, 30 routes)
+│   ├── css/  theme · components · dashboard · auth · responsive   (~4,900 lines)
+│   └── js/app.js                Alerts, sidebar, dirty-form guard, print, badges
+│
+├── src/
+│   ├── Core/
+│   │   ├── Security.php         CSRF, session hardening, password policy, rate limiting
+│   │   └── School.php           Cached accessor for school_settings
+│   ├── Middleware/
+│   │   └── AuthMiddleware.php   requireRole(), 403 page, password-change redirect
+│   ├── Controllers/             Auth · Admin · Teacher · Student · Parent · AcademicYear
+│   └── Models/                  16 models, one per table/aggregate
+│
+├── views/
+│   ├── layouts/dashboard.php    Shared chrome used by every page
+│   ├── components/              header.php · sidebar.php · stat-card.php
+│   ├── auth/   login · change_password
+│   ├── admin/  13 views
+│   ├── teacher/ dashboard · Mark_attendance · enter_scores
+│   ├── student/ information · report_card · attendance · announcements · dashboard
+│   └── parent/  dashboard · child_detail
+│
+└── images/                      Logo and background</div>
+
+<h3>Size distribution</h3>
+<table>
+  <tr><th style="width:34%">Component</th><th style="width:16%">Lines</th><th>Largest files</th></tr>
+  <tr><td>CSS</td><td>~4,940</td><td><code>auth.css</code> 1,930 · <code>components.css</code> 1,323 · <code>dashboard.css</code> 931</td></tr>
+  <tr><td>Controllers</td><td>~3,250</td><td><code>AdminController</code> 1,282 · <code>StudentController</code> 830 · <code>AcademicYearController</code> 449</td></tr>
+  <tr><td>Models</td><td>~2,900</td><td><code>Score</code> 761 · <code>Result</code> 462 · <code>Term</code> 423 · <code>Student</code> 368</td></tr>
+  <tr><td>Views</td><td>~3,900</td><td><code>sidebar.php</code> 1,195 · <code>admin/dashboard.php</code> 589 · <code>header.php</code> 559</td></tr>
+  <tr><td>JavaScript</td><td>944</td><td><code>app.js</code></td></tr>
+  <tr><td>Front controller</td><td>707</td><td><code>public/index.php</code></td></tr>
+</table>
+
+<h2 class="page-break">5. Architecture</h2>
+
+<h3>5.1 Layering</h3>
+<p>The application is a hand-rolled MVC with four clear layers and no framework underneath:</p>
+<div class="ascii">    Browser
+       │  GET/POST  index.php?action=…
+       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  FRONT CONTROLLER            public/index.php                │
+│  · configures + starts the hardened session                  │
+│  · validates CSRF for EVERY POST (single chokepoint)         │
+│  · switch($action) → require controller → call method        │
+└───────────────────────┬──────────────────────────────────────┘
+                        ▼
+┌──────────────────────────────────────────────────────────────┐
+│  MIDDLEWARE                  AuthMiddleware::requireRole()   │
+│  · authenticated?  · role allowed?  · must change password?  │
+└───────────────────────┬──────────────────────────────────────┘
+                        ▼
+┌──────────────────────────────────────────────────────────────┐
+│  CONTROLLERS   Auth · Admin · Teacher · Student · Parent ·   │
+│                AcademicYear                                  │
+│  · input validation   · ownership checks   · orchestration   │
+└───────────────────────┬──────────────────────────────────────┘
+                        ▼
+┌──────────────────────────────────────────────────────────────┐
+│  MODELS  (16)   all SQL lives here, all via PDO prepares     │
+│  Score · Result · Term · Student · SubjectCoefficient · …    │
+└───────────────────────┬──────────────────────────────────────┘
+                        ▼
+              MySQL  ·  12 tables  ·  utf8mb4
+                        ▲
+┌───────────────────────┴──────────────────────────────────────┐
+│  VIEWS   ob_start() → $content → views/layouts/dashboard.php │
+│          shared header + role-aware sidebar                  │
+└──────────────────────────────────────────────────────────────┘</div>
+
+<div class="callout good">
+  <p><strong>The layering is respected.</strong> Every SQL statement found in the codebase lives in
+  <code>src/Models/</code>. Controllers never query the database directly, and views never do either — they
+  receive prepared variables. That discipline is what makes this codebase extensible, and it should be defended
+  in review.</p>
+</div>
+
+<h3>5.2 Front controller &amp; request lifecycle</h3>
+<p>Every request enters through <code>public/index.php</code> and follows the same path:</p>
+<ol>
+  <li><strong>Configuration</strong> — <code>config/database.php</code> loads <code>.env</code> and defines <code>BASE_URL</code> and <code>SCHOOL_EMAIL_DOMAIN</code>.</li>
+  <li><strong>Session hardening</strong> — <code>Security::configureSession()</code> sets <code>httponly</code>, <code>samesite=Strict</code>, <code>use_strict_mode</code> and <code>use_only_cookies</code> <em>before</em> <code>session_start()</code>. Order matters: these <code>ini_set()</code> calls are no-ops once a session exists, which is why the method returns early if one is already active.</li>
+  <li><strong>Action resolution</strong> — <code>$action = trim($_GET['action'] ?? 'login')</code>, defaulting to the login page.</li>
+  <li><strong>Global CSRF gate</strong> — if the method is POST, <code>Security::requireValidCsrf()</code> runs before any route is dispatched.</li>
+  <li><strong>Dispatch</strong> — a <code>switch</code> maps the action to a controller method. Controllers are <code>require</code>d inside their own case, so a login request never loads the admin controller or its models.</li>
+  <li><strong>Authorization</strong> — the controller method's first statement is <code>AuthMiddleware::requireRole(...)</code>.</li>
+  <li><strong>Response</strong> — write actions redirect (Post/Redirect/Get); read actions render a view through the shared layout.</li>
+</ol>
+
+<div class="callout good">
+  <p><strong>Global CSRF validation is the single best decision in this codebase.</strong> Most PHP projects
+  validate CSRF inside each handler, and the first handler someone forgets becomes the vulnerability. Here it is
+  structurally impossible to add an unprotected POST route — the gate sits above the router. Preserve this
+  property in any refactor.</p>
+</div>
+
+<h3>5.3 The view layout system</h3>
+<p>Views use output buffering to inject their body into shared chrome:</p>
+<pre><code>$pageTitle = 'Admin Dashboard';
+ob_start();
+    // ... the page's own HTML ...
+$content = ob_get_clean();
+require __DIR__ . '/../layouts/dashboard.php';</code></pre>
+<p><code>views/layouts/dashboard.php</code> then renders <code>components/header.php</code>, the role-aware
+<code>components/sidebar.php</code>, and drops <code>$content</code> into the main region. Verified: <strong>every
+one of the 23 page views uses this layout.</strong> The only file that does not is
+<code>views/student/_header.php</code>, a partial, whose leading underscore correctly signals that.</p>
+<p class="small">Note: both <code>CLAUDE.md</code> and <code>PROJECT_PROGRESS.md</code> still describe layout
+migration as outstanding work. It is complete — see §15.</p>
+
+<h2 class="page-break">6. Routing Reference</h2>
+<p>Routing is query-string based: <code>public/index.php?action=&lt;name&gt;</code>. There is no URL rewriting.
+Thirty actions are registered; an unknown action returns a styled HTTP 404.</p>
+<table>
+  <tr><th style="width:30%">Action</th><th style="width:11%">Role</th><th style="width:29%">Handler</th><th>Purpose</th></tr>
+  <tr><td colspan="4" style="background:#e8eef5;font-weight:600">Authentication</td></tr>
+  <tr><td><code>login</code></td><td>public</td><td>AuthController::showLoginForm</td><td>Login page; redirects if already signed in.</td></tr>
+  <tr><td><code>login_submit</code></td><td>public</td><td>AuthController::login</td><td>Authenticate; rate-limited.</td></tr>
+  <tr><td><code>logout</code></td><td>any</td><td>AuthController::logout</td><td>Clear session + cookie, destroy, redirect.</td></tr>
+  <tr><td><code>change_password_form</code></td><td>any</td><td>AuthController::showChangePasswordForm</td><td>Password change page.</td></tr>
+  <tr><td><code>change_password</code></td><td>any</td><td>AuthController::changePassword</td><td>Validate strength and update.</td></tr>
+  <tr><td colspan="4" style="background:#e8eef5;font-weight:600">Admin</td></tr>
+  <tr><td><code>admin_dashboard</code></td><td>admin</td><td>AdminController::dashboard</td><td>Counts and overview.</td></tr>
+  <tr><td><code>academic_years</code></td><td>admin</td><td>AcademicYearController::index</td><td>Years, terms, sequences.</td></tr>
+  <tr><td><code>create_academic_year</code></td><td>admin</td><td>AcademicYearController::create</td><td>Create a year (generates terms).</td></tr>
+  <tr><td><code>activate_academic_year</code></td><td>admin</td><td>AcademicYearController::activate</td><td>Make a year current.</td></tr>
+  <tr><td><code>set_current_term</code></td><td>admin</td><td>AcademicYearController::setCurrentTerm</td><td>Set current term/sequence.</td></tr>
+  <tr><td><code>create_teacher_form</code> / <code>create_teacher</code></td><td>admin</td><td>AdminController</td><td>Teacher account + profile.</td></tr>
+  <tr><td><code>create_student_form</code> / <code>create_student</code></td><td>admin</td><td>AdminController</td><td>Student account, profile and enrolment (transactional).</td></tr>
+  <tr><td><code>create_parent_form</code> / <code>create_parent</code></td><td>admin</td><td>AdminController</td><td>Parent account + child links.</td></tr>
+  <tr><td><code>assign_teacher_form</code> / <code>assign_teacher</code></td><td>admin</td><td>AdminController</td><td>Bind teacher↔subject↔class.</td></tr>
+  <tr><td><code>class_coefficients_form</code> / <code>save_class_coefficients</code></td><td>admin</td><td>AdminController</td><td>Per-class subject coefficients.</td></tr>
+  <tr><td><code>view_teachers</code> / <code>view_classes</code> / <code>view_class_list</code></td><td>admin</td><td>AdminController</td><td>Read-only listings.</td></tr>
+  <tr><td><code>post_announcement_form</code> / <code>post_announcement</code> / <code>view_announcements</code></td><td>admin</td><td>AdminController</td><td>School-wide or per-class notices.</td></tr>
+  <tr><td colspan="4" style="background:#e8eef5;font-weight:600">Teacher</td></tr>
+  <tr><td><code>teacher_dashboard</code></td><td>teacher</td><td>TeacherController::dashboard</td><td>Assignments + announcements.</td></tr>
+  <tr><td><code>mark_attendance_form</code> / <code>mark_attendance</code></td><td>teacher</td><td>TeacherController</td><td>Daily register per assignment.</td></tr>
+  <tr><td><code>enter_scores_form</code> / <code>enter_scores</code></td><td>teacher</td><td>TeacherController</td><td>Bulk marks for a term+sequence.</td></tr>
+  <tr><td colspan="4" style="background:#e8eef5;font-weight:600">Student</td></tr>
+  <tr><td><code>student_information</code></td><td>student</td><td>StudentController::information</td><td>Profile and class.</td></tr>
+  <tr><td><code>student_report_card</code></td><td>student</td><td>StudentController::reportCard</td><td>Subject averages, overall, position.</td></tr>
+  <tr><td><code>student_attendance</code></td><td>student</td><td>StudentController::attendance</td><td>Attendance history.</td></tr>
+  <tr><td><code>student_announcements</code></td><td>student</td><td>StudentController::announcements</td><td>School + class notices.</td></tr>
+  <tr><td><code>student_dashboard</code></td><td>student</td><td>—</td><td>HTTP 301 to <code>student_information</code> (legacy bookmarks).</td></tr>
+  <tr><td colspan="4" style="background:#e8eef5;font-weight:600">Parent</td></tr>
+  <tr><td><code>parent_dashboard</code></td><td>parent</td><td>ParentController::dashboard</td><td>List of linked children.</td></tr>
+  <tr><td><code>parent_child_detail</code></td><td>parent</td><td>ParentController::childDetail</td><td>One child's results, attendance, position.</td></tr>
+</table>
+
+<div class="callout warn">
+  <p><strong>Scaling note.</strong> The router is a 707-line <code>switch</code> in which each case repeats five
+  lines of boilerplate. It works and it is readable, but it grows linearly with every feature. A route table
+  (<code>'action' =&gt; [Controller::class, 'method', 'role']</code>) driven by a small dispatch loop would
+  collapse those 707 lines to roughly 40 and make the role requirement visible in one place. Worth doing before
+  Phase 2 adds another thirty routes — not urgent before that.</p>
+</div>
+
+<h2 class="page-break">7. Authentication &amp; Authorization</h2>
+
+<h3>7.1 Login flow</h3>
+<p><code>AuthController::login()</code> executes these checks in order, and each failure exits immediately:</p>
+<ol>
+  <li>Reject non-POST requests.</li>
+  <li><code>Security::checkLoginRateLimit()</code> — blocks after 5 failures for 5 minutes.</li>
+  <li>Both fields present; email passes <code>FILTER_VALIDATE_EMAIL</code>.</li>
+  <li>Look up the user; verify with <code>password_verify()</code>.</li>
+  <li>On failure, record the attempt and return the <em>same</em> message — <code>"Invalid email or password."</code> — whether the email exists or not. This is deliberate: a distinct "no such account" message would let an attacker enumerate valid addresses.</li>
+  <li>Reject deactivated accounts (<code>is_active = 0</code>).</li>
+  <li><code>session_regenerate_id(true)</code> — issues a new session ID on privilege change, defeating session fixation.</li>
+  <li>Store only <code>user_id</code>, <code>email</code>, <code>role</code>, <code>must_change_password</code> in the session. No password hash, no full user row.</li>
+  <li>Redirect to the role's dashboard; an unrecognised role triggers a logout rather than falling through.</li>
+</ol>
+
+<h3>7.2 Role enforcement</h3>
+<p><code>AuthMiddleware::requireRole(string|array $allowedRoles)</code> is the single authorization primitive.
+It verifies a session exists, normalises the allowed roles to an array, and compares with
+<code>in_array($currentRole, $allowedRoles, true)</code> — strict comparison, so no type-juggling bypass.
+Unauthorised users get HTTP 403 and a rendered page; unauthenticated users are redirected to login.</p>
+<p>Verified: <strong>every controller action calls it.</strong> The student controller does so through a shared
+private helper:</p>
+<pre><code>private function bootStudentContext(): array
+{
+    AuthMiddleware::requireRole('student');
+    // … resolve user → student profile → current class → school settings
+    return ['student' => $student, 'studentId' => $studentId,
+            'classId' => $classId, 'school' => $school];
+}</code></pre>
+<p>Each of the four student pages begins with <code>$context = $this-&gt;bootStudentContext();</code>. This is the
+right pattern: authorization cannot be omitted from a new student page without also omitting the data the page
+needs, so the two failure modes collapse into one that is immediately visible.</p>
+
+<h4>Ownership checks beyond role</h4>
+<p>Role alone is insufficient — one teacher must not mark another's class, and one parent must not read another
+family's child. Both are handled:</p>
+<pre><code>// TeacherController — mark attendance / enter scores
+$assignment = $this->assignmentModel->find($assignmentId);
+if (!$assignment || (int) $assignment['teacher_id'] !== $teacher['id']) {
+    http_response_code(403);
+    echo "Access denied. This is not your assignment.";
+    exit;
+}
+
+// ParentController — child detail
+if (!$this->parentModel->isLinkedToChild($parent['id'], $studentId)) {
+    http_response_code(403);
+    echo "Access denied. This is not your child.";
+    exit;
+}</code></pre>
+<p>These are Insecure Direct Object Reference defences, and they are correctly placed <em>before</em> any data is
+loaded. This is the class of check most projects of this size omit entirely.</p>
+
+<h3>7.3 Forced password change</h3>
+<p>Accounts are created with <code>must_change_password = TRUE</code>. The middleware redirects such users to the
+change-password page on every request — explicitly exempting <code>change_password_form</code> and
+<code>change_password</code> themselves, which is what prevents an infinite redirect loop. The exemption is the
+subtle part; do not remove it.</p>
+
+<h3>7.4 CSRF, rate limiting and session hardening</h3>
+<table>
+  <tr><th style="width:26%">Control</th><th>Implementation</th></tr>
+  <tr><td>CSRF token</td><td>32 random bytes from <code>random_bytes()</code>, hex-encoded, stored per session. Emitted by <code>Security::csrfField()</code>, compared with <code>hash_equals()</code> — constant-time, so the comparison cannot be attacked by timing.</td></tr>
+  <tr><td>CSRF failure handling</td><td>HTTP 403, then redirect back to the referring page with an error message — but only when the referer contains <code>BASE_URL</code>, so the response cannot be used as an open redirect.</td></tr>
+  <tr><td>Password policy</td><td><code>validatePasswordStrength()</code>: minimum 8 characters, at least one uppercase, one lowercase, one digit. Verified applied consistently at teacher, student and parent creation <em>and</em> at password change.</td></tr>
+  <tr><td>Password storage</td><td><code>password_hash($password, PASSWORD_DEFAULT)</code> — bcrypt today, automatically upgraded by PHP in future versions.</td></tr>
+  <tr><td>Rate limiting</td><td>5 attempts, 5-minute lockout, counted in the session. See §13.4 for the limitation this carries.</td></tr>
+  <tr><td>Session cookie</td><td><code>httponly</code> (no JavaScript access), <code>samesite=Strict</code> (not sent cross-site), <code>use_only_cookies</code> (no session ID in URLs), <code>use_strict_mode</code> (rejects attacker-supplied IDs), and <code>secure</code> when HTTPS is detected.</td></tr>
+</table>
+
+<h2 class="page-break">8. Database Design</h2>
+
+<h3>8.1 Entity-relationship overview</h3>
+<div class="ascii">                        ┌─────────────┐
+                        │    users    │  email · password_hash · role
+                        │             │  is_active · must_change_password
+                        └──────┬──────┘
+         ┌─────────────┬───────┼───────┬──────────────┐
+         │ 1:1         │ 1:1   │ 1:1   │ 1:1          │
+    ┌────▼───┐   ┌─────▼──┐ ┌──▼─────┐ ┌──▼──────┐
+    │ admins │   │teachers│ │students│ │ parents │
+    └────────┘   └────┬───┘ └───┬────┘ └────┬────┘
+                      │         │           │
+                      │         │  ┌────────▼──────────┐
+                      │         └──┤  parent_student   │ M:N guardianship
+                      │            └───────────────────┘
+                      │         │
+                      │    ┌────▼────────┐        ┌────────────────┐
+                      │    │ enrollments │───────►│    classes     │
+                      │    │ UNIQUE      │        │ name · level · │
+                      │    │(student,    │        │ class_option   │
+                      │    │ acad_year)  │        └───────┬────────┘
+                      │    └────┬────────┘                │
+                      │         │                         │
+    ┌─────────────────▼─────────┼─────────────────────────▼────────┐
+    │           class_subject_teacher   UNIQUE(class, subject)     │
+    │           one teacher per subject per class                  │
+    └────────────┬──────────────────────────────┬──────────────────┘
+                 │                              │
+          ┌──────▼───────┐              ┌───────▼────────────┐
+          │  attendance  │              │     subjects       │
+          │ UNIQUE(stu,  │              └───────┬────────────┘
+          │  cst, date)  │                      │
+          └──────────────┘         ┌────────────┴─────────────┐
+                                   │                          │
+                          ┌────────▼─────────┐   ┌────────────▼──────────┐
+                          │     scores       │   │ subject_coefficients  │
+                          │ UNIQUE(student,  │   │ UNIQUE(subject,class) │
+                          │ subject, term,   │   │ coefficient INT       │
+                          │ sequence)        │   └───────────────────────┘
+                          └────────┬─────────┘
+                                   │
+                          ┌────────▼─────────┐      ┌──────────────────┐
+                          │      terms       │─────►│  academic_years  │
+                          │ name + sequence_ │      │ is_current       │
+                          │ number·is_current│      └──────────────────┘
+                          └──────────────────┘
+
+    Standalone:  grade_scale · announcements · school_settings</div>
+
+<h3>8.2 Table reference</h3>
+<table>
+  <tr><th style="width:21%">Table</th><th style="width:30%">Key constraints</th><th>Purpose</th></tr>
+  <tr><td><code>users</code></td><td><code>UNIQUE(email)</code>; role ENUM of 4</td><td>Single auth table for all roles. Profile detail lives in the four role tables.</td></tr>
+  <tr><td><code>admins</code>, <code>teachers</code>, <code>students</code>, <code>parents</code></td><td><code>UNIQUE(user_id)</code>, FK <code>ON DELETE CASCADE</code></td><td>Role profiles. Deleting a user removes the profile automatically.</td></tr>
+  <tr><td><code>parent_student</code></td><td>Composite PK <code>(parent_id, student_id)</code></td><td>Many-to-many guardianship — one parent, several children; one child, several guardians.</td></tr>
+  <tr><td><code>classes</code></td><td>—</td><td><code>name</code> ("Form 4 Science A"), <code>level</code> ("Form 4"), <code>class_option</code> (Science/Arts/Commercial, NULL in lower forms).</td></tr>
+  <tr><td><code>subjects</code></td><td><code>UNIQUE(code)</code></td><td>Subject catalogue.</td></tr>
+  <tr><td><code>class_subject_teacher</code></td><td><code>UNIQUE(class_id, subject_id)</code></td><td>The permission table. A teacher's rows here define exactly what they may mark. Enforces one teacher per subject per class.</td></tr>
+  <tr><td><code>academic_years</code></td><td><code>UNIQUE(name)</code>, <code>is_current</code></td><td>Exactly one row should be current; enforced in application code, not by the database.</td></tr>
+  <tr><td><code>terms</code></td><td><code>UNIQUE(academic_year_id, name, sequence_number)</code></td><td>One row per <em>term-sequence</em> — see §8.3. Also carries <code>is_current</code>.</td></tr>
+  <tr><td><code>enrollments</code></td><td><code>UNIQUE(student_id, academic_year_id)</code></td><td>Which class a student sits in for a given year. Supports promotion across years while preserving history.</td></tr>
+  <tr><td><code>attendance</code></td><td><code>UNIQUE(student_id, class_subject_teacher_id, date)</code></td><td>Per-subject-period register. The unique key makes re-marking idempotent.</td></tr>
+  <tr><td><code>scores</code></td><td><code>UNIQUE(student_id, subject_id, term_id, sequence)</code></td><td>Raw marks. Averages are never stored — always derived.</td></tr>
+  <tr><td><code>grade_scale</code></td><td>—</td><td>Admin-editable letter bands, seeded A–F on the Cameroon scale. Grading policy can change without touching historical scores.</td></tr>
+  <tr><td><code>subject_coefficients</code></td><td><code>UNIQUE(subject_id, class_id)</code></td><td>Per-class weighting used by the overall average.</td></tr>
+  <tr><td><code>announcements</code></td><td><code>class_id NULL</code> = school-wide</td><td>Notices scoped to a class or the whole school.</td></tr>
+  <tr><td><code>school_settings</code></td><td>Single row</td><td>Branding, colours and <code>pass_mark</code>. See §14.2.</td></tr>
+</table>
+
+<div class="callout good">
+  <p><strong>Derived, never stored.</strong> No average, grade, position or total is persisted anywhere. Every
+  such figure is computed from raw <code>scores</code> rows on each request. That is the correct trade-off at
+  school scale: it costs some CPU, but it makes it impossible for a stored average to silently disagree with the
+  marks behind it after a correction. Keep it until measurements prove otherwise — then cache, do not denormalise.</p>
+</div>
+
+<h3>8.3 The terms/sequence modelling decision</h3>
+<p>This is the single most important thing to understand before touching the grading code.</p>
+<p>A row in <code>terms</code> is <strong>not a term</strong> — it is a <em>term-sequence</em>. "Term 1" with two
+sequences is two rows:</p>
+<table>
+  <tr><th>id</th><th>academic_year_id</th><th>name</th><th>sequence_number</th><th>is_current</th></tr>
+  <tr><td>1</td><td>1</td><td>Term 1</td><td>1</td><td>0</td></tr>
+  <tr><td>2</td><td>1</td><td>Term 1</td><td>2</td><td>1</td></tr>
+  <tr><td>3</td><td>1</td><td>Term 2</td><td>1</td><td>0</td></tr>
+</table>
+<p>A term is therefore identified by the pair <code>(academic_year_id, name)</code>, not by a single id. This is
+why <code>Score::subjectAveragesForStudentTerm()</code> contains a self-join that looks unnecessary at first
+reading:</p>
+<pre><code>INNER JOIN terms selected_term ON selected_term.id = :term_id
+WHERE sc.student_id = :student_id
+  AND sc.term_id IN (
+        SELECT t.id FROM terms t
+        WHERE t.name = selected_term.name
+          AND t.academic_year_id = selected_term.academic_year_id
+  )</code></pre>
+<p>It takes the given term-sequence row, recovers its name and year, and then averages across <em>all</em>
+sequences of that term. Without it, a "term average" would only ever reflect one sequence. Any new query that
+aggregates by term must reproduce this pattern — and §14.4 documents the one place that does not.</p>
+
+<div class="callout warn">
+  <p><strong>Redundancy to be aware of.</strong> <code>scores.sequence</code> and
+  <code>terms.sequence_number</code> both record the sequence. Nothing in the schema forces them to agree, so a
+  row can claim <code>sequence = 1</code> while its <code>term_id</code> points at the sequence-2 term row. The
+  application never writes such a row today, but a future bulk import could. Longer term, the cleaner model is a
+  <code>terms</code> table holding three real terms and letting <code>scores.sequence</code> be the only sequence
+  marker. That is a migration, not a quick fix — plan it, do not improvise it.</p>
+</div>
+
+<h3>8.4 Migrations</h3>
+<table>
+  <tr><th style="width:30%">File</th><th>Effect</th></tr>
+  <tr><td><code>migration_001_sync_schema.sql</code></td><td>Adds <code>users.must_change_password</code>, <code>terms.is_current</code>, <code>attendance.class_subject_teacher_id</code>, and creates <code>school_settings</code> and <code>subject_coefficients</code>. Idempotent via <code>IF NOT EXISTS</code>.</td></tr>
+  <tr><td><code>migration_002_pass_mark.sql</code></td><td>Adds <code>school_settings.pass_mark DECIMAL(5,2) DEFAULT 10.00</code>. Its own comment states "The Result model reads this to decide PASS/FAIL" — it does not. See §14.2.</td></tr>
+  <tr><td><code>migration_003_terms_unique_constraint.sql</code></td><td>Adds <code>UNIQUE(academic_year_id, name, sequence_number)</code> on <code>terms</code>, preventing duplicate term rows from splitting a student's scores across two ids and silently corrupting averages. Documents its precondition query and its rollback — this is exactly how a migration should be written.</td></tr>
+</table>
+<div class="callout warn">
+  <p><strong>Two gaps in the migration story.</strong> First, <code>migration_001</code> leaves the
+  <code>attendance</code> foreign key and unique-index changes commented out with a note to "run these manually",
+  so two databases that both ran every migration can still differ. Second, nothing records which migrations have
+  been applied. A four-line <code>schema_migrations(version, applied_at)</code> table and a short runner script
+  would remove both problems permanently.</p>
+</div>
+
+<h2 class="page-break">9. The Academic Engine</h2>
+<p>This is the core of the product and deserves the closest reading. Four classes cooperate:
+<code>Score</code> (761 lines), <code>Result</code> (462), <code>SubjectCoefficient</code> (280) and
+<code>GradeScale</code> (22).</p>
+
+<h3>9.1 Score entry</h3>
+<p><code>Score::recordBulk()</code> saves a whole class's marks for one subject, term and sequence:</p>
+<pre><code>INSERT INTO scores (student_id, subject_id, term_id, sequence, score, max_score)
+VALUES (:student_id, :subject_id, :term_id, :sequence, :score, 20.00)
+ON DUPLICATE KEY UPDATE score = VALUES(score), max_score = VALUES(max_score)</code></pre>
+<p>Four properties are worth naming:</p>
+<ul>
+  <li><strong>Idempotent.</strong> <code>ON DUPLICATE KEY UPDATE</code> combined with the unique key means re-submitting the form corrects marks rather than duplicating them.</li>
+  <li><strong>Transactional.</strong> The whole batch is wrapped in <code>beginTransaction()</code> / <code>commit()</code>, with rollback guarded by <code>inTransaction()</code>. One invalid mark rejects the entire batch — the correct choice, since a half-saved register is worse than a rejected one.</li>
+  <li><strong>Validated.</strong> Non-numeric values and marks outside 0–20 throw <code>InvalidArgumentException</code>; the identifiers are rejected if non-positive.</li>
+  <li><strong>Blank means ungraded.</strong> Empty strings are skipped, not stored as zero. This matters: a missing mark and a mark of zero are different facts, and conflating them would drag a student's average down.</li>
+</ul>
+
+<h3>9.2 Subject averages and term aggregation</h3>
+<p><code>Score::subjectAveragesForStudentTerm($studentId, $termId)</code> returns one row per subject with
+<code>average_score</code>, <code>sequence_count</code> and <code>max_score</code>, averaging across every
+sequence of the term via the self-join described in §8.3. This is the method the report card renders.</p>
+
+<h3>9.3 Coefficient-weighted overall average</h3>
+<p><code>Score::overallAverageForStudentTerm($studentId, $termId, $classId = 0)</code> implements the Cameroon
+formula:</p>
+<pre><code>$coefficients = $classId > 0
+    ? (new SubjectCoefficient())->getForClass($classId)   // [subject_id => coefficient]
+    : [];
+
+foreach ($subjects as $subject) {
+    if ($subject['average_score'] === null) continue;
+
+    $coefficient = $coefficients[(int) $subject['subject_id']] ?? 1;
+
+    $weightedTotal     += (float) $subject['average_score'] * $coefficient;
+    $totalCoefficients += $coefficient;
+}
+
+return $totalCoefficients === 0
+    ? null
+    : round($weightedTotal / $totalCoefficients, 2);</code></pre>
+<p>The <code>?? 1</code> default is the important detail: a subject with no configured coefficient falls back to
+weight 1, so the formula degrades gracefully to a plain mean rather than dropping the subject or dividing by
+zero. Ungraded subjects are skipped entirely, and an empty result returns <code>null</code> — not <code>0</code>,
+which would be indistinguishable from a genuine zero average.</p>
+<div class="callout good">
+  <p><strong>This is correct, and it is the feature that makes the system usable in a Cameroonian school.</strong>
+  Both project notes still list weighted averages as an unimplemented gap; that is stale (§15).</p>
+</div>
+
+<h3>9.4 Grade scale</h3>
+<p>Letters and remarks are never hard-coded. <code>Result::getGrade()</code> and
+<code>GradeScale::forScore()</code> both query the <code>grade_scale</code> table:</p>
+<pre><code>SELECT id, min_score, max_score, letter, remark
+FROM grade_scale
+WHERE :score >= min_score AND :score <= max_score
+ORDER BY min_score DESC
+LIMIT 1</code></pre>
+<p>Seeded bands: A 16–20 Excellent, B 14–15.99 Very Good, C 12–13.99 Good, D 10–11.99 Fair, E 8–9.99 Weak,
+F 0–7.99 Fail. An administrator can change the policy without touching a single stored score.</p>
+<div class="callout warn">
+  <p><strong>A latent portability trap.</strong> This query binds the named placeholder <code>:score</code>
+  twice. PDO's <em>emulated</em> prepares — the MySQL default, and what this project runs with — expand it fine.
+  Native prepares do not: reusing a named placeholder raises <code>HY093 Invalid parameter number</code>. So the
+  day someone hardens the connection with <code>PDO::ATTR_EMULATE_PREPARES =&gt; false</code> (normally good
+  advice), every grade lookup in the system breaks. Fix it pre-emptively by binding two distinct placeholders,
+  <code>:score_min</code> and <code>:score_max</code>, with the same value.</p>
+</div>
+
+<h3>9.5 Class rankings</h3>
+<p><code>Result::getClassResults($classId, $academicYearId, $termId)</code> builds the ranking:</p>
+<ol>
+  <li>Load every student enrolled in the class for that academic year.</li>
+  <li>Compute each student's overall result — delegating the average to <code>Score::overallAverageForStudentTerm()</code>.</li>
+  <li><code>usort()</code> by average descending, with students who have no results forced to the bottom and ties broken by name.</li>
+  <li>Assign competition-style positions: equal averages share a position and the next distinct average skips accordingly (1st, 2nd, 2nd, 4th). Students without results get <code>position = null</code> rather than a misleading last place.</li>
+</ol>
+<div class="callout good">
+  <p><strong>One definition of "average", by construction.</strong> The ranking does not re-implement averaging —
+  it calls the same <code>Score</code> method the report card calls. This is deliberate and the code comments say
+  so. It means a student's displayed average and the average their rank was computed from can never drift apart.
+  If you ever need to change the averaging rule, change it in <code>Score</code> only; do not add a second
+  implementation.</p>
+</div>
+<div class="callout warn">
+  <p><strong>Performance: this is an N+1 pattern.</strong> Ranking a class runs roughly three queries per
+  student — subject results, subject averages, and the coefficient lookup, the last of which fetches the same
+  per-class coefficient map once per student. A 60-student class costs around 180 queries, and the student report
+  card triggers a full class ranking just to find one position. It is tolerable at a single school's scale, but it
+  is the first thing that will hurt. Two cheap fixes: hoist the coefficient lookup out of the loop (it is
+  identical for every student in the class), and compute the whole class's subject averages in one grouped query
+  instead of one query per student.</p>
+</div>
+
+<h2 class="page-break">10. Feature Walkthrough by Role</h2>
+
+<h3>10.1 Administrator</h3>
+<table>
+  <tr><th style="width:28%">Capability</th><th>Detail</th></tr>
+  <tr><td>Dashboard</td><td>Counts of students, teachers, classes and related statistics.</td></tr>
+  <tr><td>Academic year lifecycle</td><td>Create a year, activate it, and set the current term/sequence. <code>Term::setCurrent()</code> runs in a transaction: it verifies the term belongs to the current year, clears <code>is_current</code> across that year, sets the new one, and throws if no row was updated. That is the correct way to maintain a single-current-row invariant.</td></tr>
+  <tr><td>Create teacher</td><td>User account + teacher profile, password strength enforced.</td></tr>
+  <tr><td>Create student</td><td>User + student profile + enrolment, wrapped in an explicit transaction (<code>AdminController</code> lines 416–486) so a failure cannot leave an orphaned account with no enrolment.</td></tr>
+  <tr><td>Create parent</td><td>User + parent profile + child links.</td></tr>
+  <tr><td>Assign teachers</td><td>Creates the <code>class_subject_teacher</code> row that grants marking rights.</td></tr>
+  <tr><td>Class coefficients</td><td>Per-class subject weighting, saved in bulk within a transaction.</td></tr>
+  <tr><td>Announcements</td><td>Post school-wide or class-scoped notices; view all.</td></tr>
+  <tr><td>Listings</td><td>Read-only views of teachers, classes and class rosters.</td></tr>
+</table>
+<div class="callout warn">
+  <p><strong>The biggest functional gap in the product.</strong> Every entity can be created; none can be edited,
+  deactivated or deleted. A mistyped student name is permanent through the UI, a teacher who leaves cannot be
+  deactivated, and a wrong teacher assignment cannot be corrected. The <code>users.is_active</code> column already
+  exists and login already honours it — a small user-management screen would unlock most of this value immediately.
+  This is the highest-value feature work available.</p>
+</div>
+
+<h3>10.2 Teacher</h3>
+<p>The dashboard lists the teacher's <code>class_subject_teacher</code> assignments plus announcements. From each
+assignment they can mark attendance for today or enter scores for a chosen term and sequence. Both actions
+re-verify assignment ownership server-side before doing anything (§7.2). The score form only loads the class
+roster once a term/sequence has been selected, which avoids showing a marking grid that cannot yet be saved.</p>
+
+<h3>10.3 Student</h3>
+<p>The originally monolithic dashboard has been split into four focused pages — Information, Report Card,
+Attendance, Announcements — all sharing <code>bootStudentContext()</code>. The legacy
+<code>student_dashboard</code> route now issues an HTTP 301 to the information page so old bookmarks keep working.
+Using 301 rather than 302 here is the right call for a permanent split.</p>
+<p>The report card shows per-subject averages with letter and remark, the coefficient-weighted overall average,
+the overall grade, and class position out of the number of students who actually have results — a more honest
+denominator than total enrolment.</p>
+
+<h3>10.4 Parent</h3>
+<p>The dashboard lists linked children. Selecting one opens a detail page with that child's attendance, scores,
+report card, overall average, class position and class-scoped announcements — gated by the
+<code>isLinkedToChild()</code> check described in §7.2.</p>
+
+<h2 class="page-break">11. Front-End Architecture</h2>
+<p>Bootstrap 5.3.3 arrives by CDN and is supplemented by five local stylesheets, each with a clear remit:</p>
+<table>
+  <tr><th style="width:26%">File</th><th style="width:12%">Lines</th><th>Responsibility</th></tr>
+  <tr><td><code>theme.css</code></td><td>463</td><td>Design tokens — the navy <code>#123B63</code> and gold <code>#D69E2E</code> palette, typography, spacing.</td></tr>
+  <tr><td><code>components.css</code></td><td>1,323</td><td>Buttons, cards, badges, tables, forms.</td></tr>
+  <tr><td><code>dashboard.css</code></td><td>931</td><td>Sidebar, header, stat cards, dashboard grid.</td></tr>
+  <tr><td><code>auth.css</code></td><td>1,930</td><td>Login and password-change screens.</td></tr>
+  <tr><td><code>responsive.css</code></td><td>293</td><td>Breakpoints and mobile behaviour.</td></tr>
+</table>
+<p class="small">The brand colours are also stored in <code>school_settings.primary_color</code> /
+<code>secondary_color</code>, which suggests per-school theming was intended. The CSS does not yet read them —
+exposing them as CSS custom properties on <code>:root</code> from the settings row would complete that feature
+cheaply.</p>
+
+<h3>JavaScript — <code>public/js/app.js</code> (944 lines)</h3>
+<p>One file, no framework, no build step, organised as discrete <code>initialize*()</code> functions invoked on
+<code>DOMContentLoaded</code>:</p>
+<ul>
+  <li><code>initializeAlerts()</code> — dismissible flash messages.</li>
+  <li><code>initializeFormSubmitProtection()</code> — disables the submit button on submit, preventing double-posted score batches.</li>
+  <li><code>initializeDirtyPostFormWarning()</code> — warns before navigating away from an edited form. Genuinely valuable when a teacher has typed forty marks.</li>
+  <li><code>initializeDashboardSidebar()</code> — responsive sidebar with overlay and keyboard handling.</li>
+  <li><code>initializeStatusBadges()</code> / <code>initializeGradeBadges()</code> — colour-codes attendance and grade cells by reading the table's column headers.</li>
+  <li><code>initializePrintButton()</code> — report-card printing.</li>
+</ul>
+<p>The code is defensive throughout — it checks that elements exist before binding — so a page missing a sidebar
+does not throw. That is the right style for progressively enhanced server-rendered pages.</p>
+
+<h3>Notes on the front-end</h3>
+<ul>
+  <li><code>auth.css</code> is 1,930 lines for two screens. That is disproportionate and almost certainly contains dead rules; a pass with browser coverage tooling would likely halve it.</li>
+  <li><code>views/components/sidebar.php</code> is 1,195 lines, the largest view in the project. It renders four role-specific navigations in one file. Splitting it into four partials selected by role would make each one readable.</li>
+  <li>Output escaping in views is disciplined — 167 <code>htmlspecialchars(..., ENT_QUOTES, 'UTF-8')</code> calls, with integers cast (<code>(int) ($term['id'] ?? 0)</code>) before being echoed unescaped. The few unescaped echoes reviewed were all ternaries over literal strings or integer counters, which are safe.</li>
+</ul>
+
+<h2>12. Installation &amp; Setup</h2>
+<div class="callout danger">
+  <p><strong>A fresh clone will not run.</strong> <code>config/database.php</code> begins with
+  <code>require_once __DIR__ . '/env.php';</code>, but <code>config/env.php</code> is listed in
+  <code>.gitignore</code> and is not in the repository. Every request fatals before reaching the router. Step 4
+  below is the workaround; §14.1 is the real fix.</p>
+</div>
+<ol>
+  <li><strong>Start XAMPP</strong> — Apache and MySQL.</li>
+  <li><strong>Clone into the web root</strong>, e.g. <code>C:\xampp\htdocs\school-system</code>. The folder name must match the path segment in <code>BASE_URL</code>.</li>
+  <li><strong>Create the database and schema:</strong>
+    <pre><code>CREATE DATABASE `school-system`
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- then, in that database:
+SOURCE database/schema.sql;
+SOURCE database/migration_001_sync_schema.sql;
+SOURCE database/migration_002_pass_mark.sql;
+SOURCE database/migration_003_terms_unique_constraint.sql;</code></pre>
+  </li>
+  <li><strong>Recreate <code>config/env.php</code></strong> — it must define an <code>env($key, $default)</code> function that reads <code>.env</code>. See §14.1 for why this file belongs in version control and <code>.env</code> does not.</li>
+  <li><strong>Copy <code>.env.example</code> to <code>.env</code></strong> and set the real values:
+    <pre><code>DB_HOST=localhost
+DB_NAME=school-system
+DB_USERNAME=root
+DB_PASSWORD=
+BASE_URL=/school-system/public
+SCHOOL_EMAIL_DOMAIN=@school.com</code></pre>
+  </li>
+  <li><strong>Seed the first administrator.</strong> There is no installer and no registration page, so the first
+  account must be created by hand. Generate a hash with
+  <code>php -r "echo password_hash('YourStrongPass1', PASSWORD_DEFAULT);"</code>, then:
+    <pre><code>INSERT INTO users (email, password_hash, role, is_active, must_change_password)
+VALUES ('admin@school.com', '&lt;paste the hash&gt;', 'admin', 1, 1);
+
+INSERT INTO admins (user_id, full_name)
+VALUES (LAST_INSERT_ID(), 'System Administrator');</code></pre>
+  </li>
+  <li><strong>Open</strong> <code>http://localhost/school-system/public/index.php?action=login</code>.</li>
+</ol>
+<div class="callout">
+  <p><strong>Smoke test after setup.</strong> Log in as admin → forced password change appears → create an
+  academic year and activate it → set a current term/sequence → create a class, a subject, a teacher and a
+  student → assign the teacher to that class+subject → set coefficients → log in as the teacher → enter marks for
+  both sequences of a term → log in as the student → confirm the report card shows the subject average, the
+  weighted overall average, a grade and a class position. That path exercises nearly every component of the
+  system; if it passes, the installation is sound.</p>
+</div>
+
+<h2 class="page-break">13. Security Review</h2>
+<p>Findings are ordered by severity, each with root cause before remedy.</p>
+
+<h3>13.1 <span class="sev crit">CRITICAL</span> Source and secrets are exposed over HTTP</h3>
+<p><strong>Root cause:</strong> <code>.htaccess</code> at the project root is <strong>0 bytes</strong>, and the
+documented <code>BASE_URL</code> is <code>/school-system/public</code> — meaning Apache serves the entire project
+directory, not just <code>public/</code>. Nothing restricts access to the parent folders.</p>
+<p><strong>Impact:</strong> with the project at <code>htdocs/school-system</code>, these are all fetchable by
+anyone who can reach the server:</p>
+<pre><code>http://host/school-system/.env                    → database credentials
+http://host/school-system/config/database.php     → served as PHP, but...
+http://host/school-system/database/schema.sql     → full schema, downloaded as text
+http://host/school-system/src/Models/Score.php    → source if PHP handling is ever misconfigured</code></pre>
+<p>The <code>.sql</code> files and <code>.env</code> are not PHP, so Apache returns them as plain text
+immediately. Database credentials leak on the first request.</p>
+<p><strong>Fix — do both:</strong></p>
+<ol>
+  <li><strong>Point the virtual host's <code>DocumentRoot</code> at <code>public/</code>.</strong> This is the real fix. Nothing outside <code>public/</code> is then addressable at all, and <code>BASE_URL</code> becomes <code>/</code>.</li>
+  <li><strong>Add defence in depth</strong> in the root <code>.htaccess</code>, for shared hosting where you cannot set the document root:
+    <pre><code># Block everything at the project root except the public/ entry point
+&lt;FilesMatch "\.(env|sql|md|json|lock|ini|log)$"&gt;
+    Require all denied
+&lt;/FilesMatch&gt;
+
+RedirectMatch 403 ^/school-system/(config|src|database|views)/.*$</code></pre>
+  </li>
+</ol>
+<p>Treat any credentials that have been live on an exposed host as compromised and rotate them.</p>
+
+<h3>13.2 <span class="sev ok">STRONG</span> Injection, CSRF and XSS defences</h3>
+<p>These are done properly and are recorded here so a future reviewer does not "fix" them into something worse:</p>
+<ul>
+  <li><strong>SQL injection</strong> — every query in all 16 models uses PDO prepared statements with named parameters. No string interpolation into SQL was found anywhere in the codebase.</li>
+  <li><strong>CSRF</strong> — validated once, globally, for every POST before routing (§5.2). Tokens are 32 random bytes compared with <code>hash_equals()</code>.</li>
+  <li><strong>XSS</strong> — 167 escaped outputs with <code>ENT_QUOTES</code> and explicit UTF-8; integers cast before echo.</li>
+  <li><strong>Session fixation</strong> — <code>session_regenerate_id(true)</code> on successful login.</li>
+  <li><strong>IDOR</strong> — ownership verified for teacher assignments and parent–child links.</li>
+  <li><strong>User enumeration</strong> — identical error message whether or not the email exists.</li>
+</ul>
+
+<h3>13.3 <span class="sev med">MEDIUM</span> Database errors and internal messages reach the browser</h3>
+<p><strong>Root cause:</strong> <code>config/database.php</code> ends its catch block with
+<code>die("Database connection failed: " . $e-&gt;getMessage())</code>. Several controllers likewise
+<code>echo</code> a message and <code>exit</code> on missing profiles.</p>
+<p><strong>Impact:</strong> a connection failure prints the host, database name and driver error to the visitor.</p>
+<p><strong>Fix:</strong> log with <code>error_log()</code>, render a neutral page, and in production set
+<code>display_errors = Off</code> with <code>log_errors = On</code>. Replace the bare <code>echo</code>+
+<code>exit</code> paths with a small shared error view so failures look like the rest of the application.</p>
+
+<h3>13.4 <span class="sev med">MEDIUM</span> Rate limiting is per-session, not per-account</h3>
+<p><strong>Root cause:</strong> the attempt counter lives in <code>$_SESSION</code>.</p>
+<p><strong>Impact:</strong> an attacker who discards the session cookie between attempts gets an unlimited
+allowance. The control stops an honest user fat-fingering a password; it does not stop a scripted attack.</p>
+<p><strong>Fix:</strong> record attempts in a <code>login_attempts(email, ip_address, attempted_at)</code> table
+and throttle on the email/IP pair. The existing session check can stay as a cheap first line.</p>
+
+<h3>13.5 <span class="sev low">LOW</span> CSRF token never rotates</h3>
+<p>The token is generated once per session and reused until logout. Rotating it after each successful
+state-changing POST narrows the window in which a leaked token is useful. Low priority given the
+<code>samesite=Strict</code> cookie already in place.</p>
+
+<h3>13.6 <span class="sev low">LOW</span> No security headers</h3>
+<p>No <code>Content-Security-Policy</code>, <code>X-Frame-Options</code>, <code>X-Content-Type-Options</code> or
+<code>Referrer-Policy</code> is sent. Adding them in <code>.htaccess</code> costs four lines and mitigates
+clickjacking, MIME sniffing and referrer leakage. Note that a strict CSP will require removing the inline
+<code>style="…"</code> attributes and <code>onclick</code> handlers currently present in several views.</p>
+
+<h3>Security scorecard</h3>
+<table>
+  <tr><th style="width:40%">Control</th><th style="width:16%">Status</th><th>Reference</th></tr>
+  <tr><td>Password hashing</td><td><span class="sev ok">Strong</span></td><td><code>password_hash</code> / <code>password_verify</code></td></tr>
+  <tr><td>SQL injection defence</td><td><span class="sev ok">Strong</span></td><td>PDO prepares everywhere</td></tr>
+  <tr><td>CSRF protection</td><td><span class="sev ok">Strong</span></td><td>Global gate, §5.2</td></tr>
+  <tr><td>XSS defence</td><td><span class="sev ok">Strong</span></td><td>167 escaped outputs</td></tr>
+  <tr><td>Session hardening</td><td><span class="sev ok">Strong</span></td><td>§7.4</td></tr>
+  <tr><td>Role authorization</td><td><span class="sev ok">Strong</span></td><td>Middleware on every action</td></tr>
+  <tr><td>Object-level authorization</td><td><span class="sev ok">Strong</span></td><td>§7.2</td></tr>
+  <tr><td>Web-root isolation</td><td><span class="sev crit">Critical</span></td><td>§13.1</td></tr>
+  <tr><td>Error disclosure</td><td><span class="sev med">Weak</span></td><td>§13.3</td></tr>
+  <tr><td>Brute-force protection</td><td><span class="sev med">Partial</span></td><td>§13.4</td></tr>
+  <tr><td>Security headers</td><td><span class="sev low">Absent</span></td><td>§13.6</td></tr>
+  <tr><td>Audit logging</td><td><span class="sev med">Absent</span></td><td>No record of who changed a mark</td></tr>
+</table>
+
+<h2 class="page-break">14. Verified Defects &amp; Root-Cause Analysis</h2>
+<p>Every defect below was confirmed against the source at commit <code>e9f23ca</code>. Claims from the project's
+own notes that did <em>not</em> survive verification are listed separately in §15.</p>
+
+<h3>14.1 <span class="sev crit">CRITICAL</span> A fresh clone cannot boot — <code>config/env.php</code> is git-ignored</h3>
+<p><strong>Where:</strong> <code>.gitignore</code> lines 3–6; <code>config/database.php</code> line 18.</p>
+<pre><code># .gitignore
+.env
+config/env.php          ← this is the problem</code></pre>
+<p><strong>Root cause:</strong> two different kinds of file were treated as one. <code>.env</code> holds
+<em>secrets</em> and must never be committed. <code>config/env.php</code> is the <em>parser</em> that reads
+<code>.env</code> — it is ordinary application code containing no secrets, and <code>config/database.php</code>
+requires it unconditionally on line 18. Ignoring it means the repository is missing a file it cannot run without.</p>
+<p><strong>Symptom:</strong> <code>Fatal error: Failed opening required '.../config/env.php'</code> on every
+request after a clean clone. Verified: the file is absent from the repository, and <code>.env.example</code> is
+the only env-related file tracked.</p>
+<p><strong>Fix:</strong> remove <code>config/env.php</code> from <code>.gitignore</code> and commit it. Keep
+<code>.env</code> ignored — that line is correct and should stay. Also note <code>.env</code> is listed twice in
+the file; harmless, but tidy it. If <code>env.php</code> has been lost locally, it needs to be re-authored:</p>
+<pre><code>&lt;?php
+declare(strict_types=1);
+
+function env(string $key, ?string $default = null): ?string
+{
+    static $vars = null;
+
+    if ($vars === null) {
+        $vars = [];
+        $path = __DIR__ . '/../.env';
+
+        if (is_readable($path)) {
+            foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                $line = trim($line);
+                if ($line === '' || $line[0] === '#' || !str_contains($line, '=')) {
+                    continue;
+                }
+                [$name, $value] = explode('=', $line, 2);
+                $vars[trim($name)] = trim($value, " \t\n\r\0\x0B\"'");
+            }
+        }
+    }
+
+    return $vars[$key] ?? $default;
+}</code></pre>
+<p class="small">This is a reconstruction consistent with how <code>config/database.php</code> calls
+<code>env()</code>, not a copy of the original file — the original is not in the repository to compare against.</p>
+
+<h3>14.2 <span class="sev high">HIGH</span> Pass/fail uses a hard-coded 8.00 and ignores the configured pass mark</h3>
+<p><strong>Where:</strong> <code>src/Models/Result.php</code>, <code>determinePassFail()</code>.</p>
+<pre><code>public function determinePassFail(float $average): string
+{
+    return $average >= 8.00 ? 'PASS' : 'FAIL';
+}</code></pre>
+<p><strong>Root cause:</strong> the method predates <code>migration_002_pass_mark.sql</code>, which added
+<code>school_settings.pass_mark DECIMAL(5,2) NOT NULL DEFAULT 10.00</code>. That migration's own header states:
+<em>"The Result model reads this to decide PASS/FAIL."</em> It does not — the constant was never replaced.
+<code>SchoolSettings::get()</code> already selects the column and even falls back to <code>'10.00'</code>, so the
+value is available and simply unused.</p>
+<p><strong>Impact:</strong> this is a correctness bug with real consequences, not a style issue. The Cameroon
+pass mark is 10/20, and the seeded grade scale marks 8–9.99 as "E — Weak". Every student averaging between 8.00
+and 9.99 is currently reported as <strong>PASS</strong> when the school's own configured threshold says they have
+failed. It also silently propagates into <code>getClassSummary()</code>, inflating the reported pass rate.</p>
+<p><strong>Fix:</strong> read the configured value, defaulting to 10.00:</p>
+<pre><code>public function determinePassFail(float $average): string
+{
+    $passMark = (float) (School::settings()['pass_mark'] ?? 10.00);
+
+    return $average >= $passMark ? 'PASS' : 'FAIL';
+}</code></pre>
+<p>Then delete the now-inaccurate docblock above the method, which still describes the 8.00 rule as "the current
+school rule".</p>
+
+<h3>14.3 <span class="sev high">HIGH</span> A view include breaks on Linux due to file casing</h3>
+<p><strong>Where:</strong> <code>src/Controllers/TeacherController.php</code> line 77.</p>
+<pre><code>require __DIR__ . '/../../views/teacher/mark_attendance.php';   // lowercase m
+// file on disk:   views/teacher/Mark_attendance.php            // uppercase M</code></pre>
+<p><strong>Root cause:</strong> Windows and macOS default to case-insensitive filesystems, so the mismatch is
+invisible during XAMPP development. Linux — where this will be deployed — is case-sensitive.</p>
+<p><strong>Impact:</strong> the teacher attendance page fatals on any Linux host. Verified by resolving every
+<code>require</code>/<code>include</code> path in the project against the actual filesystem; this was the only
+genuine casing mismatch found.</p>
+<p><strong>Fix:</strong> rename the file, preserving history and forcing Git to record the case change:</p>
+<pre><code>git mv views/teacher/Mark_attendance.php views/teacher/mark_attendance.tmp
+git mv views/teacher/mark_attendance.tmp  views/teacher/mark_attendance.php</code></pre>
+<p>The two-step rename is necessary because Git on a case-insensitive filesystem ignores a direct
+case-only rename.</p>
+<div class="callout">
+  <p><strong>Prevent the whole class of bug</strong> with a CI check that resolves every include path against the
+  filesystem on Linux. Three lines in a workflow will catch this permanently — see §16, Phase 1.</p>
+</div>
+
+<h3>14.4 <span class="sev med">MEDIUM</span> Two different "subject results" definitions coexist</h3>
+<p><strong>Where:</strong> <code>Score::subjectAveragesForStudentTerm()</code> versus
+<code>Result::getStudentSubjectResults()</code>.</p>
+<p><strong>Root cause:</strong> the <code>Score</code> version aggregates across every sequence sharing the term's
+name and academic year (§8.3). The <code>Result</code> version filters on <code>sc.term_id = :term_id</code>
+exactly — a single sequence. The two were written at different times and the second never adopted the
+aggregation rule.</p>
+<p><strong>Impact:</strong> the overall average is computed from the aggregated set, but
+<code>subject_count</code> inside <code>getStudentOverallResult()</code> is counted from the non-aggregated one.
+A student with marks in both sequences can therefore be shown an overall average derived from, say, eight
+subjects alongside a subject count of five. The overall figure itself is correct; the count beside it is not, and
+the per-subject grades returned by <code>getStudentClassPosition()</code> reflect one sequence rather than the
+term.</p>
+<p><strong>Fix:</strong> delete <code>Result::getStudentSubjectResults()</code> and have <code>Result</code> call
+<code>Score::subjectAveragesForStudentTerm()</code>, exactly as it already does for the overall average. One
+definition of a subject average should exist in the codebase, and <code>Score</code> is the right home for it.</p>
+
+<h3>14.5 <span class="sev med">MEDIUM</span> <code>User::updatePassword()</code> cannot report failure</h3>
+<p><strong>Where:</strong> <code>src/Models/User.php</code> and <code>AuthController::changePassword()</code>.</p>
+<pre><code>// Model — declared void, returns nothing
+public function updatePassword(int $userId, string $newPassword): void
+
+// Controller — checks a return value that can never be false
+$updated = $this->userModel->updatePassword(...);
+if ($updated === false) { /* unreachable */ }</code></pre>
+<p><strong>Root cause:</strong> the model's contract and the controller's expectation disagree. A
+<code>void</code> function evaluates to <code>null</code>, and <code>null === false</code> is
+<code>false</code>, so the guard never fires.</p>
+<p><strong>Impact:</strong> limited in practice, because PDO is configured with
+<code>ERRMODE_EXCEPTION</code>, so a genuine database failure throws rather than returning quietly. But the
+controller contains dead error-handling that gives a false impression of safety, and if a caller ever uses a
+driver without exception mode, a failed password change reports success.</p>
+<p><strong>Fix:</strong> change the signature to <code>: bool</code> and <code>return $stmt-&gt;execute([...]);</code>.
+The controller's existing check then works as written.</p>
+
+<h3>14.6 <span class="sev med">MEDIUM</span> "Latest term" is chosen by highest id, not by date</h3>
+<p><strong>Where:</strong> <code>Score::latestTermIdForStudent()</code> — <code>ORDER BY term_id DESC LIMIT 1</code>.</p>
+<p><strong>Root cause:</strong> the query assumes a higher <code>terms.id</code> always means a chronologically
+later term-sequence. That holds only while terms are inserted in calendar order and never backfilled.</p>
+<p><strong>Impact:</strong> if a term is ever added out of order — correcting a missed year, importing history,
+re-seeding — students' report cards silently display the wrong term.</p>
+<p><strong>Fix:</strong> add <code>start_date</code>/<code>end_date</code> to <code>terms</code> and order by
+date; or, as a smaller step, join <code>academic_years</code> and order by
+<code>(ay.name DESC, t.name DESC, t.sequence_number DESC)</code>, which encodes the real intent rather than
+relying on insertion order.</p>
+
+<h3>14.7 <span class="sev low">LOW</span> Grade lookup breaks if prepared-statement emulation is disabled</h3>
+<p>Covered in §9.4. Two distinct placeholders instead of one reused <code>:score</code>.</p>
+
+<h3>14.8 <span class="sev low">LOW</span> Ranking is an N+1 query pattern</h3>
+<p>Covered in §9.5. Hoist the per-class coefficient lookup out of the per-student loop and batch the subject
+averages.</p>
+
+<h3>Fix priority</h3>
+<table>
+  <tr><th style="width:7%">Order</th><th style="width:40%">Item</th><th>Why this order</th></tr>
+  <tr><td>1</td><td>Restrict the web root (§13.1)</td><td>Credentials are readable over HTTP. Nothing else matters while this is true.</td></tr>
+  <tr><td>2</td><td>Commit <code>config/env.php</code> (§14.1)</td><td>Nobody else can run the project until this is fixed.</td></tr>
+  <tr><td>3</td><td>Rename <code>Mark_attendance.php</code> (§14.3)</td><td>Blocks any Linux deployment; two commands to fix.</td></tr>
+  <tr><td>4</td><td>Read the configured pass mark (§14.2)</td><td>The system currently passes students the school considers failed.</td></tr>
+  <tr><td>5</td><td>Unify the subject-average definition (§14.4)</td><td>Removes the second source of truth before more code depends on it.</td></tr>
+  <tr><td>6</td><td>Fix <code>updatePassword()</code> return type (§14.5)</td><td>Small, and removes misleading dead error handling.</td></tr>
+  <tr><td>7</td><td>Admin edit / deactivate screens (§10.1)</td><td>Highest-value missing feature; the data model already supports it.</td></tr>
+  <tr><td>8</td><td>Migration tracking table (§8.4)</td><td>Prevents environments drifting apart as the schema grows.</td></tr>
+</table>
+
+<h2 class="page-break">15. Documentation Drift</h2>
+<p><code>CLAUDE.md</code> and <code>PROJECT_PROGRESS.md</code> are useful and unusually well maintained for a
+solo project — but parts have fallen behind the code. A new developer trusting them would chase problems that no
+longer exist and miss ones that do. Verified status of every claim in their "Known Issues" and "Critical
+Findings" sections:</p>
+<table>
+  <tr><th style="width:44%">Documented claim</th><th style="width:14%">Verified</th><th>Evidence</th></tr>
+  <tr><td>"Model files have lowercase names but requires use PascalCase"</td><td><span class="sev ok">Fixed</span></td><td>All 16 model filenames and all <code>require</code> paths resolve correctly.</td></tr>
+  <tr><td>"<code>Mark_attendance.php</code> has mixed case"</td><td><span class="sev high">Still broken</span></td><td>§14.3 — the only real casing mismatch left.</td></tr>
+  <tr><td>"Weighted averages not implemented"</td><td><span class="sev ok">Implemented</span></td><td><code>Score::overallAverageForStudentTerm()</code>, §9.3.</td></tr>
+  <tr><td>"Result model exists but is not wired to any route"</td><td><span class="sev ok">Wired</span></td><td>Used by <code>StudentController::reportCard()</code> and <code>ParentController::childDetail()</code>.</td></tr>
+  <tr><td>"SubjectCoefficient is not used in any calculation"</td><td><span class="sev ok">In use</span></td><td>Called from the weighting loop, §9.3.</td></tr>
+  <tr><td>"<code>Subject::getDashboardStatistics()</code> is dead code"</td><td><span class="sev ok">Removed</span></td><td><code>Subject.php</code> now contains only <code>all()</code>.</td></tr>
+  <tr><td>"<code>User::updatePassword()</code> returns void but caller checks false"</td><td><span class="sev med">Still present</span></td><td>§14.5.</td></tr>
+  <tr><td>"Password policy inconsistent — creation allows 6 chars"</td><td><span class="sev ok">Consistent</span></td><td><code>validatePasswordStrength()</code> applied at all three creation paths and at change.</td></tr>
+  <tr><td>"Layout fragmentation — only admin dashboard uses the shared layout"</td><td><span class="sev ok">Complete</span></td><td>All 23 page views use <code>views/layouts/dashboard.php</code>.</td></tr>
+  <tr><td>"Phase 1: Fixed <code>Student::create()</code> — added <code>admission_no</code>"</td><td><span class="sev med">Not present</span></td><td><code>admission_no</code> appears nowhere in the codebase or schema; the change was reverted or lost.</td></tr>
+</table>
+<div class="callout">
+  <p><strong>Recommendation.</strong> Rewrite the "Known Issues" section of <code>CLAUDE.md</code> from §14 of
+  this document, and move the completed items in <code>PROJECT_PROGRESS.md</code> from "next" to "done". Stale
+  documentation is worse than none: it costs a new developer a day proving that fixed bugs are fixed, and it
+  hides the four that are real. Going forward, treat a "Known Issues" entry as something that is removed in the
+  same commit that fixes it.</p>
+</div>
+
+<h2 class="page-break">16. Improvement Roadmap</h2>
+<p>Four phases, ordered so each rests on the last. Phase 1 is the whole of the blocking work and is small.</p>
+
+<h3>Phase 1 — Unblock deployment (days)</h3>
+<ul>
+  <li>Move the document root to <code>public/</code>; add the defensive <code>.htaccess</code> (§13.1).</li>
+  <li>Commit <code>config/env.php</code>; keep <code>.env</code> ignored (§14.1).</li>
+  <li>Rename <code>Mark_attendance.php</code> (§14.3).</li>
+  <li>Read <code>school_settings.pass_mark</code> in <code>determinePassFail()</code> (§14.2).</li>
+  <li>Fix <code>updatePassword()</code>'s return type (§14.5); unify subject averages (§14.4).</li>
+  <li>Replace <code>die()</code> on connection failure with logging plus a neutral error page (§13.3).</li>
+  <li>Add a CI workflow — <code>php -l</code> across every file, plus an include-path resolution check on Linux, which would have caught §14.3 automatically:
+    <pre><code>name: CI
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.2' }
+      - name: Syntax check
+        run: find . -name "*.php" -print0 | xargs -0 -n1 php -l
+      - name: Verify include paths resolve (case-sensitive)
+        run: |
+          grep -rhoP "(require|include)(_once)?\s+__DIR__\s*\.\s*'[^']+'" \
+            --include="*.php" src public views | sort -u</code></pre>
+  </li>
+</ul>
+
+<h3>Phase 2 — Complete the administrative surface (weeks)</h3>
+<ul>
+  <li>Edit and deactivate for students, teachers, parents and classes — the largest missing capability (§10.1).</li>
+  <li>A user-management list: search, filter, activate/deactivate, reset password.</li>
+  <li>CRUD for subjects and classes; a school-settings editor; a grade-scale editor.</li>
+  <li>Search, filter and pagination on every listing. No list in the system is paginated today.</li>
+  <li>An <code>audit_log</code> table recording who changed which mark and when. In a school, score changes are disputed — without this there is no answer.</li>
+</ul>
+
+<h3>Phase 3 — Results workflow and reporting (weeks)</h3>
+<ul>
+  <li>Printable Cameroon-format report cards (HTML first, then PDF) — coefficient, sequence 1, sequence 2, term average, class average, rank and remarks per subject.</li>
+  <li>Result approval and locking, so marks cannot change after publication without an audited unlock.</li>
+  <li>Class result sheets and ranking sheets for staff meetings.</li>
+  <li>A migration-tracking table and runner (§8.4).</li>
+</ul>
+
+<h3>Phase 4 — Scale, analytics and Cameroon-specific features (months)</h3>
+<ul>
+  <li>Replace the 707-line router <code>switch</code> with a route table (§6).</li>
+  <li>Resolve the N+1 ranking queries (§9.5); add indexes once real query plans are measured.</li>
+  <li>Attendance summaries, class and subject analytics, student profiles.</li>
+  <li>Fees with Mobile Money (MTN MoMo / Orange Money) reconciliation, and SMS or WhatsApp notification to parents. Both fit how Cameroonian schools and families actually operate, and both are far easier to design in than to retrofit.</li>
+  <li>Bilingual English/French labels — mandated in much of the country and structural, not cosmetic.</li>
+  <li>Introduce Composer with PSR-4 autoloading to replace ~100 manual <code>require_once</code> lines, and PHPUnit tests over the grading engine — which is the part where a silent regression does the most damage.</li>
+</ul>
+
+<h2 class="page-break">Appendix A — Route Table</h2>
+<p>All 30 registered actions. Unknown actions render a styled 404.</p>
+<table>
+  <tr><th style="width:36%">Action</th><th style="width:13%">Method</th><th style="width:13%">Role</th><th>Controller method</th></tr>
+  <tr><td><code>login</code></td><td>GET</td><td>public</td><td>AuthController::showLoginForm</td></tr>
+  <tr><td><code>login_submit</code></td><td>POST</td><td>public</td><td>AuthController::login</td></tr>
+  <tr><td><code>logout</code></td><td>GET</td><td>any</td><td>AuthController::logout</td></tr>
+  <tr><td><code>change_password_form</code></td><td>GET</td><td>any</td><td>AuthController::showChangePasswordForm</td></tr>
+  <tr><td><code>change_password</code></td><td>POST</td><td>any</td><td>AuthController::changePassword</td></tr>
+  <tr><td><code>admin_dashboard</code></td><td>GET</td><td>admin</td><td>AdminController::dashboard</td></tr>
+  <tr><td><code>academic_years</code></td><td>GET</td><td>admin</td><td>AcademicYearController::index</td></tr>
+  <tr><td><code>create_academic_year</code></td><td>POST</td><td>admin</td><td>AcademicYearController::create</td></tr>
+  <tr><td><code>activate_academic_year</code></td><td>POST</td><td>admin</td><td>AcademicYearController::activate</td></tr>
+  <tr><td><code>set_current_term</code></td><td>POST</td><td>admin</td><td>AcademicYearController::setCurrentTerm</td></tr>
+  <tr><td><code>create_teacher_form</code></td><td>GET</td><td>admin</td><td>AdminController::showCreateTeacherForm</td></tr>
+  <tr><td><code>create_teacher</code></td><td>POST</td><td>admin</td><td>AdminController::createTeacher</td></tr>
+  <tr><td><code>create_student_form</code></td><td>GET</td><td>admin</td><td>AdminController::showCreateStudentForm</td></tr>
+  <tr><td><code>create_student</code></td><td>POST</td><td>admin</td><td>AdminController::createStudent</td></tr>
+  <tr><td><code>create_parent_form</code></td><td>GET</td><td>admin</td><td>AdminController::showCreateParentForm</td></tr>
+  <tr><td><code>create_parent</code></td><td>POST</td><td>admin</td><td>AdminController::createParent</td></tr>
+  <tr><td><code>assign_teacher_form</code></td><td>GET</td><td>admin</td><td>AdminController::showAssignTeacherForm</td></tr>
+  <tr><td><code>assign_teacher</code></td><td>POST</td><td>admin</td><td>AdminController::assignTeacher</td></tr>
+  <tr><td><code>class_coefficients_form</code></td><td>GET</td><td>admin</td><td>AdminController::showClassCoefficientsForm</td></tr>
+  <tr><td><code>save_class_coefficients</code></td><td>POST</td><td>admin</td><td>AdminController::saveClassCoefficients</td></tr>
+  <tr><td><code>view_teachers</code></td><td>GET</td><td>admin</td><td>AdminController::viewTeacherAssignments</td></tr>
+  <tr><td><code>view_classes</code></td><td>GET</td><td>admin</td><td>AdminController::viewClasses</td></tr>
+  <tr><td><code>view_class_list</code></td><td>GET</td><td>admin</td><td>AdminController::viewClassList</td></tr>
+  <tr><td><code>post_announcement_form</code></td><td>GET</td><td>admin</td><td>AdminController::showPostAnnouncementForm</td></tr>
+  <tr><td><code>post_announcement</code></td><td>POST</td><td>admin</td><td>AdminController::postAnnouncement</td></tr>
+  <tr><td><code>view_announcements</code></td><td>GET</td><td>admin</td><td>AdminController::viewAnnouncements</td></tr>
+  <tr><td><code>teacher_dashboard</code></td><td>GET</td><td>teacher</td><td>TeacherController::dashboard</td></tr>
+  <tr><td><code>mark_attendance_form</code></td><td>GET</td><td>teacher</td><td>TeacherController::showMarkAttendanceForm</td></tr>
+  <tr><td><code>mark_attendance</code></td><td>POST</td><td>teacher</td><td>TeacherController::markAttendance</td></tr>
+  <tr><td><code>enter_scores_form</code></td><td>GET</td><td>teacher</td><td>TeacherController::showEnterScoresForm</td></tr>
+  <tr><td><code>enter_scores</code></td><td>POST</td><td>teacher</td><td>TeacherController::enterScores</td></tr>
+  <tr><td><code>student_information</code></td><td>GET</td><td>student</td><td>StudentController::information</td></tr>
+  <tr><td><code>student_report_card</code></td><td>GET</td><td>student</td><td>StudentController::reportCard</td></tr>
+  <tr><td><code>student_attendance</code></td><td>GET</td><td>student</td><td>StudentController::attendance</td></tr>
+  <tr><td><code>student_announcements</code></td><td>GET</td><td>student</td><td>StudentController::announcements</td></tr>
+  <tr><td><code>student_dashboard</code></td><td>GET</td><td>student</td><td>301 → <code>student_information</code></td></tr>
+  <tr><td><code>parent_dashboard</code></td><td>GET</td><td>parent</td><td>ParentController::dashboard</td></tr>
+  <tr><td><code>parent_child_detail</code></td><td>GET</td><td>parent</td><td>ParentController::childDetail</td></tr>
+</table>
+
+<h2 class="page-break">Appendix B — Model API Reference</h2>
+<p>The 16 models and their public methods. All SQL in the application lives here.</p>
+<table>
+  <tr><th style="width:22%">Model</th><th>Public methods</th></tr>
+  <tr><td><code>User</code></td><td><code>create(email, password, role): int</code> · <code>findByEmail(): array|false</code> · <code>verifyPassword(): bool</code> · <code>emailExists(): bool</code> · <code>updatePassword(): void</code> <span class="sev med">§14.5</span></td></tr>
+  <tr><td><code>Student</code></td><td><code>create</code> · <code>enroll</code> · <code>all</code> · <code>allEnrolledInCurrentYear</code> · <code>allByClass</code> · <code>allByClassDetailed</code> · <code>findByUserId</code> · <code>findByUserIdWithEmail</code> · <code>find</code> · <code>getCurrentClassId</code> · <code>getCurrentEnrollment</code> · <code>getCurrentClass</code> · <code>getDashboardStatistics</code></td></tr>
+  <tr><td><code>Teacher</code></td><td><code>create</code> · <code>all</code> · <code>findByUserId</code> · <code>getTotalCount</code></td></tr>
+  <tr><td><code>ParentModel</code></td><td><code>create</code> · <code>linkChild</code> · <code>all</code> · <code>findByUserId</code> · <code>getChildren</code> · <code>isLinkedToChild</code> <span class="sev ok">IDOR guard</span></td></tr>
+  <tr><td><code>Score</code></td><td><code>recordBulk</code> <span class="sev ok">transactional</span> · <code>getForSubjectTermSequence</code> · <code>getForSubjectTerm</code> · <code>forStudent</code> · <code>forStudentTerm</code> · <code>forStudentTermSequence</code> · <code>subjectAveragesForStudentTerm</code> · <code>overallAverageForStudentTerm</code> <span class="sev ok">weighted</span> · <code>latestTermIdForStudent</code> <span class="sev med">§14.6</span></td></tr>
+  <tr><td><code>Result</code></td><td><code>getGrade</code> <span class="sev low">§9.4</span> · <code>getClassStudents</code> · <code>getStudentSubjectResults</code> <span class="sev med">§14.4</span> · <code>getStudentOverallResult</code> · <code>determinePassFail</code> <span class="sev high">§14.2</span> · <code>getClassResults</code> · <code>getStudentClassPosition</code> · <code>getClassSummary</code></td></tr>
+  <tr><td><code>Term</code></td><td><code>all</code> · <code>getCurrentTerm</code> · <code>find</code> · <code>findCurrent</code> · <code>getSequences</code> · <code>forAcademicYear</code> · <code>getCurrentAcademicYear</code> · <code>setCurrent</code> <span class="sev ok">transactional</span></td></tr>
+  <tr><td><code>AcademicYear</code></td><td><code>getCurrent</code> · <code>find</code> · <code>all</code> · <code>create</code> · <code>setCurrent</code> <span class="sev ok">transactional</span></td></tr>
+  <tr><td><code>SubjectCoefficient</code></td><td><code>getForSubjectClass</code> · <code>getForClass</code> · <code>getSubjectsForClass</code> · <code>save</code> · <code>saveBulk</code> <span class="sev ok">transactional</span> · <code>delete</code></td></tr>
+  <tr><td><code>ClassSubjectTeacher</code></td><td><code>assign</code> · <code>existsForClassSubject</code> · <code>all</code> · <code>forTeacher</code> · <code>subjectsForClass</code> · <code>find</code></td></tr>
+  <tr><td><code>Attendance</code></td><td><code>markBulk</code> · <code>getForAssignmentDate</code> · <code>forStudent</code></td></tr>
+  <tr><td><code>Announcement</code></td><td><code>create</code> · <code>forDashboard(?classId)</code> · <code>all</code></td></tr>
+  <tr><td><code>GradeScale</code></td><td><code>forScore(float): array|false</code></td></tr>
+  <tr><td><code>SchoolSettings</code></td><td><code>get(): array</code> — includes <code>pass_mark</code>, with a <code>'10.00'</code> fallback</td></tr>
+  <tr><td><code>ClassModel</code></td><td><code>all</code> · <code>getTotalCount</code> · <code>find</code></td></tr>
+  <tr><td><code>Subject</code></td><td><code>all</code></td></tr>
+</table>
+
+<h2>Appendix C — Glossary</h2>
+<table>
+  <tr><th style="width:26%">Term</th><th>Meaning in this project</th></tr>
+  <tr><td>Sequence</td><td>One of two assessment periods within a term. Six per academic year.</td></tr>
+  <tr><td>Term-sequence row</td><td>A row in <code>terms</code>. A term is the <em>pair</em> <code>(academic_year_id, name)</code>, not one row — §8.3.</td></tr>
+  <tr><td>Coefficient</td><td>Integer weight for a subject within a class, used by the overall average — §9.3.</td></tr>
+  <tr><td>GCE</td><td>General Certificate of Education — the Cameroonian Anglophone examination, O/L at Form 5 and A/L at Upper Sixth.</td></tr>
+  <tr><td>MINESEC</td><td>Cameroon's Ministry of Secondary Education, which standardises subject coefficients.</td></tr>
+  <tr><td>Front controller</td><td>A single entry point (<code>public/index.php</code>) through which every request passes before routing.</td></tr>
+  <tr><td>Middleware</td><td>A check that runs between routing and the controller body — here, <code>AuthMiddleware::requireRole()</code>.</td></tr>
+  <tr><td>CSRF</td><td>Cross-Site Request Forgery — making a logged-in user's browser issue a state-changing request. Blocked globally here.</td></tr>
+  <tr><td>IDOR</td><td>Insecure Direct Object Reference — reaching another user's record by changing an id in the URL. Guarded for teacher assignments and parent–child links.</td></tr>
+  <tr><td>N+1 queries</td><td>Running one query per item in a loop instead of one query for the whole set — §9.5.</td></tr>
+  <tr><td>Post/Redirect/Get</td><td>Redirecting after a successful POST so a refresh cannot resubmit it. Applied after every write.</td></tr>
+  <tr><td>Emulated prepares</td><td>PDO building the final SQL string in PHP rather than sending a parameterised statement to MySQL. On by default; §9.4 explains why that currently matters.</td></tr>
+</table>
+
+<p class="small" style="margin-top:26px; border-top:1px solid #c9d4e0; padding-top:8px">
+Every claim in this document was verified against the source at commit <code>e9f23ca</code>: include paths were
+resolved against the filesystem, all 74 PHP files were syntax-checked under PHP 8.4, and each defect in §14 was
+traced to a specific file and line. Where the project's own notes disagree with the code, §15 records which one
+is correct. Where a file or feature does not exist, this document says so rather than describing an assumed
+implementation.</p>
+
+</body>
+</html>
