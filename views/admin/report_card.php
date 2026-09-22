@@ -65,22 +65,27 @@ ob_start();
 
     .rc-head {
         display: flex;
-        align-items: center;
-        gap: 18px;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
         border-bottom: 2px solid #0F2C4C;
         padding-bottom: 14px;
         margin-bottom: 8px;
     }
-    .rc-head img { width: 74px; height: 74px; object-fit: contain; }
+    .rc-head-side { flex: 1 1 0; text-align: center; }
+    .rc-head-center { flex: 0 0 auto; max-width: 36%; text-align: center; }
+    .rc-head-center img { width: 76px; height: 76px; object-fit: contain; }
     .rc-head-logo-fallback {
-        width: 74px; height: 74px; border-radius: 8px;
+        width: 76px; height: 76px; border-radius: 8px; margin: 0 auto;
         background: #0F2C4C; color: #fff;
         display: flex; align-items: center; justify-content: center;
         font-weight: 700; font-size: 1.4rem;
     }
-    .rc-country { font-size: 0.72rem; letter-spacing: .04em; color: #444; margin: 0; }
-    .rc-ministry { font-size: 0.72rem; color: #444; margin: 0 0 4px; }
-    .rc-school { font-size: 1.35rem; font-weight: 700; margin: 0; color: #0F2C4C; }
+    .rc-nation { font-size: 0.78rem; font-weight: 700; letter-spacing: .03em; color: #0F2C4C; margin: 0; }
+    .rc-nation-motto { font-size: 0.72rem; font-style: italic; color: #444; margin: 2px 0; }
+    .rc-star { color: #D69E2E; font-size: 0.9rem; letter-spacing: .35em; margin: 2px 0; }
+    .rc-ministry { font-size: 0.68rem; color: #555; margin: 2px 0 0; }
+    .rc-school { font-size: 1.3rem; font-weight: 700; margin: 6px 0 0; color: #0F2C4C; }
     .rc-motto { font-size: 0.8rem; font-style: italic; color: #555; margin: 2px 0 0; }
     .rc-title {
         text-align: center;
@@ -153,18 +158,26 @@ ob_start();
 
     <!-- BILINGUAL HEADER -->
     <div class="rc-head">
-        <?php if (!empty($logoPath)): ?>
-            <img src="<?= BASE_URL ?>/<?= htmlspecialchars(ltrim((string) $logoPath, '/'), ENT_QUOTES, 'UTF-8') ?>"
-                 alt="<?= htmlspecialchars($schoolName, ENT_QUOTES, 'UTF-8') ?> logo">
-        <?php else: ?>
-            <div class="rc-head-logo-fallback">
-                <?= htmlspecialchars(strtoupper(substr($schoolName, 0, 2)), ENT_QUOTES, 'UTF-8') ?>
-            </div>
-        <?php endif; ?>
 
-        <div>
-            <p class="rc-country">REPUBLIC OF CAMEROON · RÉPUBLIQUE DU CAMEROUN</p>
-            <p class="rc-ministry">Ministry of Secondary Education · Ministère des Enseignements Secondaires</p>
+        <!-- English (left) -->
+        <div class="rc-head-side" lang="en">
+            <p class="rc-nation">REPUBLIC OF CAMEROON</p>
+            <p class="rc-nation-motto">Peace &ndash; Work &ndash; Fatherland</p>
+            <p class="rc-star">&#9733;</p>
+            <p class="rc-ministry">Ministry of Secondary Education</p>
+        </div>
+
+        <!-- School (centre) -->
+        <div class="rc-head-center">
+            <?php if (!empty($logoPath)): ?>
+                <img src="<?= BASE_URL ?>/<?= htmlspecialchars(ltrim((string) $logoPath, '/'), ENT_QUOTES, 'UTF-8') ?>"
+                     alt="<?= htmlspecialchars($schoolName, ENT_QUOTES, 'UTF-8') ?> logo">
+            <?php else: ?>
+                <div class="rc-head-logo-fallback">
+                    <?= htmlspecialchars(strtoupper(substr($schoolName, 0, 2)), ENT_QUOTES, 'UTF-8') ?>
+                </div>
+            <?php endif; ?>
+
             <h1 class="rc-school"><?= htmlspecialchars($schoolName, ENT_QUOTES, 'UTF-8') ?></h1>
             <?php if ($schoolMotto !== ''): ?>
                 <p class="rc-motto"><?= htmlspecialchars($schoolMotto, ENT_QUOTES, 'UTF-8') ?></p>
@@ -173,10 +186,19 @@ ob_start();
                 <p class="rc-motto"><?= htmlspecialchars($schoolAddress, ENT_QUOTES, 'UTF-8') ?></p>
             <?php endif; ?>
         </div>
+
+        <!-- French (right) -->
+        <div class="rc-head-side" lang="fr">
+            <p class="rc-nation">R&Eacute;PUBLIQUE DU CAMEROUN</p>
+            <p class="rc-nation-motto">Paix &ndash; Travail &ndash; Patrie</p>
+            <p class="rc-star">&#9733;</p>
+            <p class="rc-ministry">Minist&egrave;re des Enseignements Secondaires</p>
+        </div>
+
     </div>
 
     <div class="rc-title">
-        REPORT CARD · BULLETIN DE NOTES
+        REPORT CARD
     </div>
 
     <!-- STUDENT / TERM INFO -->
