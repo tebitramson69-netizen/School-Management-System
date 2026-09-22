@@ -39,6 +39,7 @@ require_once __DIR__ . '/../Models/Term.php';
 require_once __DIR__ . '/../Models/Score.php';
 require_once __DIR__ . '/../Models/Result.php';
 require_once __DIR__ . '/../Models/GradeScale.php';
+require_once __DIR__ . '/../Models/StudentTermReport.php';
 
 
 class AdminController
@@ -58,6 +59,7 @@ class AdminController
     private Score $scoreModel;
     private Result $resultModel;
     private GradeScale $gradeScaleModel;
+    private StudentTermReport $termReportModel;
 
 
     /**
@@ -82,6 +84,7 @@ class AdminController
         $this->scoreModel = new Score();
         $this->resultModel = new Result();
         $this->gradeScaleModel = new GradeScale();
+        $this->termReportModel = new StudentTermReport();
     }
 
 
@@ -1387,7 +1390,116 @@ try {
             ? $overallAverage >= $passMark
             : null;
 
+        /*
+         * Class-master-entered attendance / conduct / remarks.
+         */
+        $termReport = $this->termReportModel->getFor($studentId, $termId);
+
         require __DIR__ . '/../../views/admin/report_card.php';
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * REPORT CARD — EDIT DETAILS (attendance/conduct/remarks)
+     * -----------------------------------------------------
+     */
+    public function showReportCardDetailsForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $studentId = (int) ($_GET['student_id'] ?? 0);
+        $classId = (int) ($_GET['class_id'] ?? 0);
+        $termId = (int) ($_GET['term_id'] ?? 0);
+
+        $student = $this->studentModel->find($studentId);
+        $class = $this->classModel->find($classId);
+        $term = $this->termModel->find($termId);
+
+        if (!$student || !$class || !$term) {
+            $_SESSION['form_errors'] = ['Could not open report details (missing student, class or term).'];
+            self::redirect('report_cards');
+        }
+
+        $record = $this->termReportModel->getFor($studentId, $termId);
+        $conductOptions = StudentTermReport::conductOptions();
+        $distinctionOptions = StudentTermReport::distinctionOptions();
+
+        require __DIR__ . '/../../views/admin/report_card_details.php';
+    }
+
+    public function saveReportCardDetails(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $studentId = (int) ($_POST['student_id'] ?? 0);
+        $classId = (int) ($_POST['class_id'] ?? 0);
+        $termId = (int) ($_POST['term_id'] ?? 0);
+
+        if (
+            !$this->studentModel->find($studentId)
+            || !$this->termModel->find($termId)
+        ) {
+            $_SESSION['form_errors'] = ['Invalid student or term.'];
+            self::redirect('report_cards');
+        }
+
+        $conduct = trim($_POST['conduct'] ?? '');
+        $distinction = trim($_POST['distinction'] ?? '');
+
+        $errors = [];
+
+        if ($conduct !== '' && !in_array($conduct, StudentTermReport::conductOptions(), true)) {
+            $errors[] = 'Invalid conduct value.';
+        }
+        if ($distinction !== '' && !in_array($distinction, StudentTermReport::distinctionOptions(), true)) {
+            $errors[] = 'Invalid distinction value.';
+        }
+
+        foreach (['absence_justified', 'absence_unjustified', 'times_late'] as $numField) {
+            $raw = trim((string) ($_POST[$numField] ?? '0'));
+            if ($raw !== '' && !ctype_digit($raw)) {
+                $errors[] = 'Absence and lateness values must be whole numbers (0 or more).';
+                break;
+            }
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            $this->redirectToReportDetails($studentId, $classId, $termId);
+        }
+
+        $this->termReportModel->save($studentId, $termId, [
+            'absence_justified' => (int) ($_POST['absence_justified'] ?? 0),
+            'absence_unjustified' => (int) ($_POST['absence_unjustified'] ?? 0),
+            'times_late' => (int) ($_POST['times_late'] ?? 0),
+            'conduct' => $conduct,
+            'sanctions' => trim($_POST['sanctions'] ?? ''),
+            'distinction' => $distinction,
+            'class_master_remark' => trim($_POST['class_master_remark'] ?? ''),
+            'principal_remark' => trim($_POST['principal_remark'] ?? ''),
+        ]);
+
+        $_SESSION['success_message'] = 'Report card details saved.';
+
+        header(
+            'Location: ' . BASE_URL .
+            '/index.php?action=report_card&student_id=' . $studentId .
+            '&class_id=' . $classId . '&term_id=' . $termId
+        );
+        exit;
+    }
+
+    private function redirectToReportDetails(int $studentId, int $classId, int $termId): void
+    {
+        header(
+            'Location: ' . BASE_URL .
+            '/index.php?action=report_card_details_form&student_id=' . $studentId .
+            '&class_id=' . $classId . '&term_id=' . $termId
+        );
+        exit;
     }
 
 

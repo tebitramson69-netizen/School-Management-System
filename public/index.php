@@ -561,6 +561,30 @@ switch ($action) {
         break;
 
 
+    case 'report_card_details_form':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->showReportCardDetailsForm();
+
+        break;
+
+
+    case 'save_report_card_details':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->saveReportCardDetails();
+
+        break;
+
+
     /*
      * -----------------------------------------------------
      * Subject management
