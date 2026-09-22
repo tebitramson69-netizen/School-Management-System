@@ -7,6 +7,8 @@ $errors = $_SESSION['form_errors'] ?? [];
 $old = $_SESSION['old_input'] ?? [];
 unset($_SESSION['form_errors'], $_SESSION['old_input']);
 
+$classes = $classes ?? [];
+
 $pageTitle = 'Add Subject';
 
 ob_start();
@@ -49,6 +51,23 @@ ob_start();
                        value="<?= htmlspecialchars($old['code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required
                        style="text-transform:uppercase">
                 <small class="form-help">Letters and numbers only, e.g. ADMATH, RS, LAW.</small>
+            </div>
+
+            <div class="form-group">
+                <label>Offered in classes</label>
+                <?php if (empty($classes)): ?>
+                    <p class="form-help">No classes exist yet.</p>
+                <?php else: ?>
+                    <div class="checkbox-grid">
+                        <?php foreach ($classes as $class): ?>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="classes[]" value="<?= (int) $class['id'] ?>">
+                                <?= htmlspecialchars($class['name'], ENT_QUOTES, 'UTF-8') ?>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <small class="form-help">Tick every class that studies this subject. You can also manage this on the Class Subjects screen.</small>
+                <?php endif; ?>
             </div>
 
             <div class="form-actions">

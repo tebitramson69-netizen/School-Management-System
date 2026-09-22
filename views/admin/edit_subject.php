@@ -8,6 +8,10 @@ $old = $_SESSION['old_input'] ?? [];
 unset($_SESSION['form_errors'], $_SESSION['old_input']);
 
 $subject = $subject ?? [];
+$classes = $classes ?? [];
+$linkedClassIds = $linkedClassIds ?? [];
+
+$linkedLookup = array_fill_keys(array_map('intval', $linkedClassIds), true);
 
 /*
  * Prefer submitted old input (after a validation error), then the
@@ -59,6 +63,24 @@ ob_start();
                        value="<?= htmlspecialchars($codeValue, ENT_QUOTES, 'UTF-8') ?>" required
                        style="text-transform:uppercase">
                 <small class="form-help">Letters and numbers only, e.g. ADMATH, RS, LAW.</small>
+            </div>
+
+            <div class="form-group">
+                <label>Offered in classes</label>
+                <?php if (empty($classes)): ?>
+                    <p class="form-help">No classes exist yet.</p>
+                <?php else: ?>
+                    <div class="checkbox-grid">
+                        <?php foreach ($classes as $class): ?>
+                            <?php $cid = (int) $class['id']; ?>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="classes[]" value="<?= $cid ?>" <?= isset($linkedLookup[$cid]) ? 'checked' : '' ?>>
+                                <?= htmlspecialchars($class['name'], ENT_QUOTES, 'UTF-8') ?>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <small class="form-help">Unticking a class removes this subject from it. You can also manage this on the Class Subjects screen.</small>
+                <?php endif; ?>
             </div>
 
             <div class="form-actions">

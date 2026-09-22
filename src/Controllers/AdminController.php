@@ -1771,6 +1771,8 @@ try {
 
         self::startSession();
 
+        $classes = $this->classModel->all();
+
         require __DIR__ . '/../../views/admin/create_subject.php';
     }
 
@@ -1803,7 +1805,18 @@ try {
             self::redirect('create_subject_form');
         }
 
-        $this->subjectModel->create($name, $code);
+        $newSubjectId = $this->subjectModel->create($name, $code);
+
+        /*
+         * Link the new subject to the selected classes (writes
+         * class_subjects, the same table the Class Subjects screen
+         * uses).
+         */
+        $classIds = is_array($_POST['classes'] ?? null)
+            ? array_map('intval', $_POST['classes'])
+            : [];
+
+        $this->classSubjectModel->setClassesForSubject($newSubjectId, $classIds);
 
         $_SESSION['success_message'] =
             "Subject \"{$name}\" created successfully.";
@@ -1835,6 +1848,9 @@ try {
 
             self::redirect('view_subjects');
         }
+
+        $classes = $this->classModel->all();
+        $linkedClassIds = $this->classSubjectModel->getClassIdsForSubject($subjectId);
 
         require __DIR__ . '/../../views/admin/edit_subject.php';
     }
@@ -1889,6 +1905,12 @@ try {
         }
 
         $this->subjectModel->update($subjectId, $name, $code);
+
+        $classIds = is_array($_POST['classes'] ?? null)
+            ? array_map('intval', $_POST['classes'])
+            : [];
+
+        $this->classSubjectModel->setClassesForSubject($subjectId, $classIds);
 
         $_SESSION['success_message'] =
             "Subject \"{$name}\" updated successfully.";

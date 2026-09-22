@@ -79,6 +79,77 @@ class ClassSubject
     }
 
     /**
+     * The classes that offer a given subject (ids only), for
+     * pre-checking the subject editor.
+     */
+    public function getClassIdsForSubject(int $subjectId): array
+    {
+        $sql = "SELECT class_id
+                FROM class_subjects
+                WHERE subject_id = :subject_id";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['subject_id' => $subjectId]);
+
+        return array_map(
+            'intval',
+            array_column($stmt->fetchAll(), 'class_id')
+        );
+    }
+
+    /**
+     * Replace the set of classes that offer a subject, in one
+     * transaction. An empty $classIds removes the subject from all
+     * classes. This is the subject-centric counterpart to
+     * saveForClass(); both maintain the same class_subjects table.
+     */
+    public function setClassesForSubject(int $subjectId, array $classIds): void
+    {
+        $this->db->beginTransaction();
+
+        try {
+
+            $delete = $this->db->prepare(
+                "DELETE FROM class_subjects WHERE subject_id = :subject_id"
+            );
+            $delete->execute(['subject_id' => $subjectId]);
+
+            $insert = $this->db->prepare(
+                "INSERT INTO class_subjects (class_id, subject_id)
+                 VALUES (:class_id, :subject_id)"
+            );
+
+            $seen = [];
+
+            foreach ($classIds as $classId) {
+
+                $classId = (int) $classId;
+
+                if ($classId <= 0 || isset($seen[$classId])) {
+                    continue;
+                }
+
+                $seen[$classId] = true;
+
+                $insert->execute([
+                    'class_id' => $classId,
+                    'subject_id' => $subjectId
+                ]);
+            }
+
+            $this->db->commit();
+
+        } catch (Throwable $e) {
+
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
      * Replace the whole offered set for a class in one transaction.
      * An empty $subjectIds clears the class's subjects.
      */
