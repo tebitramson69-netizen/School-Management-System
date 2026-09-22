@@ -1391,6 +1391,358 @@ try {
     }
 
 
+    /* =====================================================
+     * STUDENT MANAGEMENT
+     * ===================================================== */
+
+    public function viewStudents(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $students = $this->studentModel->all();
+
+        require __DIR__ . '/../../views/admin/students.php';
+    }
+
+    public function showEditStudentForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $studentId = (int) ($_GET['student_id'] ?? 0);
+        $student = $this->studentModel->find($studentId);
+
+        if (!$student) {
+            $_SESSION['form_errors'] = ['Student not found.'];
+            self::redirect('manage_students');
+        }
+
+        $account = $this->userModel->find((int) $student['user_id']);
+        $currentClass = $this->studentModel->getCurrentClass($studentId);
+        $classes = $this->classModel->all();
+
+        require __DIR__ . '/../../views/admin/edit_student.php';
+    }
+
+    public function updateStudent(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $studentId = (int) ($_POST['student_id'] ?? 0);
+        $student = $this->studentModel->find($studentId);
+
+        if (!$student) {
+            $_SESSION['form_errors'] = ['Student not found.'];
+            self::redirect('manage_students');
+        }
+
+        $fullName = trim($_POST['full_name'] ?? '');
+        $dob = trim($_POST['dob'] ?? '');
+        $gender = trim($_POST['gender'] ?? '');
+        $classId = (int) ($_POST['class_id'] ?? 0);
+
+        $errors = [];
+
+        if ($fullName === '') {
+            $errors[] = 'Full name is required.';
+        }
+        if (!in_array($gender, ['M', 'F'], true)) {
+            $errors[] = 'Please select a gender.';
+        }
+        if ($classId <= 0) {
+            $errors[] = 'Please select a class.';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            $this->redirectWithId('edit_student_form', 'student_id', $studentId);
+        }
+
+        $this->studentModel->update($studentId, $fullName, $dob, $gender);
+
+        $currentAcademicYear = $this->academicYearModel->getCurrent();
+        if ($currentAcademicYear) {
+            $this->studentModel->setClassForYear(
+                $studentId,
+                $classId,
+                (int) $currentAcademicYear['id']
+            );
+        }
+
+        $_SESSION['success_message'] = "Student \"{$fullName}\" updated successfully.";
+        self::redirect('manage_students');
+    }
+
+    public function setStudentActive(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $studentId = (int) ($_POST['student_id'] ?? 0);
+        $active = (int) ($_POST['active'] ?? 0) === 1;
+        $student = $this->studentModel->find($studentId);
+
+        if ($student) {
+            $this->userModel->setActive((int) $student['user_id'], $active);
+            $_SESSION['success_message'] =
+                'Student ' . ($active ? 'activated.' : 'deactivated.');
+        } else {
+            $_SESSION['form_errors'] = ['Student not found.'];
+        }
+
+        self::redirect('manage_students');
+    }
+
+    public function deleteStudent(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $studentId = (int) ($_POST['student_id'] ?? 0);
+        $student = $this->studentModel->find($studentId);
+
+        if (!$student) {
+            $_SESSION['form_errors'] = ['Student not found.'];
+            self::redirect('manage_students');
+        }
+
+        if ($this->studentModel->hasAcademicRecords($studentId)) {
+            $_SESSION['form_errors'] = [
+                'This student has scores or attendance on record and cannot be permanently deleted. Deactivate the account instead.'
+            ];
+            self::redirect('manage_students');
+        }
+
+        $this->userModel->delete((int) $student['user_id']);
+        $_SESSION['success_message'] = 'Student deleted permanently.';
+        self::redirect('manage_students');
+    }
+
+
+    /* =====================================================
+     * TEACHER MANAGEMENT
+     * ===================================================== */
+
+    public function viewTeachers(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $teachers = $this->teacherModel->all();
+
+        require __DIR__ . '/../../views/admin/teachers.php';
+    }
+
+    public function showEditTeacherForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $teacherId = (int) ($_GET['teacher_id'] ?? 0);
+        $teacher = $this->teacherModel->find($teacherId);
+
+        if (!$teacher) {
+            $_SESSION['form_errors'] = ['Teacher not found.'];
+            self::redirect('manage_teachers');
+        }
+
+        require __DIR__ . '/../../views/admin/edit_teacher.php';
+    }
+
+    public function updateTeacher(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $teacherId = (int) ($_POST['teacher_id'] ?? 0);
+        $teacher = $this->teacherModel->find($teacherId);
+
+        if (!$teacher) {
+            $_SESSION['form_errors'] = ['Teacher not found.'];
+            self::redirect('manage_teachers');
+        }
+
+        $fullName = trim($_POST['full_name'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+
+        if ($fullName === '') {
+            $_SESSION['form_errors'] = ['Full name is required.'];
+            $this->redirectWithId('edit_teacher_form', 'teacher_id', $teacherId);
+        }
+
+        $this->teacherModel->update($teacherId, $fullName, $phone);
+        $_SESSION['success_message'] = "Teacher \"{$fullName}\" updated successfully.";
+        self::redirect('manage_teachers');
+    }
+
+    public function setTeacherActive(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $teacherId = (int) ($_POST['teacher_id'] ?? 0);
+        $active = (int) ($_POST['active'] ?? 0) === 1;
+        $teacher = $this->teacherModel->find($teacherId);
+
+        if ($teacher) {
+            $this->userModel->setActive((int) $teacher['user_id'], $active);
+            $_SESSION['success_message'] =
+                'Teacher ' . ($active ? 'activated.' : 'deactivated.');
+        } else {
+            $_SESSION['form_errors'] = ['Teacher not found.'];
+        }
+
+        self::redirect('manage_teachers');
+    }
+
+    public function deleteTeacher(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $teacherId = (int) ($_POST['teacher_id'] ?? 0);
+        $teacher = $this->teacherModel->find($teacherId);
+
+        if (!$teacher) {
+            $_SESSION['form_errors'] = ['Teacher not found.'];
+            self::redirect('manage_teachers');
+        }
+
+        if ($this->teacherModel->hasRecords($teacherId)) {
+            $_SESSION['form_errors'] = [
+                'This teacher has class assignments or marked attendance and cannot be permanently deleted. Deactivate the account instead.'
+            ];
+            self::redirect('manage_teachers');
+        }
+
+        $this->userModel->delete((int) $teacher['user_id']);
+        $_SESSION['success_message'] = 'Teacher deleted permanently.';
+        self::redirect('manage_teachers');
+    }
+
+
+    /* =====================================================
+     * PARENT MANAGEMENT
+     * ===================================================== */
+
+    public function viewParents(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $parents = $this->parentModel->all();
+
+        require __DIR__ . '/../../views/admin/parents.php';
+    }
+
+    public function showEditParentForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $parentId = (int) ($_GET['parent_id'] ?? 0);
+        $parent = $this->parentModel->find($parentId);
+
+        if (!$parent) {
+            $_SESSION['form_errors'] = ['Parent not found.'];
+            self::redirect('manage_parents');
+        }
+
+        $children = $this->parentModel->getChildren($parentId);
+
+        require __DIR__ . '/../../views/admin/edit_parent.php';
+    }
+
+    public function updateParent(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $parentId = (int) ($_POST['parent_id'] ?? 0);
+        $parent = $this->parentModel->find($parentId);
+
+        if (!$parent) {
+            $_SESSION['form_errors'] = ['Parent not found.'];
+            self::redirect('manage_parents');
+        }
+
+        $fullName = trim($_POST['full_name'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+
+        if ($fullName === '') {
+            $_SESSION['form_errors'] = ['Full name is required.'];
+            $this->redirectWithId('edit_parent_form', 'parent_id', $parentId);
+        }
+
+        $this->parentModel->update($parentId, $fullName, $phone);
+        $_SESSION['success_message'] = "Parent \"{$fullName}\" updated successfully.";
+        self::redirect('manage_parents');
+    }
+
+    public function setParentActive(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $parentId = (int) ($_POST['parent_id'] ?? 0);
+        $active = (int) ($_POST['active'] ?? 0) === 1;
+        $parent = $this->parentModel->find($parentId);
+
+        if ($parent) {
+            $this->userModel->setActive((int) $parent['user_id'], $active);
+            $_SESSION['success_message'] =
+                'Parent ' . ($active ? 'activated.' : 'deactivated.');
+        } else {
+            $_SESSION['form_errors'] = ['Parent not found.'];
+        }
+
+        self::redirect('manage_parents');
+    }
+
+    public function deleteParent(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $parentId = (int) ($_POST['parent_id'] ?? 0);
+        $parent = $this->parentModel->find($parentId);
+
+        if (!$parent) {
+            $_SESSION['form_errors'] = ['Parent not found.'];
+            self::redirect('manage_parents');
+        }
+
+        /*
+         * Parents hold no academic records; deletion only removes
+         * the account and its child links, so it is always safe.
+         */
+        $this->userModel->delete((int) $parent['user_id']);
+        $_SESSION['success_message'] = 'Parent deleted permanently.';
+        self::redirect('manage_parents');
+    }
+
+
+    /**
+     * Redirect to an action that needs a query-string id, without
+     * the rawurlencode() that self::redirect() applies to actions.
+     */
+    private function redirectWithId(
+        string $action,
+        string $key,
+        int $id
+    ): void {
+        header(
+            'Location: ' .
+            BASE_URL .
+            '/index.php?action=' . $action .
+            '&' . $key . '=' . $id
+        );
+        exit;
+    }
+
+
     /**
      * -----------------------------------------------------
      * SUBJECTS — LIST

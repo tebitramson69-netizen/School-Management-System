@@ -207,6 +207,75 @@ class Student
         return $stmt->fetch();
     }
 
+    /**
+     * Update a student's profile fields (not the login account).
+     */
+    public function update(
+        int $id,
+        string $fullName,
+        ?string $dob,
+        string $gender
+    ): void {
+        $sql = "UPDATE students
+                SET full_name = :full_name,
+                    dob = :dob,
+                    gender = :gender
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'full_name' => $fullName,
+            'dob' => ($dob === '' ? null : $dob),
+            'gender' => $gender,
+            'id' => $id
+        ]);
+    }
+
+    /**
+     * Set (or move) the student's class for an academic year.
+     * enrollments is UNIQUE per (student, year), so this upserts.
+     */
+    public function setClassForYear(
+        int $studentId,
+        int $classId,
+        int $academicYearId
+    ): void {
+        $sql = "INSERT INTO enrollments (
+                    student_id, class_id, academic_year_id
+                ) VALUES (
+                    :student_id, :class_id, :academic_year_id
+                )
+                ON DUPLICATE KEY UPDATE
+                    class_id = VALUES(class_id)";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'student_id' => $studentId,
+            'class_id' => $classId,
+            'academic_year_id' => $academicYearId
+        ]);
+    }
+
+    /**
+     * Whether a student has academic records worth keeping
+     * (scores or attendance). Used to guard permanent deletion.
+     */
+    public function hasAcademicRecords(int $studentId): bool
+    {
+        $sql = "SELECT
+                    (SELECT COUNT(*) FROM scores WHERE student_id = :id1)
+                  + (SELECT COUNT(*) FROM attendance WHERE student_id = :id2)
+                    AS total";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id1' => $studentId, 'id2' => $studentId]);
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0) > 0;
+    }
+
     public function getCurrentClassId(int $studentId): ?int
     {
         $sql = "SELECT e.class_id

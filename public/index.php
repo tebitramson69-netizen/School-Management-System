@@ -331,6 +331,118 @@ switch ($action) {
 
     /*
      * -----------------------------------------------------
+     * User management (list / edit / activate / delete)
+     * -----------------------------------------------------
+     */
+
+    case 'manage_students':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->viewStudents();
+        break;
+
+    case 'edit_student_form':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->showEditStudentForm();
+        break;
+
+    case 'update_student':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->updateStudent();
+        break;
+
+    case 'set_student_active':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->setStudentActive();
+        break;
+
+    case 'delete_student':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->deleteStudent();
+        break;
+
+    case 'manage_teachers':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->viewTeachers();
+        break;
+
+    case 'edit_teacher_form':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->showEditTeacherForm();
+        break;
+
+    case 'update_teacher':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->updateTeacher();
+        break;
+
+    case 'set_teacher_active':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->setTeacherActive();
+        break;
+
+    case 'delete_teacher':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->deleteTeacher();
+        break;
+
+    case 'manage_parents':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->viewParents();
+        break;
+
+    case 'edit_parent_form':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->showEditParentForm();
+        break;
+
+    case 'update_parent':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->updateParent();
+        break;
+
+    case 'set_parent_active':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->setParentActive();
+        break;
+
+    case 'delete_parent':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->deleteParent();
+        break;
+
+
+    /*
+     * -----------------------------------------------------
      * Teacher assignment
      * -----------------------------------------------------
      */

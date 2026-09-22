@@ -387,8 +387,12 @@ function sidebarIsActive(
                     <li class="sidebar-menu-item">
 
                         <a
-                            href="<?= BASE_URL ?>/index.php?action=create_student_form"
-                            class="sidebar-menu-link <?= sidebarIsActive('create_student_form') ?>"
+                            href="<?= BASE_URL ?>/index.php?action=manage_students"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'manage_students',
+                                'create_student_form',
+                                'edit_student_form'
+                            ]) ?>"
                         >
 
                             <span
@@ -432,8 +436,12 @@ function sidebarIsActive(
                     <li class="sidebar-menu-item">
 
                         <a
-                            href="<?= BASE_URL ?>/index.php?action=create_teacher_form"
-                            class="sidebar-menu-link <?= sidebarIsActive('create_teacher_form') ?>"
+                            href="<?= BASE_URL ?>/index.php?action=manage_teachers"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'manage_teachers',
+                                'create_teacher_form',
+                                'edit_teacher_form'
+                            ]) ?>"
                         >
 
                             <span
@@ -474,8 +482,12 @@ function sidebarIsActive(
                     <li class="sidebar-menu-item">
 
                         <a
-                            href="<?= BASE_URL ?>/index.php?action=create_parent_form"
-                            class="sidebar-menu-link <?= sidebarIsActive('create_parent_form') ?>"
+                            href="<?= BASE_URL ?>/index.php?action=manage_parents"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'manage_parents',
+                                'create_parent_form',
+                                'edit_parent_form'
+                            ]) ?>"
                         >
 
                             <span

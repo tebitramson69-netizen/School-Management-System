@@ -52,6 +52,33 @@ class ParentModel
         return $stmt->fetch();
     }
 
+    public function find(int $id): array|false
+    {
+        $sql = "SELECT p.id, p.user_id, p.full_name, p.phone,
+                       u.email, u.is_active
+                FROM parents p
+                JOIN users u ON p.user_id = u.id
+                WHERE p.id = :id
+                LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch();
+    }
+
+    public function update(int $id, string $fullName, ?string $phone): void
+    {
+        $sql = "UPDATE parents
+                SET full_name = :full_name,
+                    phone = :phone
+                WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'full_name' => $fullName,
+            'phone' => ($phone === '' ? null : $phone),
+            'id' => $id
+        ]);
+    }
+
     public function getChildren(int $parentId): array
     {
         $sql = "SELECT s.id, s.full_name
