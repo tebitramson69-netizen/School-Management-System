@@ -35,6 +35,10 @@ require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../Core/School.php';
 require_once __DIR__ . '/../Core/Security.php';
 require_once __DIR__ . '/../Models/AcademicYear.php';
+require_once __DIR__ . '/../Models/Term.php';
+require_once __DIR__ . '/../Models/Score.php';
+require_once __DIR__ . '/../Models/Result.php';
+require_once __DIR__ . '/../Models/GradeScale.php';
 
 
 class AdminController
@@ -50,6 +54,10 @@ class AdminController
     private SubjectCoefficient $coefficientModel;
     private Announcement $announcementModel;
     private AcademicYear $academicYearModel;
+    private Term $termModel;
+    private Score $scoreModel;
+    private Result $resultModel;
+    private GradeScale $gradeScaleModel;
 
 
     /**
@@ -70,6 +78,10 @@ class AdminController
         $this->coefficientModel = new SubjectCoefficient();
         $this->announcementModel = new Announcement();
         $this->academicYearModel = new AcademicYear();
+        $this->termModel = new Term();
+        $this->scoreModel = new Score();
+        $this->resultModel = new Result();
+        $this->gradeScaleModel = new GradeScale();
     }
 
 
@@ -1158,6 +1170,224 @@ try {
         }
 
         return $ids;
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * REPORT CARDS — CLASS + TERM PICKER / STUDENT LIST
+     * -----------------------------------------------------
+     */
+    public function showReportCards(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $classes = $this->classModel->all();
+
+        /*
+         * Distinct term names for the current academic year, each
+         * with a representative term_id (the Score/Result methods
+         * group a term by name, so any of its sequence rows works).
+         */
+        $terms = [];
+
+        foreach ($this->termModel->all() as $t) {
+            $name = $t['name'];
+            if (!isset($terms[$name])) {
+                $terms[$name] = [
+                    'term_id' => (int) $t['id'],
+                    'name' => $name,
+                ];
+            }
+        }
+
+        $terms = array_values($terms);
+
+        $classId = (int) ($_GET['class_id'] ?? 0);
+        $termId = (int) ($_GET['term_id'] ?? 0);
+
+        $selectedClass = null;
+        $selectedTerm = null;
+        $students = [];
+
+        if ($classId > 0 && $termId > 0) {
+
+            $selectedClass = $this->classModel->find($classId);
+            $selectedTerm = $this->termModel->find($termId);
+
+            if ($selectedClass && $selectedTerm) {
+                $students = $this->studentModel->allByClass($classId);
+            }
+        }
+
+        require __DIR__ . '/../../views/admin/report_cards.php';
+    }
+
+
+    /**
+     * -----------------------------------------------------
+     * REPORT CARD — ONE STUDENT'S PRINTABLE BULLETIN
+     * -----------------------------------------------------
+     *
+     * Coefficient-weighted, per term (Sequence 1 + Sequence 2 +
+     * term average). Uses the same averaging engine as the student
+     * portal and the class ranking, so the figures agree.
+     */
+    public function showReportCard(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        self::startSession();
+
+        $studentId = (int) ($_GET['student_id'] ?? 0);
+        $classId = (int) ($_GET['class_id'] ?? 0);
+        $termId = (int) ($_GET['term_id'] ?? 0);
+
+        $student = $this->studentModel->find($studentId);
+        $class = $this->classModel->find($classId);
+        $term = $this->termModel->find($termId);
+
+        if (!$student || !$class || !$term) {
+
+            $_SESSION['form_errors'] = [
+                'Could not build that report card (missing student, class or term).'
+            ];
+
+            self::redirect('report_cards');
+        }
+
+        $school = School::settings();
+        $academicYear = $this->academicYearModel->getCurrent();
+        $academicYearId = (int) ($academicYear['id'] ?? 0);
+
+
+        /*
+         * Subject rows: per-subject Seq1/Seq2/average, plus the
+         * per-class coefficient, grade/remark and average x coef.
+         */
+        $seqRows = $this->scoreModel->sequenceMarksForStudentTerm(
+            $studentId,
+            $termId
+        );
+
+        $coefficients = $this->coefficientModel->getForClass($classId);
+
+        $rows = [];
+        $totalCoefficient = 0;
+        $totalWeighted = 0.0;
+
+        foreach ($seqRows as $r) {
+
+            $subjectId = (int) $r['subject_id'];
+
+            $average = $r['average_score'] !== null
+                ? (float) $r['average_score']
+                : null;
+
+            $coefficient = $coefficients[$subjectId] ?? 1;
+
+            $grade = $average !== null
+                ? $this->gradeScaleModel->forScore($average)
+                : null;
+
+            $weighted = $average !== null
+                ? round($average * $coefficient, 2)
+                : null;
+
+            if ($average !== null) {
+                $totalCoefficient += $coefficient;
+                $totalWeighted += $average * $coefficient;
+            }
+
+            $rows[] = [
+                'subject_name' => $r['subject_name'],
+                'subject_code' => $r['subject_code'],
+                'seq1' => $r['seq1'],
+                'seq2' => $r['seq2'],
+                'average' => $average,
+                'coefficient' => $coefficient,
+                'weighted' => $weighted,
+                'letter' => $grade['letter'] ?? '—',
+                'remark' => $grade['remark'] ?? '—',
+            ];
+        }
+
+        $overallAverage = $totalCoefficient > 0
+            ? round($totalWeighted / $totalCoefficient, 2)
+            : null;
+
+        $overallGrade = $overallAverage !== null
+            ? $this->gradeScaleModel->forScore($overallAverage)
+            : null;
+
+
+        /*
+         * Class position + class average, from the shared ranking
+         * engine (coefficient-weighted).
+         */
+        $classPosition = null;
+        $classSize = null;
+        $classAverage = null;
+
+        if ($academicYearId > 0) {
+
+            $classResults = $this->resultModel->getClassResults(
+                $classId,
+                $academicYearId,
+                $termId
+            );
+
+            $sum = 0.0;
+            $withResults = 0;
+
+            foreach ($classResults as $cr) {
+
+                if ((int) $cr['student_id'] === $studentId) {
+                    $classPosition = $cr['position'];
+                }
+
+                if ($cr['overall_average'] !== null) {
+                    $withResults++;
+                    $sum += (float) $cr['overall_average'];
+                }
+            }
+
+            $classSize = $withResults;
+            $classAverage = $withResults > 0
+                ? round($sum / $withResults, 2)
+                : null;
+        }
+
+
+        /*
+         * Ordinal position label (1st, 2nd, 3rd...).
+         */
+        $positionLabel = null;
+
+        if ($classPosition !== null) {
+            $n = (int) $classPosition;
+            $suffix = 'th';
+            if (!in_array($n % 100, [11, 12, 13], true)) {
+                $suffix = match ($n % 10) {
+                    1 => 'st',
+                    2 => 'nd',
+                    3 => 'rd',
+                    default => 'th',
+                };
+            }
+            $positionLabel = $n . $suffix;
+        }
+
+
+        $passMark = (float) ($school['pass_mark'] ?? 10);
+
+        $passed = $overallAverage !== null
+            ? $overallAverage >= $passMark
+            : null;
+
+        require __DIR__ . '/../../views/admin/report_card.php';
     }
 
 

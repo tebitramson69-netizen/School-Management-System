@@ -637,6 +637,72 @@ class Score
 
 
     /**
+     * Per-subject sequence marks for a student in a term.
+     *
+     * A "term" spans its two sequence rows (same term name within
+     * the academic year). Returns, per subject:
+     *   subject_id, subject_name, subject_code,
+     *   seq1  (Sequence 1 mark, or null),
+     *   seq2  (Sequence 2 mark, or null),
+     *   average_score (mean of the recorded sequences).
+     *
+     * Used to render the report-card subject table.
+     */
+    public function sequenceMarksForStudentTerm(
+        int $studentId,
+        int $termId
+    ): array {
+
+        $sql = "
+            SELECT
+                sub.id AS subject_id,
+                sub.name AS subject_name,
+                sub.code AS subject_code,
+
+                MAX(CASE WHEN t.sequence_number = 1 THEN sc.score END) AS seq1,
+                MAX(CASE WHEN t.sequence_number = 2 THEN sc.score END) AS seq2,
+
+                ROUND(AVG(sc.score), 2) AS average_score
+
+            FROM scores sc
+
+            INNER JOIN subjects sub
+                ON sc.subject_id = sub.id
+
+            INNER JOIN terms t
+                ON sc.term_id = t.id
+
+            INNER JOIN terms selected_term
+                ON selected_term.id = :term_id
+
+            WHERE sc.student_id = :student_id
+
+              AND t.name = selected_term.name
+
+              AND t.academic_year_id =
+                    selected_term.academic_year_id
+
+            GROUP BY
+                sub.id,
+                sub.name,
+                sub.code
+
+            ORDER BY
+                sub.name ASC
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'student_id' => $studentId,
+            'term_id' => $termId
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    /**
      * Calculate the overall coefficient-weighted average.
      *
      * Cameroon GCE weighting:

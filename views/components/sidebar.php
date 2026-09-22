@@ -767,6 +767,44 @@ function sidebarIsActive(
 
                     </li>
 
+
+                    <!-- Report Cards -->
+
+                    <li class="sidebar-menu-item">
+
+                        <a
+                            href="<?= BASE_URL ?>/index.php?action=report_cards"
+                            class="sidebar-menu-link <?= sidebarIsActive([
+                                'report_cards',
+                                'report_card'
+                            ]) ?>"
+                        >
+
+                            <span
+                                class="sidebar-menu-icon"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+                                    <path d="M14 3v6h5" />
+                                    <path d="M9 13h6" />
+                                    <path d="M9 17h6" />
+                                </svg>
+                            </span>
+
+                            <span class="sidebar-menu-label">
+                                Report Cards
+                            </span>
+
+                        </a>
+
+                    </li>
+
  <!-- Academic Management -->
 
                     <li class="sidebar-menu-item">

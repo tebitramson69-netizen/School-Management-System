@@ -421,6 +421,36 @@ switch ($action) {
 
     /*
      * -----------------------------------------------------
+     * Report cards
+     * -----------------------------------------------------
+     */
+
+    case 'report_cards':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->showReportCards();
+
+        break;
+
+
+    case 'report_card':
+
+        require_once __DIR__ .
+            '/../src/Controllers/AdminController.php';
+
+        $adminController = new AdminController();
+
+        $adminController->showReportCard();
+
+        break;
+
+
+    /*
+     * -----------------------------------------------------
      * Subject management
      * -----------------------------------------------------
      */
