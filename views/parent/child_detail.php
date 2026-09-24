@@ -3,6 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/../../src/Models/Term.php';
+
 $classPosition = $classPosition ?? null;
 $classSize = $classSize ?? null;
 
@@ -164,7 +166,7 @@ ob_start();
                     <?php foreach ($scores as $score): ?>
                         <tr>
                             <td><?= htmlspecialchars($score['subject_name'], ENT_QUOTES, 'UTF-8') ?></td>
-                            <td><?= htmlspecialchars($score['term_name'], ENT_QUOTES, 'UTF-8') ?> — Sequence <?= (int) $score['sequence_number'] ?></td>
+                            <td><?= htmlspecialchars($score['term_name'], ENT_QUOTES, 'UTF-8') ?> — Sequence <?= Term::globalSequence($score['term_name'] ?? null, (int) $score['sequence_number']) ?></td>
                             <td><?= htmlspecialchars((string) $score['score'], ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars((string) $score['max_score'], ENT_QUOTES, 'UTF-8') ?></td>
                         </tr>
                     <?php endforeach; ?>

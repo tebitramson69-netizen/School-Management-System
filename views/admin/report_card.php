@@ -33,6 +33,10 @@ $dob = ($dobRaw && strtotime((string) $dobRaw))
 
 $className = $class['name'] ?? '—';
 $termName = $term['name'] ?? '—';
+
+// Global sequence labels for this term (Term 2 -> Seq 3 & 4, etc.).
+$seq1Label = Term::globalSequence($term['name'] ?? null, 1);
+$seq2Label = Term::globalSequence($term['name'] ?? null, 2);
 $yearName = $academicYear['name'] ?? ($term['academic_year_name'] ?? '—');
 
 $schoolName = $school['school_name'] ?? 'School Management System';
@@ -250,8 +254,8 @@ ob_start();
                 <tr>
                     <th style="text-align:left">Subject</th>
                     <th>Coef.</th>
-                    <th>Seq 1</th>
-                    <th>Seq 2</th>
+                    <th>Seq <?= (int) $seq1Label ?></th>
+                    <th>Seq <?= (int) $seq2Label ?></th>
                     <th>Average /20</th>
                     <th>Avg × Coef</th>
                     <th>Grade</th>

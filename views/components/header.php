@@ -186,7 +186,7 @@ if (
         $academicPeriodLabel =
             $termName .
             ' · Sequence ' .
-            $sequenceNumber;
+            Term::globalSequence($termName, $sequenceNumber);
     }
 }
 

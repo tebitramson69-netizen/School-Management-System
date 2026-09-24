@@ -53,7 +53,10 @@ if ($currentTerm) {
     $currentPeriodLabel =
         ($currentTerm['name'] ?? 'Term') .
         ' — Sequence ' .
-        (int) ($currentTerm['sequence_number'] ?? 0);
+        Term::globalSequence(
+            $currentTerm['name'] ?? null,
+            (int) ($currentTerm['sequence_number'] ?? 0)
+        );
 }
 
 $pageTitle = 'Academic Management';
@@ -165,11 +168,12 @@ ob_start();
                             <?php
                             $termId = (int) ($term['id'] ?? 0);
                             $sequenceNumber = (int) ($term['sequence_number'] ?? 0);
+                            $globalSequence = Term::globalSequence($termName, $sequenceNumber);
                             $isCurrent = (int) ($term['is_current'] ?? 0) === 1;
                             ?>
                             <tr>
                                 <td><?= htmlspecialchars($termName, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td>Sequence <?= $sequenceNumber ?></td>
+                                <td>Sequence <?= $globalSequence ?></td>
                                 <td>
                                     <?php if ($isCurrent): ?>
                                         <span class="status-badge active">Current</span>
@@ -185,7 +189,7 @@ ob_start();
                                             <?= Security::csrfField() ?>
                                             <input type="hidden" name="term_id" value="<?= $termId ?>">
                                             <button type="submit" class="btn btn-sm btn-primary"
-                                                onclick="return confirm('Set <?= htmlspecialchars($termName, ENT_QUOTES, 'UTF-8') ?> — Sequence <?= $sequenceNumber ?> as the current academic period?');">
+                                                onclick="return confirm('Set <?= htmlspecialchars($termName, ENT_QUOTES, 'UTF-8') ?> — Sequence <?= $globalSequence ?> as the current academic period?');">
                                                 Set as Current
                                             </button>
                                         </form>

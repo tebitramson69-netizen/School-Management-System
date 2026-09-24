@@ -39,7 +39,7 @@ ob_start();
                     <option value="">-- Select a sequence --</option>
                     <?php foreach ($terms as $term): ?>
                         <option value="<?= (int) $term['id'] ?>">
-                            <?= htmlspecialchars($term['name'], ENT_QUOTES, 'UTF-8') ?> — Sequence <?= (int) $term['sequence_number'] ?>
+                            <?= htmlspecialchars($term['name'], ENT_QUOTES, 'UTF-8') ?> — Sequence <?= Term::globalSequence($term['name'] ?? null, (int) $term['sequence_number']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -52,7 +52,7 @@ ob_start();
 
         <!-- Step 2: enter scores for the chosen sequence -->
         <p>Sequence:
-            <strong><?= htmlspecialchars($selectedTerm['name'], ENT_QUOTES, 'UTF-8') ?> — Sequence <?= (int) $selectedTerm['sequence_number'] ?></strong>
+            <strong><?= htmlspecialchars($selectedTerm['name'], ENT_QUOTES, 'UTF-8') ?> — Sequence <?= Term::globalSequence($selectedTerm['name'] ?? null, (int) $selectedTerm['sequence_number']) ?></strong>
         </p>
 
         <?php if (empty($students)): ?>

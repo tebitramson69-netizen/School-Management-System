@@ -22,6 +22,34 @@ class Term
 
     /**
      * -----------------------------------------------------
+     * Global sequence number (1-6) for display.
+     *
+     * Storage keeps the within-term sequence (1 or 2) per term
+     * row; schools number sequences 1-6 across the year:
+     * Term 1 -> 1 & 2, Term 2 -> 3 & 4, Term 3 -> 5 & 6.
+     * This maps (term name, within-term sequence) to that global
+     * number for labels only — it does not change stored data.
+     * -----------------------------------------------------
+     */
+    public static function globalSequence(
+        ?string $termName,
+        int $sequenceNumber
+    ): int {
+        $termIndex = 1;
+
+        if (
+            $termName !== null &&
+            preg_match('/(\d+)/', $termName, $matches)
+        ) {
+            $termIndex = (int) $matches[1];
+        }
+
+        return ($termIndex - 1) * 2 + $sequenceNumber;
+    }
+
+
+    /**
+     * -----------------------------------------------------
      * Get all term/sequence records for the current
      * academic year.
      * -----------------------------------------------------

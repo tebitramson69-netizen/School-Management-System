@@ -147,6 +147,7 @@ $currentRoleLabel =
    ========================================================= */
 
 require_once __DIR__ . '/../../src/Models/Announcement.php';
+require_once __DIR__ . '/../../src/Models/Term.php';
 
 $notifications = [];
 $notificationCount = 0;
