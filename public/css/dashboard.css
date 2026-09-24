@@ -518,6 +518,12 @@
         var(--color-border);
 }
 
+.dashboard-stat-icon svg,
+.dashboard-action-icon svg,
+.dashboard-empty-icon svg { width: 20px; height: 20px; }
+
+.chart-placeholder-icon svg { width: 22px; height: 22px; }
+
 .chart-placeholder-icon {
     width: 44px;
     height: 44px;
