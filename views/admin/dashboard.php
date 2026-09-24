@@ -28,6 +28,55 @@ $alPassRate = $alPassRate ?? null;
 $performanceTermName = $performanceTermName ?? null;
 $hasPerformance = $olPassRate !== null || $alPassRate !== null;
 
+$recentActivities = $recentActivities ?? [];
+
+/*
+ * Icon (by activity type) and relative-time helpers for the feed.
+ */
+$activityIcon = static function (string $type): string {
+    if (str_contains($type, 'deleted')) {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>';
+    }
+    if (str_contains($type, 'assigned')) {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>';
+    }
+    if (str_contains($type, 'announcement')) {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2"/><path d="M6 9l11-4v14L6 15z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>';
+    }
+    if (str_contains($type, 'subject')) {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 3v18"/></svg>';
+    }
+    // created / default
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M3 20c0-3.3 2.7-6 6-6h1"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>';
+};
+
+$timeAgo = static function (?string $ts): string {
+    if (!$ts) {
+        return '';
+    }
+    $t = strtotime($ts);
+    if ($t === false) {
+        return '';
+    }
+    $diff = time() - $t;
+    if ($diff < 60) {
+        return 'just now';
+    }
+    if ($diff < 3600) {
+        $m = (int) floor($diff / 60);
+        return $m . ' min' . ($m === 1 ? '' : 's') . ' ago';
+    }
+    if ($diff < 86400) {
+        $h = (int) floor($diff / 3600);
+        return $h . ' hour' . ($h === 1 ? '' : 's') . ' ago';
+    }
+    if ($diff < 604800) {
+        $d = (int) floor($diff / 86400);
+        return $d . ' day' . ($d === 1 ? '' : 's') . ' ago';
+    }
+    return date('M j, Y', $t);
+};
+
 ob_start();
 
 ?>
@@ -585,23 +634,47 @@ ob_start();
 
         <article class="dashboard-panel">
 
-            <div class="dashboard-empty-content dashboard-activity-empty">
+            <?php if (empty($recentActivities)): ?>
 
-                <div class="dashboard-empty-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 8-6-16-3 8H2"/></svg>
+                <div class="dashboard-empty-content dashboard-activity-empty">
+
+                    <div class="dashboard-empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 8-6-16-3 8H2"/></svg>
+                    </div>
+
+                    <h4>
+                        No recent activity
+                    </h4>
+
+                    <p>
+                        New registrations, assignments,
+                        announcements and other school activity
+                        will appear here.
+                    </p>
+
                 </div>
 
-                <h4>
-                    No recent activity
-                </h4>
+            <?php else: ?>
 
-                <p>
-                    New registrations, assignments,
-                    announcements and other school activity
-                    will appear here.
-                </p>
+                <ul class="activity-feed">
+                    <?php foreach ($recentActivities as $activity): ?>
+                        <li class="activity-item">
+                            <span class="activity-icon" aria-hidden="true">
+                                <?= $activityIcon((string) ($activity['type'] ?? '')) ?>
+                            </span>
+                            <span class="activity-body">
+                                <span class="activity-text">
+                                    <?= htmlspecialchars((string) ($activity['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                                <span class="activity-time">
+                                    <?= htmlspecialchars($timeAgo($activity['created_at'] ?? null), ENT_QUOTES, 'UTF-8') ?>
+                                </span>
+                            </span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
 
-            </div>
+            <?php endif; ?>
 
         </article>
 

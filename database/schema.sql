@@ -221,6 +221,16 @@ CREATE TABLE student_term_reports (
     UNIQUE (student_id, term_id)
 ) ENGINE=InnoDB;
 
+-- 11d. ACTIVITY LOG (admin dashboard "Recent Activity")
+CREATE TABLE activity_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    actor_user_id INT DEFAULT NULL,
+    type VARCHAR(40) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
 -- 12. SEED DATA: default Cameroon GCE grade scale (admin can edit later)
 INSERT INTO grade_scale (min_score, max_score, letter, remark) VALUES
 (16.00, 20.00, 'A', 'Excellent'),

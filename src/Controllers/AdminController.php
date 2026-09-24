@@ -40,6 +40,7 @@ require_once __DIR__ . '/../Models/Score.php';
 require_once __DIR__ . '/../Models/Result.php';
 require_once __DIR__ . '/../Models/GradeScale.php';
 require_once __DIR__ . '/../Models/StudentTermReport.php';
+require_once __DIR__ . '/../Models/ActivityLog.php';
 
 
 class AdminController
@@ -60,6 +61,7 @@ class AdminController
     private Result $resultModel;
     private GradeScale $gradeScaleModel;
     private StudentTermReport $termReportModel;
+    private ActivityLog $activityModel;
 
 
     /**
@@ -85,6 +87,22 @@ class AdminController
         $this->resultModel = new Result();
         $this->gradeScaleModel = new GradeScale();
         $this->termReportModel = new StudentTermReport();
+        $this->activityModel = new ActivityLog();
+    }
+
+
+    /**
+     * Record a dashboard activity, attributed to the current admin.
+     */
+    private function logActivity(string $type, string $description): void
+    {
+        self::startSession();
+
+        $actorUserId = isset($_SESSION['user_id'])
+            ? (int) $_SESSION['user_id']
+            : null;
+
+        $this->activityModel->log($type, $description, $actorUserId);
     }
 
 
@@ -184,6 +202,15 @@ class AdminController
             $passMark
         );
     }
+
+
+    /*
+     * -----------------------------------------------------
+     * RECENT ACTIVITY
+     * -----------------------------------------------------
+     */
+
+    $recentActivities = $this->activityModel->recent(8);
 
 
     /*
@@ -306,6 +333,8 @@ class AdminController
             $phone
         );
 
+
+        $this->logActivity('teacher_created', "Registered teacher {$fullName}.");
 
         $_SESSION['success_message'] =
             "Teacher account created successfully for {$fullName}.";
@@ -544,6 +573,8 @@ try {
     $db->commit();
 
 
+    $this->logActivity('student_created', "Registered student {$fullName}.");
+
     $_SESSION['success_message'] =
         "Student account created successfully for {$fullName}.";
 
@@ -753,6 +784,8 @@ try {
         }
 
 
+        $this->logActivity('parent_created', "Registered parent {$fullName}.");
+
         $_SESSION['success_message'] =
             "Parent account created successfully for {$fullName}.";
 
@@ -880,6 +913,17 @@ try {
             $classId,
             $subjectId,
             $teacherId
+        );
+
+        $teacherRow = $this->teacherModel->find($teacherId);
+        $subjectRow = $this->subjectModel->find($subjectId);
+        $classRow = $this->classModel->find($classId);
+
+        $this->logActivity(
+            'teacher_assigned',
+            'Assigned ' . ($teacherRow['full_name'] ?? 'a teacher')
+            . ' to ' . ($subjectRow['name'] ?? 'a subject')
+            . ' — ' . ($classRow['name'] ?? 'a class') . '.'
         );
 
 
@@ -1690,6 +1734,7 @@ try {
         }
 
         $this->userModel->delete((int) $student['user_id']);
+        $this->logActivity('student_deleted', "Deleted student {$student['full_name']}.");
         $_SESSION['success_message'] = 'Student deleted permanently.';
         self::redirect('manage_students');
     }
@@ -1792,6 +1837,7 @@ try {
         }
 
         $this->userModel->delete((int) $teacher['user_id']);
+        $this->logActivity('teacher_deleted', "Deleted teacher {$teacher['full_name']}.");
         $_SESSION['success_message'] = 'Teacher deleted permanently.';
         self::redirect('manage_teachers');
     }
@@ -1893,6 +1939,7 @@ try {
          * the account and its child links, so it is always safe.
          */
         $this->userModel->delete((int) $parent['user_id']);
+        $this->logActivity('parent_deleted', "Deleted parent {$parent['full_name']}.");
         $_SESSION['success_message'] = 'Parent deleted permanently.';
         self::redirect('manage_parents');
     }
@@ -1991,6 +2038,8 @@ try {
             : [];
 
         $this->classSubjectModel->setClassesForSubject($newSubjectId, $classIds);
+
+        $this->logActivity('subject_created', "Added subject {$name}.");
 
         $_SESSION['success_message'] =
             "Subject \"{$name}\" created successfully.";
@@ -2132,6 +2181,7 @@ try {
         }
 
         $this->subjectModel->delete($subjectId);
+        $this->logActivity('subject_deleted', "Deleted subject {$subject['name']}.");
 
         $_SESSION['success_message'] =
             "Subject \"{$subject['name']}\" deleted successfully.";
@@ -2368,6 +2418,8 @@ try {
             $title,
             $body
         );
+
+        $this->logActivity('announcement_posted', "Posted announcement: {$title}.");
 
 
         $_SESSION['success_message'] =
