@@ -768,6 +768,22 @@ class Score
 
 
     /**
+     * The most recent term (any student) that has scores, used as a
+     * fallback when no term is flagged current.
+     */
+    public function latestTermId(): ?int
+    {
+        $stmt = $this->db->query(
+            "SELECT term_id FROM scores ORDER BY term_id DESC LIMIT 1"
+        );
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? (int) $row['term_id'] : null;
+    }
+
+
+    /**
      * Find the latest term containing scores for a student.
      *
      * Used by the dashboard to automatically display

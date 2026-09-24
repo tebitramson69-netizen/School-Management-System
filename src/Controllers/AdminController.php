@@ -126,6 +126,68 @@ class AdminController
 
     /*
      * -----------------------------------------------------
+     * ACADEMIC PERFORMANCE (O/L & A/L pass rates)
+     * -----------------------------------------------------
+     *
+     * O/L = Form 5 classes, A/L = Upper Sixth classes. A candidate
+     * "passes" when their coefficient-weighted term average meets
+     * the school pass mark (same rule as the report card). Computed
+     * for the current term, or the latest term with scores.
+     */
+
+    $school = School::settings();
+    $passMark = (float) ($school['pass_mark'] ?? 10);
+
+    $academicYear = $this->academicYearModel->getCurrent();
+    $academicYearId = (int) ($academicYear['id'] ?? 0);
+
+    $currentTerm = $this->termModel->getCurrentTerm();
+
+    $performanceTermId = $currentTerm
+        ? (int) $currentTerm['id']
+        : $this->scoreModel->latestTermId();
+
+    $performanceTermName = $currentTerm['name'] ?? null;
+
+    if (!$performanceTermName && $performanceTermId) {
+        $termRow = $this->termModel->find($performanceTermId);
+        $performanceTermName = $termRow['name'] ?? null;
+    }
+
+    $olPassRate = null;
+    $alPassRate = null;
+
+    if ($academicYearId > 0 && $performanceTermId) {
+
+        $formFiveClassIds = [];
+        $upperSixthClassIds = [];
+
+        foreach ($this->classModel->all() as $classRow) {
+            if (($classRow['level'] ?? '') === 'Form 5') {
+                $formFiveClassIds[] = (int) $classRow['id'];
+            } elseif (($classRow['level'] ?? '') === 'Upper Sixth') {
+                $upperSixthClassIds[] = (int) $classRow['id'];
+            }
+        }
+
+        $olPassRate = $this->resultModel->passRateForClasses(
+            $formFiveClassIds,
+            $academicYearId,
+            $performanceTermId,
+            $passMark
+        );
+
+        $alPassRate = $this->resultModel->passRateForClasses(
+            $upperSixthClassIds,
+            $academicYearId,
+            $performanceTermId,
+            $passMark
+        );
+    }
+
+
+    /*
+     * -----------------------------------------------------
      * LOAD DASHBOARD
      * -----------------------------------------------------
      */

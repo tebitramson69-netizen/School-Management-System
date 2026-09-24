@@ -392,6 +392,63 @@ class Result
     }
 
     /**
+     * Aggregate pass rate across several classes (e.g. all Form 5
+     * classes for O/L, all Upper Sixth for A/L) for one term.
+     *
+     * "Passed" = coefficient-weighted overall average >= $passMark
+     * (the same PASS/FAIL rule the report card uses). Returns null
+     * when no candidate in those classes has results yet.
+     */
+    public function passRateForClasses(
+        array $classIds,
+        int $academicYearId,
+        int $termId,
+        float $passMark
+    ): ?array {
+        $withResults = 0;
+        $passed = 0;
+
+        foreach ($classIds as $classId) {
+
+            $classId = (int) $classId;
+
+            if ($classId <= 0) {
+                continue;
+            }
+
+            $results = $this->getClassResults(
+                $classId,
+                $academicYearId,
+                $termId
+            );
+
+            foreach ($results as $result) {
+
+                if ($result['overall_average'] === null) {
+                    continue;
+                }
+
+                $withResults++;
+
+                if ((float) $result['overall_average'] >= $passMark) {
+                    $passed++;
+                }
+            }
+        }
+
+        if ($withResults === 0) {
+            return null;
+        }
+
+        return [
+            'pass_rate' => round($passed / $withResults * 100, 1),
+            'passed' => $passed,
+            'total' => $withResults,
+        ];
+    }
+
+
+    /**
      * Get summary statistics for a class.
      *
      * Useful for the admin results dashboard.

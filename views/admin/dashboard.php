@@ -23,6 +23,11 @@ if ($hour < 12) {
 $success = $_SESSION['success_message'] ?? null;
 unset($_SESSION['success_message']);
 
+$olPassRate = $olPassRate ?? null;
+$alPassRate = $alPassRate ?? null;
+$performanceTermName = $performanceTermName ?? null;
+$hasPerformance = $olPassRate !== null || $alPassRate !== null;
+
 ob_start();
 
 ?>
@@ -268,10 +273,18 @@ ob_start();
                         Performance overview
                     </h4>
 
-                    <p>
-                        Academic performance data will appear here
-                        once results have been recorded.
-                    </p>
+                    <?php if ($hasPerformance): ?>
+                        <p>
+                            Pass rates for
+                            <?= htmlspecialchars($performanceTermName ?? 'the latest term', ENT_QUOTES, 'UTF-8') ?>
+                            (candidate average at or above the pass mark).
+                        </p>
+                    <?php else: ?>
+                        <p>
+                            Academic performance data will appear here
+                            once results have been recorded.
+                        </p>
+                    <?php endif; ?>
 
                 </div>
 
@@ -285,7 +298,14 @@ ob_start();
                         </span>
 
                         <strong>
-                            —
+                            <?php if ($olPassRate !== null): ?>
+                                <?= htmlspecialchars((string) $olPassRate['pass_rate'], ENT_QUOTES, 'UTF-8') ?>%
+                                <small style="font-weight:500;color:var(--color-text-muted);">
+                                    (<?= (int) $olPassRate['passed'] ?>/<?= (int) $olPassRate['total'] ?>)
+                                </small>
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
                         </strong>
 
                     </div>
@@ -298,7 +318,14 @@ ob_start();
                         </span>
 
                         <strong>
-                            —
+                            <?php if ($alPassRate !== null): ?>
+                                <?= htmlspecialchars((string) $alPassRate['pass_rate'], ENT_QUOTES, 'UTF-8') ?>%
+                                <small style="font-weight:500;color:var(--color-text-muted);">
+                                    (<?= (int) $alPassRate['passed'] ?>/<?= (int) $alPassRate['total'] ?>)
+                                </small>
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
                         </strong>
 
                     </div>
