@@ -29,6 +29,7 @@ $performanceTermName = $performanceTermName ?? null;
 $hasPerformance = $olPassRate !== null || $alPassRate !== null;
 
 $recentActivities = $recentActivities ?? [];
+$upcomingEvents = $upcomingEvents ?? [];
 
 /*
  * Icon (by activity type) and relative-time helpers for the feed.
@@ -401,25 +402,57 @@ ob_start();
 
                     </div>
 
+                    <a
+                        class="btn btn-sm btn-secondary"
+                        href="<?= BASE_URL ?>/index.php?action=post_event_form"
+                    >
+                        Add event
+                    </a>
+
                 </div>
 
 
-                <div class="dashboard-empty-content">
+                <?php if (empty($upcomingEvents)): ?>
 
-                    <div class="dashboard-empty-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>
+                    <div class="dashboard-empty-content">
+
+                        <div class="dashboard-empty-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>
+                        </div>
+
+                        <h4>
+                            No upcoming events
+                        </h4>
+
+                        <p>
+                            Tests, report cards, GCE registration
+                            deadlines and staff events will appear here.
+                        </p>
+
                     </div>
 
-                    <h4>
-                        No upcoming events
-                    </h4>
+                <?php else: ?>
 
-                    <p>
-                        Tests, report cards, GCE registration
-                        deadlines and staff events will appear here.
-                    </p>
+                    <ul class="event-list">
+                        <?php foreach ($upcomingEvents as $event): ?>
+                            <?php $ts = strtotime((string) $event['event_date']); ?>
+                            <li class="event-item">
+                                <span class="event-date" aria-hidden="true">
+                                    <span class="event-day"><?= htmlspecialchars(date('j', $ts), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span class="event-month"><?= htmlspecialchars(strtoupper(date('M', $ts)), ENT_QUOTES, 'UTF-8') ?></span>
+                                </span>
+                                <span class="event-body">
+                                    <span class="event-title"><?= htmlspecialchars($event['title'], ENT_QUOTES, 'UTF-8') ?></span>
+                                    <?php if (!empty($event['description'])): ?>
+                                        <span class="event-desc"><?= htmlspecialchars($event['description'], ENT_QUOTES, 'UTF-8') ?></span>
+                                    <?php endif; ?>
+                                    <span class="event-full-date"><?= htmlspecialchars(date('l, j M Y', $ts), ENT_QUOTES, 'UTF-8') ?></span>
+                                </span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
 
-                </div>
+                <?php endif; ?>
 
             </article>
 

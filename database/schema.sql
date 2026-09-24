@@ -231,6 +231,17 @@ CREATE TABLE activity_log (
     FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- 11e. EVENTS (dashboard "Upcoming" panel)
+CREATE TABLE events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    event_date DATE NOT NULL,
+    description VARCHAR(500) DEFAULT NULL,
+    created_by INT DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
 -- 12. SEED DATA: default Cameroon GCE grade scale (admin can edit later)
 INSERT INTO grade_scale (min_score, max_score, letter, remark) VALUES
 (16.00, 20.00, 'A', 'Excellent'),

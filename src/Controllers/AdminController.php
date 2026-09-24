@@ -41,6 +41,7 @@ require_once __DIR__ . '/../Models/Result.php';
 require_once __DIR__ . '/../Models/GradeScale.php';
 require_once __DIR__ . '/../Models/StudentTermReport.php';
 require_once __DIR__ . '/../Models/ActivityLog.php';
+require_once __DIR__ . '/../Models/Event.php';
 
 
 class AdminController
@@ -62,6 +63,7 @@ class AdminController
     private GradeScale $gradeScaleModel;
     private StudentTermReport $termReportModel;
     private ActivityLog $activityModel;
+    private Event $eventModel;
 
 
     /**
@@ -88,6 +90,7 @@ class AdminController
         $this->gradeScaleModel = new GradeScale();
         $this->termReportModel = new StudentTermReport();
         $this->activityModel = new ActivityLog();
+        $this->eventModel = new Event();
     }
 
 
@@ -215,12 +218,112 @@ class AdminController
 
     /*
      * -----------------------------------------------------
+     * UPCOMING EVENTS
+     * -----------------------------------------------------
+     */
+
+    $upcomingEvents = $this->eventModel->upcoming(5);
+
+
+    /*
+     * -----------------------------------------------------
      * LOAD DASHBOARD
      * -----------------------------------------------------
      */
 
     require __DIR__ . '/../../views/admin/dashboard.php';
 }
+
+
+    /**
+     * =====================================================
+     * EVENTS
+     * =====================================================
+     */
+
+    public function viewEvents(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $events = $this->eventModel->all();
+
+        require __DIR__ . '/../../views/admin/events.php';
+    }
+
+    public function showPostEventForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        require __DIR__ . '/../../views/admin/post_event.php';
+    }
+
+    public function postEvent(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $title = trim($_POST['title'] ?? '');
+        $eventDate = trim($_POST['event_date'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        $errors = [];
+
+        if ($title === '') {
+            $errors[] = 'Event title is required.';
+        } elseif (mb_strlen($title) > 150) {
+            $errors[] = 'Event title must be 150 characters or fewer.';
+        }
+
+        if ($eventDate === '') {
+            $errors[] = 'Event date is required.';
+        } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $eventDate) || strtotime($eventDate) === false) {
+            $errors[] = 'Please enter a valid event date.';
+        }
+
+        if (mb_strlen($description) > 500) {
+            $errors[] = 'Description must be 500 characters or fewer.';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            $_SESSION['old_input'] = [
+                'title' => $title,
+                'event_date' => $eventDate,
+                'description' => $description,
+            ];
+            self::redirect('post_event_form');
+        }
+
+        $actorUserId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+
+        $this->eventModel->create($title, $eventDate, $description, $actorUserId);
+        $this->logActivity('event_created', "Added event: {$title}.");
+
+        $_SESSION['success_message'] = 'Event added successfully.';
+        self::redirect('view_events');
+    }
+
+    public function deleteEvent(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $eventId = (int) ($_POST['event_id'] ?? 0);
+        $event = $this->eventModel->find($eventId);
+
+        if (!$event) {
+            $_SESSION['form_errors'] = ['Event not found.'];
+            self::redirect('view_events');
+        }
+
+        $this->eventModel->delete($eventId);
+        $this->logActivity('event_deleted', "Deleted event: {$event['title']}.");
+
+        $_SESSION['success_message'] = 'Event deleted.';
+        self::redirect('view_events');
+    }
 
 
     /**

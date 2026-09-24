@@ -748,6 +748,41 @@ switch ($action) {
 
 
     /*
+     * -----------------------------------------------------
+     * Events
+     * -----------------------------------------------------
+     */
+
+    case 'view_events':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->viewEvents();
+        break;
+
+    case 'post_event_form':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->showPostEventForm();
+        break;
+
+    case 'post_event':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->postEvent();
+        break;
+
+    case 'delete_event':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->deleteEvent();
+        break;
+
+
+    /*
      * =====================================================
      * TEACHER
      * =====================================================
