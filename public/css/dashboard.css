@@ -50,7 +50,19 @@
     width: var(--sidebar-width);
     flex: 0 0 var(--sidebar-width);
 
-    min-height: calc(100vh - var(--topbar-height));
+    /*
+     * Pin the sidebar under the (sticky) topbar so only the main
+     * content scrolls. align-self:flex-start stops it stretching to
+     * the full body height, which is what lets sticky take effect;
+     * the sidebar gets its own scroll if its menu is tall.
+     * The <=900px rules below switch it to a fixed off-canvas panel.
+     */
+    position: sticky;
+    top: var(--topbar-height);
+    align-self: flex-start;
+
+    height: calc(100vh - var(--topbar-height));
+    overflow-y: auto;
 
     background:
         linear-gradient(
