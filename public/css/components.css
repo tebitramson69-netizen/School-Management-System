@@ -652,6 +652,92 @@
     line-height: 1;
 }
 
+/* ---- Notifications dropdown ---- */
+
+.notification-wrapper {
+    position: relative;
+}
+
+.notification-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 1000;
+
+    width: 300px;
+    max-width: 86vw;
+
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md, 0 12px 32px rgba(18, 59, 99, .16));
+
+    overflow: hidden;
+}
+
+.notification-panel-head {
+    padding: 11px 14px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.notification-empty {
+    padding: 18px 14px;
+    font-size: .85rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.notification-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item strong {
+    font-size: .86rem;
+    color: var(--color-text);
+}
+
+.notification-item time {
+    font-size: .72rem;
+    color: var(--color-text-secondary);
+}
+
+.notification-viewall {
+    display: block;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    border-top: 1px solid var(--color-border);
+    text-decoration: none;
+}
+
+.notification-viewall:hover {
+    background: var(--color-primary-light);
+}
+
 /* =========================================================
    USER MENU
    ========================================================= */

@@ -390,42 +390,117 @@ if (
              NOTIFICATIONS
              ================================================= -->
 
-        <button
-            type="button"
-            class="notification-button"
-            aria-label="Notifications"
-            title="Notifications"
-        >
+        <div class="notification-wrapper">
 
-            <svg
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.9"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
+            <button
+                type="button"
+                class="notification-button"
+                id="notificationButton"
+                aria-label="Notifications"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="notificationPanel"
+                title="Notifications"
             >
-                <path
-                    d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
-                ></path>
 
-                <path
-                    d="M13.73 21a2 2 0 0 1-3.46 0"
-                ></path>
-            </svg>
+                <svg
+                    width="19"
+                    height="19"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
+                    ></path>
+
+                    <path
+                        d="M13.73 21a2 2 0 0 1-3.46 0"
+                    ></path>
+                </svg>
 
 
-            <span
-                class="notification-count"
+                <span
+                    class="notification-count"
+                    <?= ($notificationCount ?? 0) > 0 ? '' : 'hidden' ?>
+                >
+                    <?= (int) ($notificationCount ?? 0) ?>
+                </span>
+
+            </button>
+
+
+            <div
+                class="notification-panel"
+                id="notificationPanel"
+                role="menu"
                 hidden
             >
-                0
-            </span>
 
-        </button>
+                <div class="notification-panel-head">
+                    Notifications
+                </div>
+
+                <?php if (empty($notifications)): ?>
+
+                    <div class="notification-empty">
+                        No new notifications.
+                    </div>
+
+                <?php else: ?>
+
+                    <ul class="notification-list">
+
+                        <?php foreach (array_slice($notifications, 0, 6) as $note): ?>
+
+                            <li class="notification-item">
+
+                                <strong>
+                                    <?= htmlspecialchars(
+                                        (string) ($note['title'] ?? 'Announcement'),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </strong>
+
+                                <?php if (!empty($note['created_at'])): ?>
+                                    <time>
+                                        <?= htmlspecialchars(
+                                            date('M j, Y', strtotime((string) $note['created_at'])),
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>
+                                    </time>
+                                <?php endif; ?>
+
+                            </li>
+
+                        <?php endforeach; ?>
+
+                    </ul>
+
+                    <?php if (!empty($notificationsLink)): ?>
+                        <a
+                            class="notification-viewall"
+                            href="<?= htmlspecialchars(
+                                BASE_URL . '/index.php?action=' . rawurlencode($notificationsLink),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                        >
+                            View all announcements
+                        </a>
+                    <?php endif; ?>
+
+                <?php endif; ?>
+
+            </div>
+
+        </div>
 
 
         <!-- =================================================

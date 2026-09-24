@@ -138,6 +138,50 @@ $currentRoleLabel =
     $roleLabels[$currentRole]
     ?? ucfirst($currentRole ?: 'User');
 
+
+/* =========================================================
+   NOTIFICATIONS
+
+   The topbar bell shows recent school-wide announcements. The
+   badge counts those posted in the last 14 days.
+   ========================================================= */
+
+require_once __DIR__ . '/../../src/Models/Announcement.php';
+
+$notifications = [];
+$notificationCount = 0;
+
+try {
+
+    $notifications =
+        (new Announcement())->forDashboard(null);
+
+    $notificationCutoff = strtotime('-14 days');
+
+    foreach ($notifications as $note) {
+        if (
+            !empty($note['created_at']) &&
+            strtotime((string) $note['created_at']) >= $notificationCutoff
+        ) {
+            $notificationCount++;
+        }
+    }
+
+} catch (Throwable $e) {
+    $notifications = [];
+    $notificationCount = 0;
+}
+
+/*
+ * Where "View all" points, per role (roles without an
+ * announcements list get no link).
+ */
+$notificationsLink = match ($currentRole) {
+    'admin'   => 'view_announcements',
+    'student' => 'student_announcements',
+    default   => null,
+};
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

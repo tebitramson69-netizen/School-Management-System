@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeGradeBadges();
     initializeDashboardSidebar();
     initializePrintButton();
+    initializeNotifications();
 });
 
 
@@ -525,6 +526,77 @@ function initializeDashboardSidebar() {
                 : "true"
         );
     }
+}
+
+
+/* =========================================================
+   5b. NOTIFICATIONS DROPDOWN
+   ========================================================= */
+
+function initializeNotifications() {
+
+    const button =
+        document.getElementById("notificationButton");
+
+    const panel =
+        document.getElementById("notificationPanel");
+
+
+    if (!button || !panel) {
+        return;
+    }
+
+
+    function openPanel() {
+        panel.hidden = false;
+        button.setAttribute("aria-expanded", "true");
+    }
+
+
+    function closePanel() {
+        panel.hidden = true;
+        button.setAttribute("aria-expanded", "false");
+    }
+
+
+    button.addEventListener("click", (event) => {
+
+        event.stopPropagation();
+
+        if (panel.hidden) {
+            openPanel();
+        } else {
+            closePanel();
+        }
+    });
+
+
+    /*
+     * Clicking inside the panel should not close it.
+     */
+    panel.addEventListener("click", (event) => {
+        event.stopPropagation();
+    });
+
+
+    /*
+     * Any outside click closes the panel.
+     */
+    document.addEventListener("click", () => {
+        if (!panel.hidden) {
+            closePanel();
+        }
+    });
+
+
+    /*
+     * Escape closes the panel.
+     */
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !panel.hidden) {
+            closePanel();
+        }
+    });
 }
 
 
