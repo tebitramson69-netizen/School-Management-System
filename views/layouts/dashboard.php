@@ -142,34 +142,57 @@ $currentRoleLabel =
 /* =========================================================
    NOTIFICATIONS
 
-   The topbar bell shows recent school-wide announcements. The
-   badge counts those posted in the last 14 days.
+   The topbar bell surfaces imminent events (next 7 days) and
+   recent school-wide announcements. The badge counts events in
+   the next 7 days plus announcements from the last 14 days.
    ========================================================= */
 
 require_once __DIR__ . '/../../src/Models/Announcement.php';
 require_once __DIR__ . '/../../src/Models/Term.php';
+require_once __DIR__ . '/../../src/Models/Event.php';
 
-$notifications = [];
+$notificationItems = [];
 $notificationCount = 0;
 
 try {
 
-    $notifications =
-        (new Announcement())->forDashboard(null);
+    /* Upcoming events within the next 7 days. */
+    $eventCutoff = date('Y-m-d', strtotime('+7 days'));
 
-    $notificationCutoff = strtotime('-14 days');
+    foreach ((new Event())->upcoming(10) as $ev) {
+        if (($ev['event_date'] ?? '') <= $eventCutoff) {
+            $notificationItems[] = [
+                'kind' => 'event',
+                'label' => (string) $ev['title'],
+                'meta' => date('M j', strtotime((string) $ev['event_date'])),
+            ];
+            $notificationCount++;
+        }
+    }
 
-    foreach ($notifications as $note) {
-        if (
+    /* Recent school-wide announcements (badge counts last 14 days). */
+    $announcementCutoff = strtotime('-14 days');
+
+    foreach ((new Announcement())->forDashboard(null) as $note) {
+        $isRecent =
             !empty($note['created_at']) &&
-            strtotime((string) $note['created_at']) >= $notificationCutoff
-        ) {
+            strtotime((string) $note['created_at']) >= $announcementCutoff;
+
+        $notificationItems[] = [
+            'kind' => 'announcement',
+            'label' => (string) ($note['title'] ?? 'Announcement'),
+            'meta' => !empty($note['created_at'])
+                ? date('M j', strtotime((string) $note['created_at']))
+                : '',
+        ];
+
+        if ($isRecent) {
             $notificationCount++;
         }
     }
 
 } catch (Throwable $e) {
-    $notifications = [];
+    $notificationItems = [];
     $notificationCount = 0;
 }
 

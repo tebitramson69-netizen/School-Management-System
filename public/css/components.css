@@ -718,6 +718,28 @@
     color: var(--color-text);
 }
 
+.notification-kind {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: .6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    vertical-align: middle;
+}
+
+.notification-kind-event {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.notification-kind-announcement {
+    background: #fff6e5;
+    color: #8a5a00;
+}
+
 .notification-item time {
     font-size: .72rem;
     color: var(--color-text-secondary);

@@ -445,7 +445,9 @@ if (
                     Notifications
                 </div>
 
-                <?php if (empty($notifications)): ?>
+                <?php $notificationItems = $notificationItems ?? []; ?>
+
+                <?php if (empty($notificationItems)): ?>
 
                     <div class="notification-empty">
                         No new notifications.
@@ -455,26 +457,19 @@ if (
 
                     <ul class="notification-list">
 
-                        <?php foreach (array_slice($notifications, 0, 6) as $note): ?>
+                        <?php foreach (array_slice($notificationItems, 0, 6) as $item): ?>
 
                             <li class="notification-item">
 
                                 <strong>
-                                    <?= htmlspecialchars(
-                                        (string) ($note['title'] ?? 'Announcement'),
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>
+                                    <span class="notification-kind notification-kind-<?= htmlspecialchars((string) ($item['kind'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                        <?= ($item['kind'] ?? '') === 'event' ? 'Event' : 'News' ?>
+                                    </span>
+                                    <?= htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                 </strong>
 
-                                <?php if (!empty($note['created_at'])): ?>
-                                    <time>
-                                        <?= htmlspecialchars(
-                                            date('M j, Y', strtotime((string) $note['created_at'])),
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ) ?>
-                                    </time>
+                                <?php if (!empty($item['meta'])): ?>
+                                    <time><?= htmlspecialchars((string) $item['meta'], ENT_QUOTES, 'UTF-8') ?></time>
                                 <?php endif; ?>
 
                             </li>
