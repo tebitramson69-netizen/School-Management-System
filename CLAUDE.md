@@ -33,20 +33,30 @@
 ## Database Assumptions
 - `academic_years.is_current` — exactly one row should be TRUE at a time
 - `terms.is_current` — exactly one row TRUE at a time (within current academic year)
+- `terms` — one row per (term name, within-term sequence 1|2); a "term" spans its two rows. Global sequence 1–6 is a display mapping only (`Term::globalSequence()`), not stored
 - `enrollments` — one per student per academic year (UNIQUE constraint)
-- `scores` — one per student/subject/term/sequence (UNIQUE constraint)
-- `subject_coefficients` — per-subject per-class weighting for GCE
+- `scores` — one per student/subject/term/sequence (UNIQUE constraint); `scores.sequence` is the within-term number (1|2)
+- `subject_coefficients` — per-subject per-class weighting for GCE (UNIQUE on subject_id+class_id)
+- `class_subjects` — which subjects a class offers (UNIQUE on class_id+subject_id); the authoritative subject list, independent of teacher assignment
+- `student_term_reports` — per-student/term attendance, conduct, sanctions & remarks (UNIQUE on student_id+term_id) for the report card
+- `activity_log` — admin dashboard "Recent Activity" feed (actor SET NULL on user delete)
+- `events` — school events for the dashboard "Upcoming" panel
+- Migrations live in `database/migration_00N_*.sql`; `database/schema.sql` mirrors the full schema for fresh installs
 
 ## Known Issues
-- Model files have lowercase names but require statements use PascalCase (works on Windows, breaks Linux)
-- `views/teacher/Mark_attendance.php` has mixed case (controller requires lowercase)
-- Result model (rankings) exists but is not wired to any route
-- SubjectCoefficient model exists but is not used in any calculation
-- Subject::getDashboardStatistics() is dead code (duplicate of Student method)
-- User::updatePassword() returns void but caller checks for false
+- None currently tracked. (Prior issues — model-file casing, `Result`/`SubjectCoefficient` wiring, `Subject::getDashboardStatistics` dead code, and `User::updatePassword()` return type — are all resolved.)
+
+### Caveats to keep in mind
+- The report card subject list = a class's offered subjects (`class_subjects`) merged with any subject the student has marks in, so leftover marks for a no-longer-offered subject still appear until score data is reset. Only marked subjects contribute to the average.
+- Dashboard pass-rate and class-ranking computations are N+1 (per class → per student); fine at school scale, revisit if data grows large.
+- `Result::getClassSummary()` is currently unused (kept for a future class-summary screen).
+- Model line endings are mixed per file; when editing, keep a file's existing convention to avoid noisy diffs.
 
 ## Testing Commands
 ```bash
+# Run the unit test suite (pure core-maths: weighting, ranking, sequence mapping)
+php tests/run.php
+
 # Syntax check all PHP files
 find . -name "*.php" -not -path "./vendor/*" | xargs -I{} php -l {}
 
