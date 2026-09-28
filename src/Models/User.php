@@ -45,13 +45,14 @@ class User
         return $this->findByEmail($email) !== false;
     }
 
-    public function updatePassword(int $userId, string $newPassword): void
+    public function updatePassword(int $userId, string $newPassword): bool
     {
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
         $sql = "UPDATE users SET password_hash = :password_hash, must_change_password = 0 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
+
+        return $stmt->execute([
             'password_hash' => $hashedPassword,
             'id' => $userId
         ]);

@@ -11,10 +11,35 @@ class Result
 
     private Score $scoreModel;
 
+    private ?float $passMark = null;
+
     public function __construct()
     {
         $this->db = Database::getConnection();
         $this->scoreModel = new Score();
+    }
+
+    /**
+     * The school's configured pass mark (0-20 scale), cached.
+     * Defaults to 10 when unset, so PASS/FAIL is defined the same
+     * way here as on the report card and the dashboard.
+     */
+    private function passMark(): float
+    {
+        if ($this->passMark === null) {
+            try {
+                $row = $this->db
+                    ->query("SELECT pass_mark FROM school_settings LIMIT 1")
+                    ->fetch(PDO::FETCH_ASSOC);
+                $this->passMark = ($row && $row['pass_mark'] !== null)
+                    ? (float) $row['pass_mark']
+                    : 10.0;
+            } catch (Throwable $e) {
+                $this->passMark = 10.0;
+            }
+        }
+
+        return $this->passMark;
     }
 
     /**
@@ -227,22 +252,13 @@ class Result
     }
 
     /**
-     * Determine whether a student has passed based on
-     * the school's configured grading scale.
-     *
-     * Current school rule:
-     *
-     * 8 and above = PASS
-     * below 8 = FAIL
-     *
-     * This corresponds to the current E/F boundary.
-     *
-     * This method can later be made configurable if the school
-     * introduces a different pass requirement.
+     * Determine whether a student has passed, using the school's
+     * configured pass mark (default 10/20) — the same threshold the
+     * report card and dashboard pass rates use.
      */
     public function determinePassFail(float $average): string
     {
-        return $average >= 8.00
+        return $average >= $this->passMark()
             ? 'PASS'
             : 'FAIL';
     }
