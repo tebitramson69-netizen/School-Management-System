@@ -61,6 +61,10 @@
         width: 280px;
         max-width: 86vw;
 
+        /* Full-height off-canvas panel: top/bottom drive the height,
+           overriding the desktop sticky height. */
+        height: auto;
+
         transform:
             translateX(-105%);
 

@@ -8,7 +8,7 @@ require_once __DIR__ . '/../Models/Term.php';
 require_once __DIR__ . '/../Models/Score.php';
 require_once __DIR__ . '/../Models/Announcement.php';
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
-
+require_once __DIR__ . '/../Core/School.php';
 class TeacherController
 {
     private Teacher $teacherModel;

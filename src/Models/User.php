@@ -45,15 +45,52 @@ class User
         return $this->findByEmail($email) !== false;
     }
 
-    public function updatePassword(int $userId, string $newPassword): void
+    public function updatePassword(int $userId, string $newPassword): bool
     {
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
         $sql = "UPDATE users SET password_hash = :password_hash, must_change_password = 0 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
+
+        return $stmt->execute([
             'password_hash' => $hashedPassword,
             'id' => $userId
         ]);
+    }
+
+    public function find(int $id): array|false
+    {
+        $sql = "SELECT id, email, role, is_active, must_change_password
+                FROM users WHERE id = :id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Activate or deactivate an account. An inactive user is
+     * blocked at login (see AuthController), so this is a safe,
+     * reversible "remove" that preserves all their records.
+     */
+    public function setActive(int $id, bool $active): void
+    {
+        $sql = "UPDATE users SET is_active = :active WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'active' => $active ? 1 : 0,
+            'id' => $id
+        ]);
+    }
+
+    /**
+     * Permanently delete a user. Foreign keys cascade to the role
+     * profile and its data, so callers MUST guard this against
+     * accounts that still have records worth keeping.
+     */
+    public function delete(int $id): void
+    {
+        $sql = "DELETE FROM users WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
     }
 }

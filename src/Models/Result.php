@@ -3,14 +3,43 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/Score.php';
 
 class Result
 {
     private PDO $db;
 
+    private Score $scoreModel;
+
+    private ?float $passMark = null;
+
     public function __construct()
     {
         $this->db = Database::getConnection();
+        $this->scoreModel = new Score();
+    }
+
+    /**
+     * The school's configured pass mark (0-20 scale), cached.
+     * Defaults to 10 when unset, so PASS/FAIL is defined the same
+     * way here as on the report card and the dashboard.
+     */
+    private function passMark(): float
+    {
+        if ($this->passMark === null) {
+            try {
+                $row = $this->db
+                    ->query("SELECT pass_mark FROM school_settings LIMIT 1")
+                    ->fetch(PDO::FETCH_ASSOC);
+                $this->passMark = ($row && $row['pass_mark'] !== null)
+                    ? (float) $row['pass_mark']
+                    : 10.0;
+            } catch (Throwable $e) {
+                $this->passMark = 10.0;
+            }
+        }
+
+        return $this->passMark;
     }
 
     /**
@@ -156,29 +185,28 @@ class Result
     /**
      * Calculate the overall average for one student in one term.
      *
-     * Each subject receives equal weight.
+     * COEFFICIENT-WEIGHTED. The overall figure is produced by the
+     * SAME engine the student's report card uses —
+     * Score::overallAverageForStudentTerm() — so a student's rank
+     * and their displayed overall average always share one
+     * definition (weighting AND term-name/sequence aggregation).
+     *
+     * $classId is required for weighting: it selects the per-class
+     * coefficients. When it is 0 (or no coefficients are configured)
+     * every subject defaults to coefficient 1, reproducing the
+     * previous equal-weight mean — so existing callers that cannot
+     * supply a class id keep their old behaviour.
      */
     public function getStudentOverallResult(
         int $studentId,
-        int $termId
+        int $termId,
+        int $classId = 0
     ): array {
         $subjects = $this->getStudentSubjectResults(
             $studentId,
             $termId
         );
 
-        if (empty($subjects)) {
-            return [
-                'student_id' => $studentId,
-                'subject_count' => 0,
-                'overall_average' => null,
-                'grade' => null,
-                'remark' => null,
-                'status' => 'NO RESULT'
-            ];
-        }
-
-        $total = 0.0;
         $subjectCount = 0;
 
         foreach ($subjects as $subject) {
@@ -186,11 +214,21 @@ class Result
                 continue;
             }
 
-            $total += (float) $subject['average_score'];
             $subjectCount++;
         }
 
-        if ($subjectCount === 0) {
+        /*
+         * Delegate the overall figure to the shared Score engine so
+         * ranking == displayed report-card average by construction.
+         */
+        $overallAverage =
+            $this->scoreModel->overallAverageForStudentTerm(
+                $studentId,
+                $termId,
+                $classId
+            );
+
+        if ($overallAverage === null) {
             return [
                 'student_id' => $studentId,
                 'subject_count' => 0,
@@ -200,11 +238,6 @@ class Result
                 'status' => 'NO RESULT'
             ];
         }
-
-        $overallAverage = round(
-            $total / $subjectCount,
-            2
-        );
 
         $grade = $this->getGrade($overallAverage);
 
@@ -219,22 +252,13 @@ class Result
     }
 
     /**
-     * Determine whether a student has passed based on
-     * the school's configured grading scale.
-     *
-     * Current school rule:
-     *
-     * 8 and above = PASS
-     * below 8 = FAIL
-     *
-     * This corresponds to the current E/F boundary.
-     *
-     * This method can later be made configurable if the school
-     * introduces a different pass requirement.
+     * Determine whether a student has passed, using the school's
+     * configured pass mark (default 10/20) — the same threshold the
+     * report card and dashboard pass rates use.
      */
     public function determinePassFail(float $average): string
     {
-        return $average >= 8.00
+        return $average >= $this->passMark()
             ? 'PASS'
             : 'FAIL';
     }
@@ -261,7 +285,8 @@ class Result
 
             $studentResult = $this->getStudentOverallResult(
                 (int) $student['student_id'],
-                $termId
+                $termId,
+                $classId
             );
 
             $results[] = array_merge(
@@ -270,12 +295,17 @@ class Result
             );
         }
 
-        /*
-         * Students with actual results come first.
-         * Within the result group, highest average comes first.
-         *
-         * Students without results are placed at the bottom.
-         */
+        return self::assignPositions($results);
+    }
+
+    /**
+     * Pure ranking: sort by overall_average (highest first, ties
+     * broken by name, null averages last) and assign 1-based
+     * positions where equal averages share a position and unranked
+     * students get position null. DB-free so it can be unit-tested.
+     */
+    public static function assignPositions(array $results): array
+    {
         usort(
             $results,
             function (array $a, array $b): int {
@@ -285,8 +315,8 @@ class Result
 
                 if ($averageA === null && $averageB === null) {
                     return strcasecmp(
-                        $a['full_name'],
-                        $b['full_name']
+                        $a['full_name'] ?? '',
+                        $b['full_name'] ?? ''
                     );
                 }
 
@@ -300,8 +330,8 @@ class Result
 
                 if ((float) $averageA === (float) $averageB) {
                     return strcasecmp(
-                        $a['full_name'],
-                        $b['full_name']
+                        $a['full_name'] ?? '',
+                        $b['full_name'] ?? ''
                     );
                 }
 
@@ -311,18 +341,6 @@ class Result
             }
         );
 
-        /*
-         * Assign positions.
-         *
-         * Example:
-         *
-         * 1st = 17.50
-         * 2nd = 16.75
-         * 2nd = 16.75
-         * 4th = 15.20
-         *
-         * Equal averages receive the same position.
-         */
         $position = 0;
         $previousAverage = null;
         $numberedStudents = 0;
@@ -381,6 +399,63 @@ class Result
 
         return false;
     }
+
+    /**
+     * Aggregate pass rate across several classes (e.g. all Form 5
+     * classes for O/L, all Upper Sixth for A/L) for one term.
+     *
+     * "Passed" = coefficient-weighted overall average >= $passMark
+     * (the same PASS/FAIL rule the report card uses). Returns null
+     * when no candidate in those classes has results yet.
+     */
+    public function passRateForClasses(
+        array $classIds,
+        int $academicYearId,
+        int $termId,
+        float $passMark
+    ): ?array {
+        $withResults = 0;
+        $passed = 0;
+
+        foreach ($classIds as $classId) {
+
+            $classId = (int) $classId;
+
+            if ($classId <= 0) {
+                continue;
+            }
+
+            $results = $this->getClassResults(
+                $classId,
+                $academicYearId,
+                $termId
+            );
+
+            foreach ($results as $result) {
+
+                if ($result['overall_average'] === null) {
+                    continue;
+                }
+
+                $withResults++;
+
+                if ((float) $result['overall_average'] >= $passMark) {
+                    $passed++;
+                }
+            }
+        }
+
+        if ($withResults === 0) {
+            return null;
+        }
+
+        return [
+            'pass_rate' => round($passed / $withResults * 100, 1),
+            'passed' => $passed,
+            'total' => $withResults,
+        ];
+    }
+
 
     /**
      * Get summary statistics for a class.

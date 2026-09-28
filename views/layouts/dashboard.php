@@ -20,60 +20,56 @@
  * require __DIR__ . '/../admin/dashboard-content.php';
  * $content = ob_get_clean();
  *
- * require __DIR__ . '/../layouts/dashboard.php';
- *
- * =========================================================
+ * The sidebar and header are shared by all roles.
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$pageTitle =
-    $pageTitle
-    ?? 'Dashboard';
 
-$school =
-    $school
-    ?? [
-        'school_name' => 'School Management System',
-        'motto' => null,
-        'logo_path' => null
-    ];
+/* =========================================================
+   DEFAULT VALUES
+   ========================================================= */
 
-$content =
-    $content
-    ?? '';
-
-$bodyClass =
-    $bodyClass
-    ?? '';
-
-$useSchoolBackground =
-    $useSchoolBackground
-    ?? false;
-
-$schoolBackground =
-    $schoolBackground
-    ?? null;
-
+$pageTitle = $pageTitle ?? 'Dashboard';
 
 /*
- * School background CSS variable.
+ * If the controller did not provide school settings, load them
+ * here so every view that uses this layout shows real branding.
  */
+if (!isset($school) || !is_array($school)) {
+
+    require_once __DIR__ . '/../../src/Core/School.php';
+
+    $school = School::settings();
+}
+
+$school = $school ?? [
+    'school_name' => 'School Management System',
+    'motto'       => null,
+    'logo_path'   => null
+];
+
+$content = $content ?? '';
+
+$bodyClass = $bodyClass ?? '';
+
+$useSchoolBackground = $useSchoolBackground ?? false;
+
+$schoolBackground = $schoolBackground ?? null;
+
+
+/* =========================================================
+   SCHOOL BACKGROUND
+   ========================================================= */
+
 $backgroundStyle = '';
 
-if (
-    $useSchoolBackground &&
-    !empty($schoolBackground)
-) {
+if ($useSchoolBackground && !empty($schoolBackground)) {
+
     $backgroundUrl =
-        BASE_URL .
-        '/' .
-        ltrim(
-            $schoolBackground,
-            '/'
-        );
+        BASE_URL . '/' . ltrim($schoolBackground, '/');
 
     $backgroundStyle =
         '--school-background-image:url("' .
@@ -84,6 +80,131 @@ if (
         ) .
         '");';
 }
+
+
+/* =========================================================
+   USER INFORMATION
+   ========================================================= */
+
+$currentRole = $_SESSION['role'] ?? '';
+
+$currentUserName =
+    $_SESSION['full_name']
+    ?? $_SESSION['name']
+    ?? $_SESSION['email']
+    ?? 'User';
+
+
+/*
+ * Initials for the avatar.
+ */
+$nameParts = preg_split(
+    '/\s+/',
+    trim($currentUserName)
+);
+
+if (count($nameParts) >= 2) {
+
+    $userInitials =
+        strtoupper(
+            substr($nameParts[0], 0, 1) .
+            substr(
+                $nameParts[count($nameParts) - 1],
+                0,
+                1
+            )
+        );
+
+} else {
+
+    $userInitials =
+        strtoupper(
+            substr($currentUserName, 0, 2)
+        );
+}
+
+
+/*
+ * Human-readable role.
+ */
+$roleLabels = [
+    'admin'   => 'Administrator',
+    'teacher' => 'Teacher',
+    'student' => 'Student',
+    'parent'  => 'Parent'
+];
+
+$currentRoleLabel =
+    $roleLabels[$currentRole]
+    ?? ucfirst($currentRole ?: 'User');
+
+
+/* =========================================================
+   NOTIFICATIONS
+
+   The topbar bell surfaces imminent events (next 7 days) and
+   recent school-wide announcements. The badge counts events in
+   the next 7 days plus announcements from the last 14 days.
+   ========================================================= */
+
+require_once __DIR__ . '/../../src/Models/Announcement.php';
+require_once __DIR__ . '/../../src/Models/Term.php';
+require_once __DIR__ . '/../../src/Models/Event.php';
+
+$notificationItems = [];
+$notificationCount = 0;
+
+try {
+
+    /* Upcoming events within the next 7 days. */
+    $eventCutoff = date('Y-m-d', strtotime('+7 days'));
+
+    foreach ((new Event())->upcoming(10) as $ev) {
+        if (($ev['event_date'] ?? '') <= $eventCutoff) {
+            $notificationItems[] = [
+                'kind' => 'event',
+                'label' => (string) $ev['title'],
+                'meta' => date('M j', strtotime((string) $ev['event_date'])),
+            ];
+            $notificationCount++;
+        }
+    }
+
+    /* Recent school-wide announcements (badge counts last 14 days). */
+    $announcementCutoff = strtotime('-14 days');
+
+    foreach ((new Announcement())->forDashboard(null) as $note) {
+        $isRecent =
+            !empty($note['created_at']) &&
+            strtotime((string) $note['created_at']) >= $announcementCutoff;
+
+        $notificationItems[] = [
+            'kind' => 'announcement',
+            'label' => (string) ($note['title'] ?? 'Announcement'),
+            'meta' => !empty($note['created_at'])
+                ? date('M j', strtotime((string) $note['created_at']))
+                : '',
+        ];
+
+        if ($isRecent) {
+            $notificationCount++;
+        }
+    }
+
+} catch (Throwable $e) {
+    $notificationItems = [];
+    $notificationCount = 0;
+}
+
+/*
+ * Where "View all" points, per role (roles without an
+ * announcements list get no link).
+ */
+$notificationsLink = match ($currentRole) {
+    'admin'   => 'view_announcements',
+    'student' => 'student_announcements',
+    default   => null,
+};
 
 ?>
 <!DOCTYPE html>
@@ -100,7 +221,7 @@ if (
 
     <meta
         name="theme-color"
-        content="#0B2946"
+        content="#0D3B4C"
     >
 
     <title>
@@ -110,49 +231,66 @@ if (
     </title>
 
 
-    <!-- Bootstrap 5.3.3 -->
+    <!-- =====================================================
+         BOOTSTRAP
+         ===================================================== -->
+
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
 
-    <!-- Base school-management styles -->
+    <!-- =====================================================
+         APPLICATION STYLES
+         ===================================================== -->
+
+    <!--
+         Global design system.
+         This MUST load first because the other CSS files
+         use the variables defined here.
+    -->
+
+    <link
+        rel="stylesheet"
+        href="<?= BASE_URL ?>/css/theme.css"
+    >
+
     <link
         rel="stylesheet"
         href="<?= BASE_URL ?>/css/auth.css"
     >
 
-
-    <!-- Dashboard shell -->
-    <link
-        rel="stylesheet"
-        href="<?= BASE_URL ?>/css/dashboard.css"
-    >
-
-
-    <!-- Components -->
     <link
         rel="stylesheet"
         href="<?= BASE_URL ?>/css/components.css"
     >
 
+    <link
+        rel="stylesheet"
+        href="<?= BASE_URL ?>/css/dashboard.css"
+    >
 
-    <!-- Responsive rules -->
     <link
         rel="stylesheet"
         href="<?= BASE_URL ?>/css/responsive.css"
     >
 
 
-    <!-- Bootstrap JavaScript -->
+    <!-- =====================================================
+         BOOTSTRAP JS
+         ===================================================== -->
+
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         defer
     ></script>
 
 
-    <!-- Application JavaScript -->
+    <!-- =====================================================
+         APPLICATION JS
+         ===================================================== -->
+
     <script
         src="<?= BASE_URL ?>/js/app.js"
         defer
@@ -165,39 +303,44 @@ if (
 
 <div
     class="dashboard-shell app-shell <?= $useSchoolBackground ? 'has-school-background' : '' ?> <?= htmlspecialchars($bodyClass) ?>"
-    <?= $backgroundStyle !== ''
-        ? 'style="' .
-          htmlspecialchars(
-              $backgroundStyle,
-              ENT_QUOTES,
-              'UTF-8'
-          ) .
-          '"'
-        : ''
-    ?>
+    <?php if ($backgroundStyle !== ''): ?>
+        style="<?= htmlspecialchars(
+            $backgroundStyle,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>"
+    <?php endif; ?>
 >
 
 
     <!-- =====================================================
-         TOP HEADER
+         TOPBAR
          ===================================================== -->
 
-    <?php require __DIR__ . '/../components/header.php'; ?>
+    <?php
+    require __DIR__ . '/../components/header.php';
+    ?>
 
 
     <!-- =====================================================
-         BODY
+         APPLICATION BODY
          ===================================================== -->
 
     <div class="app-body">
 
 
-        <!-- Sidebar -->
+        <!-- =================================================
+             SIDEBAR
+             ================================================= -->
 
-        <?php require __DIR__ . '/../components/sidebar.php'; ?>
+        <?php
+        require __DIR__ . '/../components/sidebar.php';
+        ?>
 
 
-        <!-- Main content -->
+        <!-- =================================================
+             MAIN CONTENT
+             ================================================= -->
 
         <main
             class="app-main"
@@ -212,7 +355,20 @@ if (
 
         </main>
 
+
     </div>
+
+
+    <!-- =====================================================
+         MOBILE SIDEBAR OVERLAY
+         ===================================================== -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+        aria-hidden="true"
+    ></div>
+
 
 </div>
 

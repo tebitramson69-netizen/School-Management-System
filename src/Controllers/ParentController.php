@@ -6,8 +6,9 @@ require_once __DIR__ . '/../Models/Attendance.php';
 require_once __DIR__ . '/../Models/Score.php';
 require_once __DIR__ . '/../Models/Announcement.php';
 require_once __DIR__ . '/../Models/GradeScale.php';
+require_once __DIR__ . '/../Models/Result.php';
 require_once __DIR__ . '/../Middleware/AuthMiddleware.php';
-
+require_once __DIR__ . '/../Core/School.php';
 class ParentController
 {
     private ParentModel $parentModel;
@@ -16,6 +17,7 @@ class ParentController
     private Score $scoreModel;
     private Announcement $announcementModel;
     private GradeScale $gradeScaleModel;
+    private Result $resultModel;
 
     public function __construct()
     {
@@ -25,6 +27,7 @@ class ParentController
         $this->scoreModel = new Score();
         $this->announcementModel = new Announcement();
         $this->gradeScaleModel = new GradeScale();
+        $this->resultModel = new Result();
     }
 
     public function dashboard(): void
@@ -43,6 +46,8 @@ class ParentController
         }
 
         $children = $this->parentModel->getChildren($parent['id']);
+
+        $school = School::settings();
 
         require __DIR__ . '/../../views/parent/dashboard.php';
     }
@@ -72,18 +77,56 @@ class ParentController
         $classId = $this->studentModel->getCurrentClassId($studentId);
         $announcements = $this->announcementModel->forDashboard($classId);
 
-        $reportCard = $this->scoreModel->reportCardForStudent($studentId);
-        $subjectAverages = [];
-        foreach ($reportCard as &$row) {
-            $grade = $this->gradeScaleModel->forScore((float) $row['average_score']);
-            $row['letter'] = $grade['letter'] ?? '—';
-            $row['remark'] = $grade['remark'] ?? '—';
-            $subjectAverages[] = (float) $row['average_score'];
-        }
-        unset($row);
+        $latestTermId = $this->scoreModel->latestTermIdForStudent($studentId);
 
-        $overallAverage = !empty($subjectAverages) ? array_sum($subjectAverages) / count($subjectAverages) : null;
-        $overallGrade = $overallAverage !== null ? $this->gradeScaleModel->forScore($overallAverage) : null;
+        $reportCard = [];
+        $overallAverage = null;
+        $overallGrade = null;
+
+        if ($latestTermId !== null) {
+            $reportCard = $this->scoreModel->subjectAveragesForStudentTerm($studentId, $latestTermId);
+            foreach ($reportCard as &$row) {
+                $grade = $this->gradeScaleModel->forScore((float) $row['average_score']);
+                $row['letter'] = $grade['letter'] ?? '—';
+                $row['remark'] = $grade['remark'] ?? '—';
+            }
+            unset($row);
+
+            $overallAverage = $this->scoreModel->overallAverageForStudentTerm(
+                $studentId,
+                $latestTermId,
+                (int) ($classId ?? 0)
+            );
+            $overallGrade = $overallAverage !== null
+                ? $this->gradeScaleModel->forScore($overallAverage)
+                : null;
+        }
+
+        // Class position (ranking) for the latest term with scores
+        $classPosition = null;
+        $classSize = null;
+
+        $enrollment = $this->studentModel->getCurrentEnrollment($studentId);
+
+        if ($latestTermId !== null && $enrollment !== null) {
+            $classResults = $this->resultModel->getClassResults(
+                $enrollment['class_id'],
+                $enrollment['academic_year_id'],
+                $latestTermId
+            );
+
+            $classSize = 0;
+            foreach ($classResults as $classResult) {
+                if ((int) $classResult['student_id'] === $studentId) {
+                    $classPosition = $classResult['position'];
+                }
+                if ($classResult['overall_average'] !== null) {
+                    $classSize++;
+                }
+            }
+        }
+
+        $school = School::settings();
 
         require __DIR__ . '/../../views/parent/child_detail.php';
     }
