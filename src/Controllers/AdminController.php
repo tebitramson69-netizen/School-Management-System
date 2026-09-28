@@ -1476,8 +1476,10 @@ try {
 
 
         /*
-         * Subject rows: per-subject Seq1/Seq2/average, plus the
-         * per-class coefficient, grade/remark and average x coef.
+         * Canonical subject set: subjects the class OFFERS
+         * (class_subjects) merged with any subject the student
+         * actually has marks in. Offered-but-unmarked subjects show
+         * with blank marks; recorded marks win where present.
          */
         $seqRows = $this->scoreModel->sequenceMarksForStudentTerm(
             $studentId,
@@ -1486,11 +1488,42 @@ try {
 
         $coefficients = $this->coefficientModel->getForClass($classId);
 
+        $subjectsById = [];
+
+        foreach ($this->classSubjectModel->getForClass($classId) as $offered) {
+            $sid = (int) $offered['id'];
+            $subjectsById[$sid] = [
+                'subject_id' => $sid,
+                'subject_name' => $offered['name'],
+                'subject_code' => $offered['code'],
+                'seq1' => null,
+                'seq2' => null,
+                'average_score' => null,
+            ];
+        }
+
+        foreach ($seqRows as $r) {
+            $sid = (int) $r['subject_id'];
+            $subjectsById[$sid] = [
+                'subject_id' => $sid,
+                'subject_name' => $r['subject_name'],
+                'subject_code' => $r['subject_code'],
+                'seq1' => $r['seq1'],
+                'seq2' => $r['seq2'],
+                'average_score' => $r['average_score'],
+            ];
+        }
+
+        uasort(
+            $subjectsById,
+            static fn (array $a, array $b): int => strcasecmp($a['subject_name'], $b['subject_name'])
+        );
+
         $rows = [];
         $totalCoefficient = 0;
         $totalWeighted = 0.0;
 
-        foreach ($seqRows as $r) {
+        foreach ($subjectsById as $r) {
 
             $subjectId = (int) $r['subject_id'];
 
