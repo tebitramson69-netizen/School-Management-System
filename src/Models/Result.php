@@ -295,12 +295,17 @@ class Result
             );
         }
 
-        /*
-         * Students with actual results come first.
-         * Within the result group, highest average comes first.
-         *
-         * Students without results are placed at the bottom.
-         */
+        return self::assignPositions($results);
+    }
+
+    /**
+     * Pure ranking: sort by overall_average (highest first, ties
+     * broken by name, null averages last) and assign 1-based
+     * positions where equal averages share a position and unranked
+     * students get position null. DB-free so it can be unit-tested.
+     */
+    public static function assignPositions(array $results): array
+    {
         usort(
             $results,
             function (array $a, array $b): int {
@@ -310,8 +315,8 @@ class Result
 
                 if ($averageA === null && $averageB === null) {
                     return strcasecmp(
-                        $a['full_name'],
-                        $b['full_name']
+                        $a['full_name'] ?? '',
+                        $b['full_name'] ?? ''
                     );
                 }
 
@@ -325,8 +330,8 @@ class Result
 
                 if ((float) $averageA === (float) $averageB) {
                     return strcasecmp(
-                        $a['full_name'],
-                        $b['full_name']
+                        $a['full_name'] ?? '',
+                        $b['full_name'] ?? ''
                     );
                 }
 
@@ -336,18 +341,6 @@ class Result
             }
         );
 
-        /*
-         * Assign positions.
-         *
-         * Example:
-         *
-         * 1st = 17.50
-         * 2nd = 16.75
-         * 2nd = 16.75
-         * 4th = 15.20
-         *
-         * Equal averages receive the same position.
-         */
         $position = 0;
         $previousAverage = null;
         $numberedStudents = 0;

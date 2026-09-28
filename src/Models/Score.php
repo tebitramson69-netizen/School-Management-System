@@ -736,12 +736,29 @@ class Score
                 $coefficientModel->getForClass($classId);
         }
 
+        return self::computeWeightedAverage($subjects, $coefficients);
+    }
+
+
+    /**
+     * Pure coefficient-weighted average — Σ(avg × coef) / Σ(coef).
+     *
+     * $subjectAverages: rows with 'subject_id' and 'average_score'
+     * (null averages are skipped). $coefficients: [subject_id => coef];
+     * subjects with no entry default to coefficient 1. Returns null
+     * when nothing counts. Kept DB-free so it can be unit-tested.
+     */
+    public static function computeWeightedAverage(
+        array $subjectAverages,
+        array $coefficients
+    ): ?float {
+
         $weightedTotal = 0.0;
         $totalCoefficients = 0;
 
-        foreach ($subjects as $subject) {
+        foreach ($subjectAverages as $subject) {
 
-            if ($subject['average_score'] === null) {
+            if (!isset($subject['average_score']) || $subject['average_score'] === null) {
                 continue;
             }
 
@@ -758,11 +775,7 @@ class Score
             return null;
         }
 
-        return round(
-            $weightedTotal / $totalCoefficients,
-            2
-        );
-
+        return round($weightedTotal / $totalCoefficients, 2);
     }
 
 
