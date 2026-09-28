@@ -693,6 +693,42 @@ switch ($action) {
         break;
 
 
+    case 'create_class_form':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->showCreateClassForm();
+        break;
+
+    case 'create_class':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->createClass();
+        break;
+
+    case 'edit_class_form':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->showEditClassForm();
+        break;
+
+    case 'update_class':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->updateClass();
+        break;
+
+    case 'delete_class':
+
+        require_once __DIR__ . '/../src/Controllers/AdminController.php';
+        $adminController = new AdminController();
+        $adminController->deleteClass();
+        break;
+
+
     case 'view_class_list':
 
         require_once __DIR__ .

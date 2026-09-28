@@ -3,6 +3,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$errors = $_SESSION['form_errors'] ?? [];
+$successMessage = $_SESSION['success_message'] ?? '';
+unset($_SESSION['form_errors'], $_SESSION['success_message'], $_SESSION['old_input']);
+
+$classes = $classes ?? [];
+
 $pageTitle = 'Classes';
 
 ob_start();
@@ -14,7 +20,20 @@ ob_start();
         <h1>Classes</h1>
         <p>All classes configured in the school.</p>
     </div>
+    <div class="actions">
+        <a class="btn btn-primary" href="<?= BASE_URL ?>/index.php?action=create_class_form">Add Class</a>
+    </div>
 </section>
+
+<?php if ($successMessage !== ''): ?>
+    <div class="status-message status-message-success" role="alert"><?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?></div>
+<?php endif; ?>
+
+<?php if (!empty($errors)): ?>
+    <div class="alert alert-error" role="alert">
+        <ul><?php foreach ($errors as $e): ?><li><?= htmlspecialchars($e, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach; ?></ul>
+    </div>
+<?php endif; ?>
 
 <section class="dashboard-section">
 
@@ -34,7 +53,7 @@ ob_start();
                     <tr>
                         <th>Class</th>
                         <th>Level</th>
-                        <th>Option</th>
+                        <th>Stream</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -47,8 +66,18 @@ ob_start();
                             <td>
                                 <a class="btn btn-sm btn-primary"
                                    href="<?= BASE_URL ?>/index.php?action=view_class_list&class_id=<?= (int) $class['id'] ?>">
-                                    View Class List
+                                    View List
                                 </a>
+                                <a class="btn btn-sm btn-secondary"
+                                   href="<?= BASE_URL ?>/index.php?action=edit_class_form&class_id=<?= (int) $class['id'] ?>">
+                                    Edit
+                                </a>
+                                <form method="POST" action="<?= BASE_URL ?>/index.php?action=delete_class" style="display:inline"
+                                      onsubmit="return confirm('Delete this class? This cannot be undone.');">
+                                    <?= Security::csrfField() ?>
+                                    <input type="hidden" name="class_id" value="<?= (int) $class['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>

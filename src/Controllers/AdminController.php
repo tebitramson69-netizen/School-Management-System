@@ -2377,11 +2377,151 @@ try {
     {
         AuthMiddleware::requireRole('admin');
 
+        self::startSession();
+
         $classes =
             $this->classModel->all();
 
         require __DIR__ .
             '/../../views/admin/classes.php';
+    }
+
+
+    public function showCreateClassForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $levels = ClassModel::levels();
+        $options = ClassModel::options();
+
+        require __DIR__ . '/../../views/admin/create_class.php';
+    }
+
+    public function createClass(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $name = trim($_POST['name'] ?? '');
+        $level = trim($_POST['level'] ?? '');
+        $classOption = trim($_POST['class_option'] ?? '');
+
+        $errors = $this->validateClassInput($name, $level, $classOption);
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            $_SESSION['old_input'] = ['name' => $name, 'level' => $level, 'class_option' => $classOption];
+            self::redirect('create_class_form');
+        }
+
+        $this->classModel->create($name, $level, $classOption);
+        $this->logActivity('class_created', "Added class {$name}.");
+
+        $_SESSION['success_message'] = "Class \"{$name}\" created successfully.";
+        self::redirect('view_classes');
+    }
+
+    public function showEditClassForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $classId = (int) ($_GET['class_id'] ?? 0);
+        $class = $this->classModel->find($classId);
+
+        if (!$class) {
+            $_SESSION['form_errors'] = ['Class not found.'];
+            self::redirect('view_classes');
+        }
+
+        $levels = ClassModel::levels();
+        $options = ClassModel::options();
+
+        require __DIR__ . '/../../views/admin/edit_class.php';
+    }
+
+    public function updateClass(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $classId = (int) ($_POST['class_id'] ?? 0);
+        $class = $this->classModel->find($classId);
+
+        if (!$class) {
+            $_SESSION['form_errors'] = ['Class not found.'];
+            self::redirect('view_classes');
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $level = trim($_POST['level'] ?? '');
+        $classOption = trim($_POST['class_option'] ?? '');
+
+        $errors = $this->validateClassInput($name, $level, $classOption);
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            $this->redirectWithId('edit_class_form', 'class_id', $classId);
+        }
+
+        $this->classModel->update($classId, $name, $level, $classOption);
+        $this->logActivity('class_updated', "Updated class {$name}.");
+
+        $_SESSION['success_message'] = "Class \"{$name}\" updated successfully.";
+        self::redirect('view_classes');
+    }
+
+    public function deleteClass(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        self::startSession();
+
+        $classId = (int) ($_POST['class_id'] ?? 0);
+        $class = $this->classModel->find($classId);
+
+        if (!$class) {
+            $_SESSION['form_errors'] = ['Class not found.'];
+            self::redirect('view_classes');
+        }
+
+        if ($this->classModel->hasEnrollments($classId)) {
+            $_SESSION['form_errors'] = [
+                "\"{$class['name']}\" has enrolled students and cannot be deleted. Move or remove those students first."
+            ];
+            self::redirect('view_classes');
+        }
+
+        $this->classModel->delete($classId);
+        $this->logActivity('class_deleted', "Deleted class {$class['name']}.");
+
+        $_SESSION['success_message'] = "Class \"{$class['name']}\" deleted.";
+        self::redirect('view_classes');
+    }
+
+    /**
+     * Shared class validation. $excludeId reserved for future
+     * uniqueness checks; name/level/option are validated here.
+     */
+    private function validateClassInput(string $name, string $level, string $classOption): array
+    {
+        $errors = [];
+
+        if ($name === '') {
+            $errors[] = 'Class name is required.';
+        } elseif (mb_strlen($name) > 50) {
+            $errors[] = 'Class name must be 50 characters or fewer.';
+        }
+
+        if (!in_array($level, ClassModel::levels(), true)) {
+            $errors[] = 'Please select a valid level.';
+        }
+
+        if ($classOption !== '' && !in_array($classOption, ClassModel::options(), true)) {
+            $errors[] = 'Please select a valid stream.';
+        }
+
+        return $errors;
     }
 
 

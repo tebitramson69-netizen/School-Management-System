@@ -539,7 +539,9 @@ function sidebarIsActive(
                             href="<?= BASE_URL ?>/index.php?action=view_classes"
                             class="sidebar-menu-link <?= sidebarIsActive([
                                 'view_classes',
-                                'view_class_list'
+                                'view_class_list',
+                                'create_class_form',
+                                'edit_class_form'
                             ]) ?>"
                         >
 
