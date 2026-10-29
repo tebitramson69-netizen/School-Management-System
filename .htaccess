@@ -1,0 +1,6 @@
+# Deny everything by default. public/.htaccess grants access back for the
+# one directory that is meant to be served.
+#
+# Without this, the whole repository sits under the web root: .env returns
+# the database credentials in plain text, and config/ and src/ are readable.
+Require all denied
